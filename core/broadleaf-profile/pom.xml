@@ -60,6 +60,16 @@
                   </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- easymockclassextension drives cglib bytecode generation, which
+                         reflectively calls ClassLoader.defineClass. JDK 17 strong
+                         encapsulation requires explicitly opening java.lang for this. -->
+                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED ${surefire.argLine}</argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>
