@@ -17,33 +17,23 @@
  * limitations under the License.
  * #L%
  */
-/**
- * 
- */
-package org.broadleafcommerce.common.test.util
+package org.broadleafcommerce.common.test.util;
 
-import org.broadleafcommerce.common.util.StringUtil
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import spock.lang.Specification
-
+import org.broadleafcommerce.common.util.StringUtil;
+import org.junit.Test;
 
 /**
- * 
- * 
  * @author Phillip Verheyden (phillipuniverse)
  */
-class StringUtilSpec extends Specification {
+public class StringUtilTest {
 
-    def "Exact roperty segments"() {
-        when: 
-            def result = StringUtil.segmentInclusion("fulfillmentLocation.address.phoneFax", "fulfillmentLocation.address.phone")
-        then:
-            !result
-        
-        when:
-            result = StringUtil.segmentInclusion("fulfillmentLocation.address.phoneFax.phoneNumber", "fulfillmentLocation.address.phoneFax")
-        then:
-            result
+    @Test
+    public void exactPropertySegments() {
+        assertFalse(StringUtil.segmentInclusion("fulfillmentLocation.address.phoneFax", "fulfillmentLocation.address.phone"));
+        assertTrue(StringUtil.segmentInclusion("fulfillmentLocation.address.phoneFax.phoneNumber", "fulfillmentLocation.address.phoneFax"));
     }
-    
+
 }
