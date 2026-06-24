@@ -19,9 +19,10 @@
  */
 package org.broadleafcommerce.core.search.service;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.MutableConfiguration;
 
 import org.apache.commons.lang.StringUtils;
 import org.broadleafcommerce.common.exception.ServiceException;
@@ -50,7 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * @deprecated Use {@link SolrSearchServiceImpl} 
@@ -70,7 +71,17 @@ public class DatabaseSearchServiceImpl implements SearchService {
     
     protected static String CACHE_NAME = "blStandardElements";
     protected static String CACHE_KEY_PREFIX = "facet:";
-    protected Cache cache = CacheManager.getInstance().getCache(CACHE_NAME);
+    protected Cache cache = lookupCache(CACHE_NAME);
+
+    protected static Cache<Object, Object> lookupCache(String cacheName) {
+        CacheManager cacheManager = Caching.getCachingProvider().getCacheManager();
+        Cache<Object, Object> c = cacheManager.getCache(cacheName);
+        if (c == null) {
+            c = cacheManager.createCache(cacheName,
+                    new MutableConfiguration<Object, Object>().setStoreByValue(false));
+        }
+        return c;
+    }
     
     @Override
     public SearchResult findExplicitSearchResultsByCategory(Category category, SearchCriteria searchCriteria) throws ServiceException {
@@ -118,15 +129,14 @@ public class DatabaseSearchServiceImpl implements SearchService {
         List<SearchFacetDTO> facets = null;
         
         String cacheKey = CACHE_KEY_PREFIX + "blc-search";
-        Element element = cache.get(cacheKey);
+        Object element = cache.get(cacheKey);
         if (element != null) {
-            facets = (List<SearchFacetDTO>) element.getValue();
+            facets = (List<SearchFacetDTO>) element;
         }
         
         if (facets == null) {
             facets = buildSearchFacetDtos(searchFacetDao.readAllSearchFacets(FieldEntity.PRODUCT));
-            element = new Element(cacheKey, facets);
-            cache.put(element);
+            cache.put(cacheKey, facets);
         }
         return facets;
     }
@@ -137,9 +147,9 @@ public class DatabaseSearchServiceImpl implements SearchService {
         List<SearchFacetDTO> facets = null;
         
         String cacheKey = CACHE_KEY_PREFIX + "category:" + category.getId();
-        Element element = cache.get(cacheKey);
+        Object element = cache.get(cacheKey);
         if (element != null) {
-            facets = (List<SearchFacetDTO>) element.getValue();
+            facets = (List<SearchFacetDTO>) element;
         }
         
         if (facets == null) {
@@ -149,8 +159,7 @@ public class DatabaseSearchServiceImpl implements SearchService {
                 searchFacets.add(categorySearchFacet.getSearchFacet());
             }
             facets = buildSearchFacetDtos(searchFacets);
-            element = new Element(cacheKey, facets);
-            cache.put(element);
+            cache.put(cacheKey, facets);
         }
         return facets;
     }

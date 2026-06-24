@@ -21,15 +21,15 @@ package org.broadleafcommerce.core.search.redirect.dao;
 
 import org.broadleafcommerce.common.time.SystemTime;
 import org.broadleafcommerce.core.search.redirect.domain.SearchRedirect;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.QueryHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 /**
  * Created by ppatel.

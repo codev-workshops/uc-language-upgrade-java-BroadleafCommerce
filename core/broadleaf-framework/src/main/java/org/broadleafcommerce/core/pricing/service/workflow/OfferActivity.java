@@ -29,7 +29,7 @@ import org.broadleafcommerce.core.workflow.ProcessContext;
 
 import java.util.List;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 public class OfferActivity extends BaseActivity<ProcessContext<Order>> {
 

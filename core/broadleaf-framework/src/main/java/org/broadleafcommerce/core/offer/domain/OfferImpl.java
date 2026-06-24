@@ -57,7 +57,6 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Index;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -71,20 +70,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.Lob;
-import javax.persistence.MapKey;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Lob;
+import jakarta.persistence.MapKey;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "BLC_OFFER")
@@ -211,14 +210,12 @@ public class OfferImpl implements Offer, AdminMainEntity {
     @Column(name = "APPLIES_TO_RULES", length = Integer.MAX_VALUE - 1)
     @AdminPresentation(excluded = true)
     @Lob
-    @Type(type = "org.hibernate.type.StringClobType")
     @Deprecated
     protected String appliesToOrderRules;
 
     @Column(name = "APPLIES_WHEN_RULES", length = Integer.MAX_VALUE - 1)
     @AdminPresentation(excluded = true)
     @Lob
-    @Type(type = "org.hibernate.type.StringClobType")
     @Deprecated
     protected String appliesToCustomerRules;
 

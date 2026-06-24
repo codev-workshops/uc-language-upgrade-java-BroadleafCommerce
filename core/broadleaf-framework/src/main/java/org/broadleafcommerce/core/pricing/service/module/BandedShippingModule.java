@@ -33,7 +33,7 @@ import org.broadleafcommerce.core.pricing.service.fulfillment.provider.BandedFul
 import org.broadleafcommerce.core.pricing.service.workflow.type.ShippingServiceType;
 import org.broadleafcommerce.profile.core.domain.Address;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Map;
 

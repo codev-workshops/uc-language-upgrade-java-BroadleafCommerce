@@ -32,19 +32,23 @@ import org.broadleafcommerce.core.offer.domain.OfferInfo;
 import org.broadleafcommerce.core.offer.domain.OrderAdjustment;
 import org.broadleafcommerce.core.offer.domain.OrderItemAdjustment;
 import org.broadleafcommerce.core.offer.domain.OrderItemPriceDetailAdjustment;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.jpa.QueryHints;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 @Repository("blOfferDao")
 public class OfferDaoImpl implements OfferDao {
@@ -150,31 +154,39 @@ public class OfferDaoImpl implements OfferDao {
 
     @Override
     public List<Offer> readOffersByAutomaticDeliveryType() {
-        //TODO change this to a JPA criteria
-        Criteria criteria = ((HibernateEntityManager) em).getSession().createCriteria(OfferImpl.class);
+        CriteriaBuilder builder = em.getCriteriaBuilder();
+        CriteriaQuery<Offer> criteria = builder.createQuery(Offer.class);
+        Root<OfferImpl> offer = criteria.from(OfferImpl.class);
+        criteria.select(offer.as(Offer.class));
 
         Date myDate = getCurrentDateAfterFactoringInDateResolution();
+
+        List<Predicate> predicates = new ArrayList<Predicate>();
 
         Calendar c = Calendar.getInstance();
         c.setTime(myDate);
         c.add(Calendar.DATE, +1);
-        criteria.add(Restrictions.lt("startDate", c.getTime()));
+        predicates.add(builder.lessThan(offer.<Date>get("startDate"), c.getTime()));
         c = Calendar.getInstance();
         c.setTime(myDate);
         c.add(Calendar.DATE, -1);
-        criteria.add(Restrictions.or(Restrictions.isNull("endDate"), Restrictions.gt("endDate", c.getTime())));
-        criteria.add(Restrictions.or(Restrictions.eq("archiveStatus.archived", 'N'),
-                Restrictions.isNull("archiveStatus.archived")));
+        predicates.add(builder.or(builder.isNull(offer.get("endDate")),
+                builder.greaterThan(offer.<Date>get("endDate"), c.getTime())));
+        predicates.add(builder.or(builder.equal(offer.get("archiveStatus").get("archived"), 'N'),
+                builder.isNull(offer.get("archiveStatus").get("archived"))));
 
         // Automatically Added or (Automatically Added is null and deliveryType is Automatic)
-        criteria.add(Restrictions.or(Restrictions.eq("automaticallyAdded", true),
-                Restrictions.and(Restrictions.isNull("automaticallyAdded"),
-                        Restrictions.eq("deliveryType", "AUTOMATIC"))));
+        predicates.add(builder.or(builder.equal(offer.get("automaticallyAdded"), true),
+                builder.and(builder.isNull(offer.get("automaticallyAdded")),
+                        builder.equal(offer.get("deliveryType"), "AUTOMATIC"))));
 
-        criteria.setCacheable(true);
-        criteria.setCacheRegion("query.Offer");
+        criteria.where(predicates.toArray(new Predicate[predicates.size()]));
 
-        return criteria.list();
+        TypedQuery<Offer> query = em.createQuery(criteria);
+        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(QueryHints.HINT_CACHE_REGION, "query.Offer");
+
+        return query.getResultList();
     }
 
     @Override

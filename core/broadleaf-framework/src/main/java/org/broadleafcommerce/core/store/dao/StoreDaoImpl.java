@@ -21,13 +21,13 @@ package org.broadleafcommerce.core.store.dao;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 import org.broadleafcommerce.core.store.domain.Store;
 import org.broadleafcommerce.core.store.domain.StoreImpl;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.QueryHints;
 import org.springframework.stereotype.Repository;
 
 @Repository("blStoreDao")

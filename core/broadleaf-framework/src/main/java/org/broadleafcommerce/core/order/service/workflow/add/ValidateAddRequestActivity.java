@@ -46,7 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 public class ValidateAddRequestActivity extends BaseActivity<ProcessContext<CartOperationRequest>> {
     

@@ -25,32 +25,29 @@ import org.broadleafcommerce.core.catalog.domain.Product;
 import org.broadleafcommerce.core.catalog.domain.ProductOption;
 import org.broadleafcommerce.core.catalog.domain.ProductOptionImpl;
 import org.broadleafcommerce.core.catalog.domain.ProductOptionValue;
+import org.broadleafcommerce.core.catalog.domain.Sku;
 import org.broadleafcommerce.core.catalog.domain.ProductOptionValueImpl;
 import org.broadleafcommerce.core.catalog.domain.ProductOptionXref;
 import org.broadleafcommerce.core.catalog.domain.ProductOptionXrefImpl;
 import org.broadleafcommerce.core.catalog.domain.SkuProductOptionValueXrefImpl;
 import org.broadleafcommerce.core.catalog.domain.dto.AssignedProductOptionDTO;
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.ejb.QueryHints;
-import org.hibernate.transform.Transformers;
+import org.hibernate.jpa.QueryHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 @Repository("blProductOptionDao")
 public class ProductOptionDaoImpl implements ProductOptionDao {
@@ -86,26 +83,33 @@ public class ProductOptionDaoImpl implements ProductOptionDao {
 
     @Override
     public List<AssignedProductOptionDTO> findAssignedProductOptionsByProductId(Long productId) {
-        Session session = em.unwrap(Session.class);
-        Criteria criteria = session.createCriteria(SkuProductOptionValueXrefImpl.class);
-        List dtoList = criteria
-            .createAlias("sku", "sku")
-            .createAlias("sku.product", "product")
-            .createAlias("productOptionValue", "productOptionValue")
-            .createAlias("productOptionValue.productOption", "productOption")
-            .setProjection(Projections.distinct(
-                    Projections.projectionList()
-                    .add(Projections.property("product.id"), "productId")
-                    .add(Projections.property("productOption.attributeName"), "productOptionAttrName")
-                    .add(Projections.property("productOptionValue"), "productOptionValue")
-                    .add(Projections.property("sku"), "sku")
-                )
-            ).setResultTransformer(Transformers.aliasToBean(AssignedProductOptionDTO.class))
-            .add(Restrictions.eq("product.id", productId))
-            .addOrder(Order.asc("productOption.attributeName")).list();
+        CriteriaBuilder builder = em.getCriteriaBuilder();
+        CriteriaQuery<Tuple> criteria = builder.createTupleQuery();
+        Root<SkuProductOptionValueXrefImpl> root = criteria.from(SkuProductOptionValueXrefImpl.class);
+        Join<Object, Object> sku = root.join("sku");
+        Join<Object, Object> product = sku.join("product");
+        Join<Object, Object> productOptionValue = root.join("productOptionValue");
+        Join<Object, Object> productOption = productOptionValue.join("productOption");
+
+        Path<Object> productId2 = product.get("id");
+        Path<Object> productOptionAttrName = productOption.get("attributeName");
+        criteria.multiselect(
+                productId2.alias("productId"),
+                productOptionAttrName.alias("productOptionAttrName"),
+                productOptionValue.alias("productOptionValue"),
+                sku.alias("sku"));
+        criteria.distinct(true);
+        criteria.where(builder.equal(product.get("id"), productId));
+        criteria.orderBy(builder.asc(productOptionAttrName));
+
+        List<Tuple> dtoList = em.createQuery(criteria).getResultList();
         List<AssignedProductOptionDTO> results = new ArrayList<AssignedProductOptionDTO>();
-        for (Object o : dtoList) {
-            AssignedProductOptionDTO dto = (AssignedProductOptionDTO) o;
+        for (Tuple t : dtoList) {
+            AssignedProductOptionDTO dto = new AssignedProductOptionDTO();
+            dto.setProductId((Long) t.get("productId"));
+            dto.setProductOptionAttrName((String) t.get("productOptionAttrName"));
+            dto.setProductOptionValue((ProductOptionValue) t.get("productOptionValue"));
+            dto.setSku((Sku) t.get("sku"));
             if (dto.getSku().isActive()) {
                 results.add(dto);
             }

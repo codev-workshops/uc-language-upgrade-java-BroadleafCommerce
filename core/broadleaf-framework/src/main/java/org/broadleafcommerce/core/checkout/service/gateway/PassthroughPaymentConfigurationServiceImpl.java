@@ -36,7 +36,7 @@ import org.broadleafcommerce.common.web.payment.expression.PaymentGatewayFieldEx
 import org.broadleafcommerce.common.web.payment.processor.CreditCardTypesExtensionHandler;
 import org.broadleafcommerce.common.web.payment.processor.TRCreditCardExtensionHandler;
 import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * A Default Configuration to handle Passthrough Payments, for example COD payments.
