@@ -63,7 +63,7 @@
                     <excludes>
                         <exclude>**/browsertest/**</exclude>
                     </excludes>
-                    <argLine>${surefire.argLine}</argLine>
+                    <argLine>${surefire.argLine} ${blc.add.opens}</argLine>
                 </configuration>
             </plugin>
             <plugin>

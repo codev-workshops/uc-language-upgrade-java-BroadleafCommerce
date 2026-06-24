@@ -23,7 +23,7 @@ import org.broadleafcommerce.test.BaseTest;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 public class RuntimeEnvironmentPropertiesManagerTest extends BaseTest {
 

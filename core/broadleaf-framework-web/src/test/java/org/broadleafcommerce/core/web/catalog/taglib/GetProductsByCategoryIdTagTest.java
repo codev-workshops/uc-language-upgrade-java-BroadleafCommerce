@@ -19,7 +19,7 @@
  */
 package org.broadleafcommerce.core.web.catalog.taglib;
 
-import javax.servlet.jsp.JspException;
+import jakarta.servlet.jsp.JspException;
 
 public class GetProductsByCategoryIdTagTest extends BaseTagLibTest {
     

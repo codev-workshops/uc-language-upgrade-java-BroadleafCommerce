@@ -81,8 +81,8 @@
                         <id>default-test</id>
                         <configuration>
                             <skipTests>true</skipTests>
-                            <argLine>-Xmx1024m -XX:MaxPermSize=512m
-                                -Dlegacy=true ${surefire.argLine}</argLine>
+                            <argLine>-Xmx1024m
+                                -Dlegacy=true ${surefire.argLine} ${blc.add.opens}</argLine>
                         </configuration>
                     </execution>
                     <execution>
@@ -95,7 +95,7 @@
                             <excludes>
                                 <exclude>**/Legacy**Test.java</exclude>
                             </excludes>
-                            <argLine>-Xmx1024m -XX:MaxPermSize=512m ${surefire.argLine}</argLine>
+                            <argLine>-Xmx1024m ${surefire.argLine} ${blc.add.opens}</argLine>
                         </configuration>
                     </execution>
                 </executions>

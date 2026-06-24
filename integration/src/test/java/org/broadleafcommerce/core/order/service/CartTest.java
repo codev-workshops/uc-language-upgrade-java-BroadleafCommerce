@@ -31,7 +31,7 @@ import org.broadleafcommerce.profile.core.domain.Customer;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.Test;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
