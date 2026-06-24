@@ -47,8 +47,8 @@ import java.util.Map.Entry;
 
 import jakarta.annotation.Resource;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
 
 @Service("blTranslationService")
 public class TranslationServiceImpl implements TranslationService, TranslationSupport {
@@ -66,6 +66,9 @@ public class TranslationServiceImpl implements TranslationService, TranslationSu
     protected SandBoxHelper sandBoxHelper;
     
     protected Cache cache;
+
+    @Resource(name="blCacheManager")
+    protected CacheManager cacheManager;
 
     @Resource(name="blTranslationServiceExtensionManager")
     protected TranslationServiceExtensionManager extensionManager;
@@ -164,7 +167,7 @@ public class TranslationServiceImpl implements TranslationService, TranslationSu
     @Override
     public Cache getCache() {
         if (cache == null) {
-            cache = CacheManager.getInstance().getCache("blTranslationElements");
+            cache = cacheManager.getCache("blTranslationElements");
         }
         return cache;
     }

@@ -19,13 +19,8 @@
  */
 package org.broadleafcommerce.common.cache.engine;
 
-import net.sf.ehcache.CacheException;
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.event.CacheEventListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.cache.spi.CacheKey;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -38,7 +33,7 @@ import java.util.Map;
  *
  */
 @Deprecated
-public class HydratedCacheManagerImpl implements CacheEventListener, HydratedCacheManager, HydratedAnnotationManager {
+public class HydratedCacheManagerImpl implements HydratedCacheManager, HydratedAnnotationManager {
 
     private static final Log LOG = LogFactory.getLog(HydratedCacheManagerImpl.class);
     private static final HydratedCacheManagerImpl MANAGER = new HydratedCacheManagerImpl();
@@ -133,12 +128,9 @@ public class HydratedCacheManagerImpl implements CacheEventListener, HydratedCac
         hydratedCacheContainer.clear();
     }
 
+    @SuppressWarnings("unused")
     private void removeCache(String cacheRegion, Serializable key) {
         String cacheName = cacheRegion;
-        if (key instanceof CacheKey) {
-            cacheName = ((CacheKey) key).getEntityOrRoleName();
-            key = ((CacheKey) key).getKey();
-        }
         if (containsCache(cacheRegion, cacheName)) {
             HydratedCache cache = hydratedCacheContainer.get(cacheRegion + "_" + cacheName);
             String myKey = cacheRegion + "_" + cacheName + "_" + key;
@@ -158,30 +150,6 @@ public class HydratedCacheManagerImpl implements CacheEventListener, HydratedCac
             }
             hydratedCacheContainer.remove(cacheName);
         }
-    }
-
-    public void notifyElementEvicted(Ehcache arg0, Element arg1) {
-        removeCache(arg0.getName(), arg1.getKey());
-    }
-
-    public void notifyElementExpired(Ehcache arg0, Element arg1) {
-        removeCache(arg0.getName(), arg1.getKey());
-    }
-
-    public void notifyElementPut(Ehcache arg0, Element arg1) throws CacheException {
-        //do nothing
-    }
-
-    public void notifyElementRemoved(Ehcache arg0, Element arg1) throws CacheException {
-        removeCache(arg0.getName(), arg1.getKey());
-    }
-
-    public void notifyElementUpdated(Ehcache arg0, Element arg1) throws CacheException {
-        removeCache(arg0.getName(), arg1.getKey());
-    }
-
-    public void notifyRemoveAll(Ehcache arg0) {
-        removeAll(arg0.getName());
     }
 
     @Override

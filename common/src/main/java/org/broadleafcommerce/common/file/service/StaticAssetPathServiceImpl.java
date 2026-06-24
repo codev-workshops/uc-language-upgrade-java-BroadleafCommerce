@@ -20,7 +20,6 @@
 package org.broadleafcommerce.common.file.service;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.velocity.tools.view.ImportSupport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -160,7 +159,7 @@ public class StaticAssetPathServiceImpl implements StaticAssetPathService {
                 returnValue = envPrefix + returnValue;
             }
         } else {
-            if (returnValue != null && ! ImportSupport.isAbsoluteUrl(returnValue)) {
+            if (returnValue != null && ! isAbsoluteUrl(returnValue)) {
                 if (! returnValue.startsWith("/")) {
                     returnValue = "/" + returnValue;
                 }
@@ -226,6 +225,26 @@ public class StaticAssetPathServiceImpl implements StaticAssetPathService {
      * @param urlPrefix
      * @return
      */
+    /**
+     * Determines whether the supplied url is absolute (i.e. it begins with an RFC-style {@code scheme:} prefix). This
+     * replaces velocity-tools' {@code ImportSupport.isAbsoluteUrl}, which was removed from the Java 17 stack.
+     */
+    protected boolean isAbsoluteUrl(String url) {
+        if (url == null) {
+            return false;
+        }
+        int colonPos = url.indexOf(':');
+        if (colonPos == -1) {
+            return false;
+        }
+        for (int i = 0; i < colonPos; i++) {
+            if (!Character.isLetter(url.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private String fixEnvironmentUrlPrefix(String urlPrefix) {
         if (urlPrefix != null) {
             urlPrefix = urlPrefix.trim();

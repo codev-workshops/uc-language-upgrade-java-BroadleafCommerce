@@ -19,15 +19,14 @@
  */
 package org.broadleafcommerce.common.cache.engine;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheException;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.cache.spi.CacheKey;
+import org.broadleafcommerce.common.extensibility.cache.ehcache.MergeEhCacheManagerFactoryBean;
+
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.MutableConfiguration;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -52,21 +51,27 @@ public class BigMemoryHydratedCacheManagerImpl extends AbstractHydratedCacheMana
 
     private Map<String, List<String>> cacheMemberNamesByEntity = Collections.synchronizedMap(new HashMap<String, List<String>>(100));
     private List<String> removeKeys = Collections.synchronizedList(new ArrayList<String>(100));
-    private Cache offHeap = null;
+    private Cache<Object, Object> offHeap = null;
 
     private BigMemoryHydratedCacheManagerImpl()  {
-        //CacheManager.getInstance() and CacheManager.create() cannot be called in this constructor because it will create two cache manager instances
+        //the cache manager cannot be resolved in this constructor because it may not be initialized yet
     }
-    
-    private synchronized Cache getHeap() {
+
+    private CacheManager getCacheManager() {
+        CacheManager manager = MergeEhCacheManagerFactoryBean.getConfiguredManager();
+        if (manager == null) {
+            manager = Caching.getCachingProvider().getCacheManager();
+        }
+        return manager;
+    }
+
+    @SuppressWarnings("unchecked")
+    private synchronized Cache<Object, Object> getHeap() {
         if (offHeap == null) {
-            if (CacheManager.getInstance().cacheExists("hydrated-offheap-cache")) {
-                offHeap = CacheManager.getInstance().getCache("hydrated-offheap-cache");
-            } else {
-                CacheConfiguration config = new CacheConfiguration("hydrated-offheap-cache", 500).eternal(true).overflowToOffHeap(true).maxMemoryOffHeap("1400M");
-                Cache cache = new Cache(config);
-                CacheManager.create().addCache(cache);
-                offHeap = cache;
+            CacheManager manager = getCacheManager();
+            offHeap = manager.getCache("hydrated-offheap-cache");
+            if (offHeap == null) {
+                offHeap = manager.createCache("hydrated-offheap-cache", new MutableConfiguration<Object, Object>());
             }
         }
         return offHeap;
@@ -74,17 +79,11 @@ public class BigMemoryHydratedCacheManagerImpl extends AbstractHydratedCacheMana
 
     @Override
     public Object getHydratedCacheElementItem(String cacheRegion, String cacheName, Serializable elementKey, String elementItemName) {
-        Element element;
         String myKey = cacheRegion + '_' + cacheName + '_' + elementItemName + '_' + elementKey;
         if (removeKeys.contains(myKey)) {
             return null;
         }
-        Object response = null;
-        element = getHeap().get(myKey);
-        if (element != null) {
-            response = element.getObjectValue();
-        }
-        return response;
+        return getHeap().get(myKey);
     }
 
     @Override
@@ -92,7 +91,6 @@ public class BigMemoryHydratedCacheManagerImpl extends AbstractHydratedCacheMana
         String heapKey = cacheRegion + '_' + cacheName + '_' + elementItemName + '_' + elementKey;
         String nameKey = cacheRegion + '_' + cacheName + '_' + elementKey;
         removeKeys.remove(nameKey);
-        Element element = new Element(heapKey, elementValue);
         if (!cacheMemberNamesByEntity.containsKey(nameKey)) {
             List<String> myMembers = new ArrayList<String>(50);
             myMembers.add(elementItemName);
@@ -101,15 +99,11 @@ public class BigMemoryHydratedCacheManagerImpl extends AbstractHydratedCacheMana
             List<String> myMembers = cacheMemberNamesByEntity.get(nameKey);
             myMembers.add(elementItemName);
         }
-        getHeap().put(element);
+        getHeap().put(heapKey, elementValue);
     }
 
     protected void removeCache(String cacheRegion, Serializable key) {
         String cacheName = cacheRegion;
-        if (key instanceof CacheKey) {
-            cacheName = ((CacheKey) key).getEntityOrRoleName();
-            key = ((CacheKey) key).getKey();
-        }
         String nameKey = cacheRegion + '_' + cacheName + '_' + key;
         if (cacheMemberNamesByEntity.containsKey(nameKey)) {
             String[] members = new String[cacheMemberNamesByEntity.get(nameKey).size()];
@@ -124,36 +118,6 @@ public class BigMemoryHydratedCacheManagerImpl extends AbstractHydratedCacheMana
     
     protected void removeAll(String cacheName) {
         //do nothing
-    }
-
-    @Override
-    public void notifyElementEvicted(Ehcache arg0, Element arg1) {
-        removeCache(arg0.getName(), arg1.getKey());
-    }
-
-    @Override
-    public void notifyElementExpired(Ehcache arg0, Element arg1) {
-        removeCache(arg0.getName(), arg1.getKey());
-    }
-
-    @Override
-    public void notifyElementPut(Ehcache arg0, Element arg1) throws CacheException {
-        //do nothing
-    }
-
-    @Override
-    public void notifyElementRemoved(Ehcache arg0, Element arg1) throws CacheException {
-        removeCache(arg0.getName(), arg1.getKey());
-    }
-
-    @Override
-    public void notifyElementUpdated(Ehcache arg0, Element arg1) throws CacheException {
-        removeCache(arg0.getName(), arg1.getKey());
-    }
-
-    @Override
-    public void notifyRemoveAll(Ehcache arg0) {
-        removeAll(arg0.getName());
     }
 
 }

@@ -21,8 +21,9 @@ package org.broadleafcommerce.common.util;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
+import org.hibernate.query.BindableType;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.type.Type;
 
 import java.util.ArrayList;
@@ -74,16 +75,24 @@ public class UpdateExecutor {
         List<Long[]> runs = buildRuns(ids);
         for (Long[] run : runs) {
             String queryString = String.format(template, buildInClauseTemplate(run.length));
-            SQLQuery query = em.unwrap(Session.class).createSQLQuery(queryString);
-            int counter = 0;
+            NativeQuery<?> query = em.unwrap(Session.class).createNativeQuery(queryString);
+            //Hibernate 6 native-query positional parameters are 1-based
+            int counter = 1;
             if (!ArrayUtils.isEmpty(params)) {
+                int typeIndex = 0;
                 for (Object param : params) {
-                    query.setParameter(counter, param, types[counter]);
+                    Type type = types != null ? types[typeIndex] : null;
+                    if (type instanceof BindableType) {
+                        query.setParameter(counter, param, (BindableType) type);
+                    } else {
+                        query.setParameter(counter, param);
+                    }
                     counter++;
+                    typeIndex++;
                 }
             }
             for (Long id : run) {
-                query.setLong(counter, id);
+                query.setParameter(counter, id);
                 counter++;
             }
             response += query.executeUpdate();

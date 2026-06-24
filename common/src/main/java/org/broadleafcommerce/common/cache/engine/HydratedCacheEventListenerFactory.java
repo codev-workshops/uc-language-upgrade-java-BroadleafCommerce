@@ -19,23 +19,24 @@
  */
 package org.broadleafcommerce.common.cache.engine;
 
-import net.sf.ehcache.event.CacheEventListener;
-import net.sf.ehcache.event.CacheEventListenerFactory;
-
 import java.lang.reflect.Method;
 import java.util.Properties;
 
 /**
- * 
- * @author jfischer
+ * Resolves the {@link HydratedCacheManager} used by {@link org.broadleafcommerce.common.cache.HydratedSetup}.
  *
+ * <p>Historically this extended ehcache-2's {@code CacheEventListenerFactory} so the hydrated-cache manager could be
+ * wired in as an ehcache-2 cache event listener. ehcache-2's listener factory SPI no longer exists on the Hibernate 6 /
+ * JCache stack, so this is now a plain factory that simply resolves the configured manager. Re-binding hydrated-cache
+ * invalidation to the Hibernate 6 / JCache event model is handled in a later phase.
+ *
+ * @author jfischer
  */
-public class HydratedCacheEventListenerFactory extends CacheEventListenerFactory {
+public class HydratedCacheEventListenerFactory {
 
     private static HydratedCacheManager manager = null;
 
-    @Override
-    public CacheEventListener createCacheEventListener(Properties props) {
+    public HydratedCacheManager createCacheEventListener(Properties props) {
         try {
             if (props == null || props.isEmpty()) {
                 manager = EhcacheHydratedCacheManagerImpl.getInstance();
@@ -46,12 +47,15 @@ public class HydratedCacheEventListenerFactory extends CacheEventListenerFactory
                 manager = (HydratedCacheManager) method.invoke(null);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Unable to create a CacheEventListener instance", e);
+            throw new RuntimeException("Unable to create a HydratedCacheManager instance", e);
         }
-        return (CacheEventListener) manager;
+        return manager;
     }
 
     public static HydratedCacheManager getConfiguredManager() {
+        if (manager == null) {
+            manager = EhcacheHydratedCacheManagerImpl.getInstance();
+        }
         return manager;
     }
 }

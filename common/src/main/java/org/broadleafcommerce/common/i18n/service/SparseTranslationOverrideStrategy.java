@@ -37,12 +37,9 @@ import org.broadleafcommerce.common.site.domain.Site;
 import org.broadleafcommerce.common.util.dao.DynamicDaoHelper;
 import org.broadleafcommerce.common.util.dao.DynamicDaoHelperImpl;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.ejb.HibernateEntityManager;
-import org.hibernate.ejb.QueryHints;
-import org.hibernate.ejb.criteria.CriteriaBuilderImpl;
-import org.hibernate.type.LongType;
-import org.hibernate.type.StringType;
+import org.hibernate.jpa.HibernateHints;
 import org.hibernate.type.Type;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -297,14 +294,17 @@ public class SparseTranslationOverrideStrategy implements TranslationOverrideStr
             if (restrictAssociation) {
                 try {
                     Class<?> type = Class.forName(entityType.getType());
-                    SessionFactory sessionFactory = ((CriteriaBuilderImpl) em.getCriteriaBuilder()).getEntityManagerFactory().getSessionFactory();
+                    SessionFactory sessionFactory = em.unwrap(Session.class).getSessionFactory();
                     Class<?>[] entities = helper.getAllPolymorphicEntitiesFromCeiling(type, sessionFactory, true, true);
                     //This should already be in level 1 cache and this should not cause a hit to the database.
-                    Map<String, Object> idMetadata = helper.getIdMetadata(entities[entities.length - 1], (HibernateEntityManager) em);
+                    Map<String, Object> idMetadata = helper.getIdMetadata(entities[entities.length - 1], em);
                     Type idType = (Type) idMetadata.get("type");
-                    if (idType instanceof StringType) {
+                    // Hibernate 6 removed the concrete StringType / LongType classes (now modeled as
+                    // BasicType instances), so branch on the identifier's Java type instead.
+                    Class<?> idJavaType = idType.getReturnedClass();
+                    if (String.class.equals(idJavaType)) {
                         testObject = em.find(entities[entities.length - 1], entityId);
-                    } else if (idType instanceof LongType) {
+                    } else if (Long.class.equals(idJavaType) || long.class.equals(idJavaType)) {
                         testObject = em.find(entities[entities.length - 1], Long.parseLong(entityId));
                     }
                 } catch (ClassNotFoundException e) {
@@ -321,7 +321,7 @@ public class SparseTranslationOverrideStrategy implements TranslationOverrideStr
             if (extensionManager != null) {
                 extensionManager.refineQuery(TranslationImpl.class, testObject, query);
             }
-            query.setHint(QueryHints.HINT_CACHEABLE, true);
+            query.setHint(HibernateHints.HINT_CACHEABLE, true);
             List response = query.getResultList();
             if (extensionManager != null) {
                 extensionManager.filterResults(TranslationImpl.class, testObject, response);

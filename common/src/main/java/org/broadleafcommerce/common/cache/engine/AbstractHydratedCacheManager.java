@@ -19,7 +19,6 @@
  */
 package org.broadleafcommerce.common.cache.engine;
 
-import net.sf.ehcache.event.CacheEventListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -31,7 +30,7 @@ import java.util.Map;
 /**
  * @author jfischer
  */
-public abstract class AbstractHydratedCacheManager implements CacheEventListener, HydratedCacheManager, HydratedAnnotationManager {
+public abstract class AbstractHydratedCacheManager implements HydratedCacheManager, HydratedAnnotationManager {
 
     private static final Log LOG = LogFactory.getLog(AbstractHydratedCacheManager.class);
 
@@ -72,7 +71,6 @@ public abstract class AbstractHydratedCacheManager implements CacheEventListener
         return myClass;
     }
 
-    @Override
     public void dispose() {
         if (LOG.isInfoEnabled()) {
             LOG.info("Disposing of all hydrated cache members");

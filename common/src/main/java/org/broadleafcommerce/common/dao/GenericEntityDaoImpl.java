@@ -29,10 +29,7 @@ import org.broadleafcommerce.common.util.dao.DynamicDaoHelperImpl;
 import org.broadleafcommerce.common.util.dao.TypedQueryBuilder;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
-import org.hibernate.ejb.HibernateEntityManager;
-import org.hibernate.type.AbstractSingleColumnStandardBasicType;
-import org.hibernate.type.IntegerType;
-import org.hibernate.type.LongType;
+import org.hibernate.type.Type;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -92,12 +89,13 @@ public class GenericEntityDaoImpl implements GenericEntityDao, ApplicationContex
     @Override
     public <T> T readGenericEntity(Class<T> clazz, Object id) {
         clazz = (Class<T>) DynamicDaoHelperImpl.getNonProxyImplementationClassIfNecessary(clazz);
-        Map<String, Object> md = daoHelper.getIdMetadata(clazz, (HibernateEntityManager) em);
-        AbstractSingleColumnStandardBasicType type = (AbstractSingleColumnStandardBasicType) md.get("type");
+        Map<String, Object> md = daoHelper.getIdMetadata(clazz, em);
+        Type type = (Type) md.get("type");
+        Class<?> idClass = type == null ? null : type.getReturnedClass();
         
-        if (type instanceof LongType) {
+        if (Long.class.equals(idClass)) {
             id = Long.parseLong(String.valueOf(id));
-        } else if (type instanceof IntegerType) {
+        } else if (Integer.class.equals(idClass)) {
             id = Integer.parseInt(String.valueOf(id));
         }
 
@@ -215,12 +213,12 @@ public class GenericEntityDaoImpl implements GenericEntityDao, ApplicationContex
 
     @Override
     public void clearAutoFlushMode() {
-        em.unwrap(Session.class).setFlushMode(FlushMode.MANUAL);
+        em.unwrap(Session.class).setHibernateFlushMode(FlushMode.MANUAL);
     }
 
     @Override
     public void enableAutoFlushMode() {
-        em.unwrap(Session.class).setFlushMode(FlushMode.AUTO);
+        em.unwrap(Session.class).setHibernateFlushMode(FlushMode.AUTO);
     }
 
     @Override

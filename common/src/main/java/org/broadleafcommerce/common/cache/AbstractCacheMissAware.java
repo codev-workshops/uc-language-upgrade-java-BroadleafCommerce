@@ -34,9 +34,8 @@ import java.lang.reflect.Proxy;
 
 import jakarta.annotation.Resource;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
 
 /**
  * Support for any class that wishes to utilize a query miss cache. This cache is capable of caching a query miss
@@ -51,6 +50,9 @@ public abstract class AbstractCacheMissAware {
     
     @Resource(name="blStatisticsService")
     protected StatisticsService statisticsService;
+
+    @Resource(name="blCacheManager")
+    protected CacheManager cacheManager;
 
     protected Cache cache;
 
@@ -86,9 +88,9 @@ public abstract class AbstractCacheMissAware {
      * @return the cache item instance
      */
     protected <T> T getObjectFromCache(String key, String cacheName) {
-        Element cacheElement = getCache(cacheName).get(key);
+        Object cacheElement = getCache(cacheName).get(key);
         if (cacheElement != null) {
-            return (T) cacheElement.getValue();
+            return (T) cacheElement;
         }
         return null;
     }
@@ -102,7 +104,7 @@ public abstract class AbstractCacheMissAware {
      */
     protected Cache getCache(String cacheName) {
         if (cache == null) {
-            cache = CacheManager.getInstance().getCache(cacheName);
+            cache = cacheManager.getCache(cacheName);
         }
         return cache;
     }
@@ -130,7 +132,7 @@ public abstract class AbstractCacheMissAware {
         if (getLogger().isTraceEnabled()) {
             getLogger().trace("Evicting all keys from the [" + cacheName + "] cache.");
         }
-        getCache(cacheName).removeAll();
+        getCache(cacheName).clear();
     }
 
     /**
@@ -190,7 +192,7 @@ public abstract class AbstractCacheMissAware {
             //only handle null, non-hits. Otherwise, let level 2 cache handle it
             if ((context.isProductionSandBox() || (context.getAdditionalProperties().containsKey("allowLevel2Cache") && (Boolean) context.getAdditionalProperties().get("allowLevel2Cache"))) && response.equals(nullResponse)) {
                 statisticsService.addCacheStat(statisticsName, false);
-                getCache(cacheName).put(new Element(key, response));
+                getCache(cacheName).put(key, response);
                 if (getLogger().isTraceEnabled()) {
                     getLogger().trace("Caching [" + key + "] as null in the [" + cacheName + "] cache.");
                 }

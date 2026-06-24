@@ -27,8 +27,6 @@ import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.StringMemberValue;
 import org.broadleafcommerce.common.extensibility.jpa.copy.DirectCopyIgnorePattern;
 import org.hibernate.annotations.Type;
-import org.hibernate.type.MaterializedClobType;
-import org.hibernate.type.StringClobType;
 
 import jakarta.annotation.Resource;
 import jakarta.persistence.Embeddable;
@@ -46,9 +44,11 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Broadleaf defines the Hibernate type for Clob fields as {@link StringClobType}. This has been deprecated in favor of
- * {@link MaterializedClobType}. However, this is not a panacea, as this can map to the wrong type for Postgres. However,
- * this mapping is correct for Oracle.
+ * Broadleaf historically defined the Hibernate type for Clob fields as the legacy {@code org.hibernate.type.StringClobType},
+ * which was deprecated in favor of {@code org.hibernate.type.MaterializedClobType}. Both types were removed in Hibernate 6
+ * (which manages Clob mapping natively and changed {@code @Type} to take a {@code UserType} class rather than a type-name
+ * string), so this transformer's legacy string rewrite is effectively inert on the upgraded stack; the FQN strings are
+ * retained as constants so the bytecode-level scan remains backwards compatible.
  * </p>
  * The main reason to switch to MaterializedClobType is because it avoids the use of rs.getCharacterStream on the clob column.
  * Opening the character stream causes the Oracle jdbc driver to allocate a very large buffer array, which contributes to
@@ -75,6 +75,9 @@ import java.util.Properties;
  * @author Jeff Fischer
  */
 public class MaterializedClobTypeClassTransformer implements BroadleafClassTransformer {
+
+    protected static final String LEGACY_STRING_CLOB_TYPE = "org.hibernate.type.StringClobType";
+    protected static final String LEGACY_MATERIALIZED_CLOB_TYPE = "org.hibernate.type.MaterializedClobType";
 
     @Resource(name = "blDirectCopyIgnorePatterns")
     protected List<DirectCopyIgnorePattern> ignorePatterns = new ArrayList<DirectCopyIgnorePattern>();
@@ -123,10 +126,10 @@ public class MaterializedClobTypeClassTransformer implements BroadleafClassTrans
                                 String typeName = annotation.getTypeName();
                                 if (typeName.equals(Type.class.getName())) {
                                     StringMemberValue annot = (StringMemberValue) annotation.getMemberValue("type");
-                                    if (annot != null && annot.getValue().equals(StringClobType.class.getName())) {
+                                    if (annot != null && annot.getValue().equals(LEGACY_STRING_CLOB_TYPE)) {
                                         Annotation clobType = new Annotation(Type.class.getName(), constantPool);
                                         StringMemberValue type = new StringMemberValue(constantPool);
-                                        type.setValue(MaterializedClobType.class.getName());
+                                        type.setValue(LEGACY_MATERIALIZED_CLOB_TYPE);
                                         clobType.addMemberValue("type", type);
                                         annotationsAttribute.addAnnotation(clobType);
                                         transformed = true;

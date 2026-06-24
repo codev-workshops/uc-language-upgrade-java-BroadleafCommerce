@@ -141,6 +141,15 @@
             <artifactId>ehcache</artifactId>
             <version>3.10.8</version>
             <classifier>jakarta</classifier>
+            <exclusions>
+                <!-- The ehcache POM pulls in the legacy javax glassfish jaxb-runtime (2.4.0),
+                     whose transitive istack-commons-runtime is only published in a now-defunct
+                     repository. We supply the Jakarta jaxb stack (jakarta.xml.bind-api) instead. -->
+                <exclusion>
+                    <groupId>org.glassfish.jaxb</groupId>
+                    <artifactId>jaxb-runtime</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>

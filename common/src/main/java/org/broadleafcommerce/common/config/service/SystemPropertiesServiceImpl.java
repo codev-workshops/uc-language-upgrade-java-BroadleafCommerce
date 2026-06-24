@@ -19,9 +19,8 @@
  */
 package org.broadleafcommerce.common.config.service;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.broadleafcommerce.common.config.RuntimeEnvironmentPropertiesManager;
@@ -50,6 +49,9 @@ public class SystemPropertiesServiceImpl implements SystemPropertiesService{
     private static final String NULL_RESPONSE = "*NULL_RESPONSE*";
 
     protected Cache systemPropertyCache;
+
+    @Resource(name="blCacheManager")
+    protected CacheManager cacheManager;
 
     @Resource(name="blSystemPropertiesDao")
     protected SystemPropertiesDao systemPropertiesDao;
@@ -114,19 +116,16 @@ public class SystemPropertiesServiceImpl implements SystemPropertiesService{
 
     protected void addPropertyToCache(String propertyName, String propertyValue) {
         String key = buildKey(propertyName);
-        if (systemPropertyCacheTimeout < 0) {
-            getSystemPropertyCache().put(new Element(key, propertyValue));
-        } else {
-            getSystemPropertyCache().put(new Element(key, propertyValue, systemPropertyCacheTimeout, 
-                    systemPropertyCacheTimeout));
-        }
+        // Under JCache (ehcache 3) per-entry TTL is governed by the cache's configured ExpiryPolicy
+        // rather than a per-put expiry, so systemPropertyCacheTimeout is applied via cache configuration.
+        getSystemPropertyCache().put(key, propertyValue);
     }
 
     protected String getPropertyFromCache(String propertyName) {
         String key = buildKey(propertyName);
-        Element cacheElement = getSystemPropertyCache().get(key);
-        if (cacheElement != null && cacheElement.getObjectValue() != null) {
-            return (String) cacheElement.getObjectValue();
+        Object cacheElement = getSystemPropertyCache().get(key);
+        if (cacheElement != null) {
+            return (String) cacheElement;
         }
         return null;
     }
@@ -166,7 +165,7 @@ public class SystemPropertiesServiceImpl implements SystemPropertiesService{
 
     protected Cache getSystemPropertyCache() {
         if (systemPropertyCache == null) {
-            systemPropertyCache = CacheManager.getInstance().getCache("blSystemPropertyElements");
+            systemPropertyCache = cacheManager.getCache("blSystemPropertyElements");
         }
         return systemPropertyCache;
     }

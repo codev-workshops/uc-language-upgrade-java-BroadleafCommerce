@@ -22,7 +22,7 @@ package org.broadleafcommerce.common.i18n.dao;
 import org.broadleafcommerce.common.i18n.domain.ISOCountry;
 import org.broadleafcommerce.common.i18n.domain.ISOCountryImpl;
 import org.broadleafcommerce.common.persistence.EntityConfiguration;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import jakarta.annotation.Resource;
@@ -49,7 +49,7 @@ public class ISODaoImpl implements ISODao {
     @SuppressWarnings("unchecked")
     public List<ISOCountry> findISOCountries() {
         Query query = em.createNamedQuery("BC_FIND_ISO_COUNTRIES");
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         return query.getResultList();
     }
 

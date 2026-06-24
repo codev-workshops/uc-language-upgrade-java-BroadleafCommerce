@@ -21,9 +21,12 @@ package org.broadleafcommerce.common.util.sql.importsql;
 
 import org.broadleafcommerce.common.logging.SupportLogManager;
 import org.broadleafcommerce.common.logging.SupportLogger;
-import org.hibernate.tool.hbm2ddl.SingleLineSqlCommandExtractor;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.tool.schema.internal.script.SingleLineSqlScriptExtractor;
 
 import java.io.Reader;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * 
@@ -38,16 +41,16 @@ import java.io.Reader;
  * @author Jay Aisenbrey (cja769)
  *
  */
-public class DemoPostgresSingleLineSqlCommandExtractor extends SingleLineSqlCommandExtractor {
+public class DemoPostgresSingleLineSqlCommandExtractor extends SingleLineSqlScriptExtractor {
 
     private static final long serialVersionUID = 1L;
     
     private static final SupportLogger LOGGER = SupportLogManager.getLogger("UserOverride", DemoPostgresSingleLineSqlCommandExtractor.class);
     
     @Override
-    public String[] extractCommands(Reader reader) {
+    public List<String> extractCommands(Reader reader, Dialect dialect) {
         
-        String[] commands = super.extractCommands(reader);
+        String[] commands = super.extractCommands(reader, dialect).toArray(new String[0]);
         String[] newCommands = new String[commands.length];
         int i = 0;
         for (String command : commands) {
@@ -64,7 +67,7 @@ public class DemoPostgresSingleLineSqlCommandExtractor extends SingleLineSqlComm
             newCommands[i] = newCommand;
             i++;
         }
-        return newCommands;
+        return Arrays.asList(newCommands);
     }
 
 }

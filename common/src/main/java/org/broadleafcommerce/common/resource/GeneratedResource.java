@@ -62,7 +62,7 @@ public class GeneratedResource extends AbstractResource implements Serializable 
     }
 
     public GeneratedResource(byte[] source, String description) {
-        Assert.notNull(source);
+        Assert.notNull(source, "source cannot be null");
         this.source = source;
         this.description = description;
         timeGenerated = System.currentTimeMillis();

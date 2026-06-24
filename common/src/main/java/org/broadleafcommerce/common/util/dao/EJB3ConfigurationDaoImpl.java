@@ -19,9 +19,12 @@
  */
 package org.broadleafcommerce.common.util.dao;
 
-import org.hibernate.ejb.Ejb3Configuration;
+import org.hibernate.boot.Metadata;
+import org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl;
+import org.hibernate.jpa.boot.spi.Bootstrap;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import jakarta.persistence.spi.PersistenceUnitInfo;
 
@@ -32,18 +35,23 @@ import jakarta.persistence.spi.PersistenceUnitInfo;
  */
 public class EJB3ConfigurationDaoImpl implements EJB3ConfigurationDao {
 
-    private Ejb3Configuration configuration = null;
+    private Metadata configuration = null;
 
     protected PersistenceUnitInfo persistenceUnitInfo;
 
-    public Ejb3Configuration getConfiguration() {
+    public Metadata getConfiguration() {
         synchronized(this) {
             if (configuration == null) {
-                Ejb3Configuration temp = new Ejb3Configuration();
                 String previousValue = persistenceUnitInfo.getProperties().getProperty("hibernate.hbm2ddl.auto");
                 persistenceUnitInfo.getProperties().setProperty("hibernate.hbm2ddl.auto", "none");
-                configuration = temp.configure(persistenceUnitInfo, new HashMap());
-                configuration.getHibernateConfiguration().buildSessionFactory();
+                // Hibernate 6 replaced Ejb3Configuration with the metadata bootstrap. Building the
+                // EntityManagerFactoryBuilder and asking for its metadata() runs the full mapping
+                // bind step (producing the PersistentClass bindings) without forcing us to build a
+                // SessionFactory just to read the mappings.
+                Map<String, Object> integration = new HashMap<String, Object>();
+                EntityManagerFactoryBuilderImpl builder = (EntityManagerFactoryBuilderImpl)
+                        Bootstrap.getEntityManagerFactoryBuilder(persistenceUnitInfo, integration);
+                configuration = builder.metadata();
                 if (previousValue != null) {
                     persistenceUnitInfo.getProperties().setProperty("hibernate.hbm2ddl.auto", previousValue);
                 }
