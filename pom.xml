@@ -45,22 +45,40 @@
         </developer>
     </developers>
     <properties>
-        <!-- These remain at the legacy (Java 7 era) values so the reactor still
-             COMPILES and BUILDS on JDK 17 during Phase 0, since module source still
-             uses the javax.* namespace and the Spring 4 / Hibernate 4 / Thymeleaf 2
-             APIs. The Java-17 TARGET versions for the whole stack are STAGED in the
-             non-default "java17-libs" profile near the bottom of this file and will be
-             promoted to defaults as the source migration lands in Phases 1-9. -->
+        <!-- Phase 1: the Java-17 TARGET stack staged by Phase 0 in the (now removed)
+             java17-libs profile has been PROMOTED to these defaults as the broadleaf-common
+             source migration (javax.* -> jakarta.*, Spring 6, Hibernate 6) landed. Later
+             phases migrate the remaining modules' source against these same versions. -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.version>4.1.9.RELEASE</spring.version>
-        <spring.security.version>3.2.9.RELEASE</spring.security.version>
+        <spring.version>6.1.14</spring.version>
+        <spring.security.version>6.2.8</spring.security.version>
+        <hibernate.version>6.4.10.Final</hibernate.version>
         <maven.source.plugin.version>2.2.1</maven.source.plugin.version>
-        <thymeleaf.version>2.1.4.RELEASE</thymeleaf.version>
-        <geb.version>0.10.0</geb.version>
-        <spock.core.version>1.0-groovy-2.3</spock.core.version>
-        <spock.spring.version>1.0-groovy-2.3</spock.spring.version>
-        <selenium.version>2.43.1</selenium.version>
-        <groovy.version>2.3.10</groovy.version>
+        <thymeleaf.version>3.1.2.RELEASE</thymeleaf.version>
+        <thymeleaf.layout.dialect.version>3.3.0</thymeleaf.layout.dialect.version>
+        <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
+        <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
+        <jakarta.ws.rs.version>3.1.0</jakarta.ws.rs.version>
+        <jakarta.xml.bind.version>4.0.2</jakarta.xml.bind.version>
+        <jakarta.mail.version>2.1.3</jakarta.mail.version>
+        <jakarta.jms.version>3.1.0</jakarta.jms.version>
+        <solr.version>9.4.1</solr.version>
+        <jackson.version>2.17.2</jackson.version>
+        <velocity.version>2.3</velocity.version>
+        <slf4j.version>2.0.13</slf4j.version>
+        <woodstox.version>6.6.2</woodstox.version>
+        <asm.version>9.7</asm.version>
+        <javassist.version>3.30.2-GA</javassist.version>
+        <mvel.version>2.5.2.Final</mvel.version>
+        <junit.version>4.13.2</junit.version>
+        <easymock.version>5.2.0</easymock.version>
+        <testng.version>7.10.2</testng.version>
+        <greenmail.version>2.1.0</greenmail.version>
+        <geb.version>7.0</geb.version>
+        <spock.core.version>2.3-groovy-4.0</spock.core.version>
+        <spock.spring.version>2.3-groovy-4.0</spock.spring.version>
+        <selenium.version>4.23.1</selenium.version>
+        <groovy.version>4.0.22</groovy.version>
         <gpg.plugin.version>1.6</gpg.plugin.version>
         <project.uri>${project.baseUri}</project.uri>
     </properties>
@@ -525,260 +543,201 @@
                 <additionalparam>-Xdoclint:none</additionalparam>
             </properties>
         </profile>
-        <!--
-          ============================================================================
-          java17-libs  -  STAGING profile for the Java 17 dependency upgrade (Phase 0)
-          ============================================================================
-          This profile is intentionally NOT active by default. It stages the Java 17
-          compatible TARGET versions / coordinates for the whole stack so the upgrade
-          path is captured in source control and reviewable, WITHOUT yet breaking the
-          default reactor build (module source still uses the javax.* namespace and the
-          Spring 4 / Hibernate 4 / Thymeleaf 2 APIs, which are migrated in Phases 1-9).
-
-          Activating it today (-P java17-libs) will NOT produce a clean build - the
-          jakarta / Spring 6 / Hibernate 6 coordinates only line up once the source flip
-          lands. As each later phase migrates a module's source, the corresponding
-          entries here get promoted into the default <properties> / <dependencyManagement>
-          above and removed from this profile. When the profile is empty, Phase 0's
-          staging is fully absorbed and this profile is deleted.
-
-          Notable coordinate changes captured here (vs. the legacy defaults):
-            - javax.servlet:servlet-api:2.5            -> jakarta.servlet:jakarta.servlet-api (Servlet 6 / Tomcat 10)
-            - org.thymeleaf:thymeleaf-spring4          -> org.thymeleaf:thymeleaf-spring6
-            - javax.ws.rs:jsr311-api                   -> jakarta.ws.rs:jakarta.ws.rs-api (Jakarta RESTful WS 3.1)
-            - javax.xml.bind:jaxb-api                  -> jakarta.xml.bind:jakarta.xml.bind-api
-            - javax.mail:mail                          -> jakarta.mail:jakarta.mail-api (Jakarta Mail 2.x)
-            - org.apache.velocity:velocity(-tools)     -> org.apache.velocity:velocity-engine-core
-            - org.codehaus.woodstox:woodstox-core-asl  -> com.fasterxml.woodstox:woodstox-core
-            - asm:asm / asm:asm-commons                -> org.ow2.asm:asm / org.ow2.asm:asm-commons
-            - log4j:log4j (1.2)                        -> org.slf4j:log4j-over-slf4j (slf4j 2 / log4j2 bridge)
-            - cglib:cglib-nodep                        -> REMOVED (Spring ASM / ByteBuddy cover this)
-            - org.testng:testng (jdk15 classifier)     -> classifier removed
-            - org.easymock:easymockclassextension      -> REMOVED (folded into easymock 5.x)
-        -->
-        <profile>
-            <id>java17-libs</id>
-            <properties>
-                <!-- Same stack, latest Java 17 compatible target versions -->
-                <spring.version>6.1.14</spring.version>
-                <spring.security.version>6.2.8</spring.security.version>
-                <hibernate.version>6.4.10.Final</hibernate.version>
-                <thymeleaf.version>3.1.2.RELEASE</thymeleaf.version>
-                <thymeleaf.layout.dialect.version>3.3.0</thymeleaf.layout.dialect.version>
-                <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
-                <solr.version>9.4.1</solr.version>
-                <jackson.version>2.17.2</jackson.version>
-                <jakarta.ws.rs.version>3.1.0</jakarta.ws.rs.version>
-                <jakarta.xml.bind.version>4.0.2</jakarta.xml.bind.version>
-                <jakarta.mail.version>2.1.3</jakarta.mail.version>
-                <velocity.version>2.3</velocity.version>
-                <slf4j.version>2.0.13</slf4j.version>
-                <woodstox.version>6.6.2</woodstox.version>
-                <asm.version>9.7</asm.version>
-                <javassist.version>3.30.2-GA</javassist.version>
-                <mvel.version>2.5.2.Final</mvel.version>
-                <junit.version>4.13.2</junit.version>
-                <easymock.version>5.2.0</easymock.version>
-                <testng.version>7.10.2</testng.version>
-                <greenmail.version>2.1.0</greenmail.version>
-                <groovy.version>4.0.22</groovy.version>
-                <spock.core.version>2.3-groovy-4.0</spock.core.version>
-                <spock.spring.version>2.3-groovy-4.0</spock.spring.version>
-                <selenium.version>4.23.1</selenium.version>
-                <geb.version>7.0</geb.version>
-            </properties>
-            <dependencyManagement>
-                <dependencies>
-                    <!-- Hibernate 6 (hibernate-entitymanager is folded into hibernate-core;
-                         hibernate-ehcache is replaced by hibernate-jcache in 6.x) -->
-                    <dependency>
-                        <groupId>org.hibernate.orm</groupId>
-                        <artifactId>hibernate-core</artifactId>
-                        <version>${hibernate.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.hibernate.orm</groupId>
-                        <artifactId>hibernate-envers</artifactId>
-                        <version>${hibernate.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.hibernate.orm</groupId>
-                        <artifactId>hibernate-jcache</artifactId>
-                        <version>${hibernate.version}</version>
-                    </dependency>
-
-                    <!-- Jakarta Servlet 6 (Tomcat 10 line) -->
-                    <dependency>
-                        <groupId>jakarta.servlet</groupId>
-                        <artifactId>jakarta.servlet-api</artifactId>
-                        <version>${jakarta.servlet.version}</version>
-                        <scope>provided</scope>
-                    </dependency>
-
-                    <!-- Thymeleaf 3.1 + Spring 6 integration + layout dialect 3.x -->
-                    <dependency>
-                        <groupId>org.thymeleaf</groupId>
-                        <artifactId>thymeleaf-spring6</artifactId>
-                        <version>${thymeleaf.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>nz.net.ultraq.thymeleaf</groupId>
-                        <artifactId>thymeleaf-layout-dialect</artifactId>
-                        <version>${thymeleaf.layout.dialect.version}</version>
-                    </dependency>
-
-                    <!-- Solr 9.x (most of the legacy Woodstox/hadoop/jdk.tools/jetty
-                         exclusions are no longer needed with modern SolrJ) -->
-                    <dependency>
-                        <groupId>org.apache.solr</groupId>
-                        <artifactId>solr-solrj</artifactId>
-                        <version>${solr.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.solr</groupId>
-                        <artifactId>solr-core</artifactId>
-                        <version>${solr.version}</version>
-                    </dependency>
-
-                    <!-- Jackson 2.17 -->
-                    <dependency>
-                        <groupId>com.fasterxml.jackson.module</groupId>
-                        <artifactId>jackson-module-jaxb-annotations</artifactId>
-                        <version>${jackson.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.fasterxml.jackson.dataformat</groupId>
-                        <artifactId>jackson-dataformat-xml</artifactId>
-                        <version>${jackson.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                        <artifactId>jackson-jaxrs-json-provider</artifactId>
-                        <version>${jackson.version}</version>
-                    </dependency>
-
-                    <!-- Jakarta RESTful WS 3.1 + Jakarta XML Bind -->
-                    <dependency>
-                        <groupId>jakarta.ws.rs</groupId>
-                        <artifactId>jakarta.ws.rs-api</artifactId>
-                        <version>${jakarta.ws.rs.version}</version>
-                        <scope>provided</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                        <version>${jakarta.xml.bind.version}</version>
-                    </dependency>
-
-                    <!-- Jakarta Mail 2.x -->
-                    <dependency>
-                        <groupId>jakarta.mail</groupId>
-                        <artifactId>jakarta.mail-api</artifactId>
-                        <version>${jakarta.mail.version}</version>
-                    </dependency>
-
-                    <!-- Velocity Engine 2.3 (replaces velocity 1.6 + velocity-tools 2.0) -->
-                    <dependency>
-                        <groupId>org.apache.velocity</groupId>
-                        <artifactId>velocity-engine-core</artifactId>
-                        <version>${velocity.version}</version>
-                    </dependency>
-
-                    <!-- slf4j 2.x + log4j 1.2 -> slf4j bridge (drop-in for log4j:log4j) -->
-                    <dependency>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                        <version>${slf4j.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>jcl-over-slf4j</artifactId>
-                        <version>${slf4j.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>log4j-over-slf4j</artifactId>
-                        <version>${slf4j.version}</version>
-                    </dependency>
-
-                    <!-- Modern Woodstox -->
-                    <dependency>
-                        <groupId>com.fasterxml.woodstox</groupId>
-                        <artifactId>woodstox-core</artifactId>
-                        <version>${woodstox.version}</version>
-                    </dependency>
-
-                    <!-- ASM 9.x (groupId moved to org.ow2.asm) + javassist + MVEL2 -->
-                    <dependency>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm</artifactId>
-                        <version>${asm.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm-commons</artifactId>
-                        <version>${asm.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.javassist</groupId>
-                        <artifactId>javassist</artifactId>
-                        <version>${javassist.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.mvel</groupId>
-                        <artifactId>mvel2</artifactId>
-                        <version>${mvel.version}</version>
-                    </dependency>
-
-                    <!-- Test stack -->
-                    <dependency>
-                        <groupId>junit</groupId>
-                        <artifactId>junit</artifactId>
-                        <version>${junit.version}</version>
-                        <scope>test</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.easymock</groupId>
-                        <artifactId>easymock</artifactId>
-                        <version>${easymock.version}</version>
-                        <scope>test</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.testng</groupId>
-                        <artifactId>testng</artifactId>
-                        <version>${testng.version}</version>
-                        <scope>test</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.icegreen</groupId>
-                        <artifactId>greenmail</artifactId>
-                        <version>${greenmail.version}</version>
-                        <scope>test</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.spockframework</groupId>
-                        <artifactId>spock-core</artifactId>
-                        <version>${spock.core.version}</version>
-                        <scope>test</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.spockframework</groupId>
-                        <artifactId>spock-spring</artifactId>
-                        <version>${spock.spring.version}</version>
-                        <scope>test</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.groovy</groupId>
-                        <artifactId>groovy</artifactId>
-                        <version>${groovy.version}</version>
-                        <scope>test</scope>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
-        </profile>
     </profiles>
     <dependencyManagement>
         <dependencies>
+            <!-- ===== Java 17 target stack (promoted from the Phase 0 java17-libs profile).
+                 Declared first so it takes precedence over the legacy entries below. ===== -->
+            <!-- Hibernate 6 (hibernate-entitymanager folded into hibernate-core;
+                 hibernate-ehcache replaced by hibernate-jcache in 6.x) -->
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-envers</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-jcache</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <!-- Jakarta APIs -->
+            <dependency>
+                <groupId>jakarta.persistence</groupId>
+                <artifactId>jakarta.persistence-api</artifactId>
+                <version>${jakarta.persistence.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>2.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${jakarta.servlet.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.jms</groupId>
+                <artifactId>jakarta.jms-api</artifactId>
+                <version>${jakarta.jms.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${jakarta.ws.rs.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jakarta.xml.bind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
+                <version>${jakarta.mail.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-mail</artifactId>
+                <version>2.0.3</version>
+            </dependency>
+            <!-- Thymeleaf 3.1 + Spring 6 integration + layout dialect 3.x -->
+            <dependency>
+                <groupId>org.thymeleaf</groupId>
+                <artifactId>thymeleaf-spring6</artifactId>
+                <version>${thymeleaf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>nz.net.ultraq.thymeleaf</groupId>
+                <artifactId>thymeleaf-layout-dialect</artifactId>
+                <version>${thymeleaf.layout.dialect.version}</version>
+            </dependency>
+            <!-- Solr 9.x -->
+            <dependency>
+                <groupId>org.apache.solr</groupId>
+                <artifactId>solr-solrj</artifactId>
+                <version>${solr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.solr</groupId>
+                <artifactId>solr-core</artifactId>
+                <version>${solr.version}</version>
+            </dependency>
+            <!-- Jackson 2.17 (jakarta xmlbind annotations variant) -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-xml</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                <artifactId>jackson-jaxrs-json-provider</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <!-- Velocity Engine 2.3 -->
+            <dependency>
+                <groupId>org.apache.velocity</groupId>
+                <artifactId>velocity-engine-core</artifactId>
+                <version>${velocity.version}</version>
+            </dependency>
+            <!-- slf4j 2.x + log4j 1.2 -> slf4j bridge -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <!-- Modern Woodstox -->
+            <dependency>
+                <groupId>com.fasterxml.woodstox</groupId>
+                <artifactId>woodstox-core</artifactId>
+                <version>${woodstox.version}</version>
+            </dependency>
+            <!-- ASM 9.x (groupId moved to org.ow2.asm) + javassist + MVEL2 -->
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-commons</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.javassist</groupId>
+                <artifactId>javassist</artifactId>
+                <version>${javassist.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mvel</groupId>
+                <artifactId>mvel2</artifactId>
+                <version>${mvel.version}</version>
+            </dependency>
+            <!-- Test stack -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.easymock</groupId>
+                <artifactId>easymock</artifactId>
+                <version>${easymock.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${testng.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.icegreen</groupId>
+                <artifactId>greenmail</artifactId>
+                <version>${greenmail.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.spockframework</groupId>
+                <artifactId>spock-core</artifactId>
+                <version>${spock.core.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.spockframework</groupId>
+                <artifactId>spock-spring</artifactId>
+                <version>${spock.spring.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.groovy</groupId>
+                <artifactId>groovy</artifactId>
+                <version>${groovy.version}</version>
+            </dependency>
+
             <!--Broadleaf libraries -->
             <dependency>
                 <groupId>org.broadleafcommerce</groupId>

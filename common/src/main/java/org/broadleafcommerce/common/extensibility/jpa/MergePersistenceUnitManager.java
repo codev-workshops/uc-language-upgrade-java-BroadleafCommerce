@@ -28,20 +28,13 @@ import org.broadleafcommerce.common.extensibility.jpa.convert.BroadleafClassTran
 import org.broadleafcommerce.common.extensibility.jpa.convert.BroadleafPersistenceUnitDeclaringClassTransformer;
 import org.broadleafcommerce.common.extensibility.jpa.convert.EntityMarkerClassTransformer;
 import org.broadleafcommerce.common.extensibility.jpa.copy.NullClassTransformer;
-import org.hibernate.ejb.AvailableSettings;
-import org.hibernate.ejb.instrument.InterceptFieldClassFileTransformer;
-import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.jmx.export.MBeanExporter;
 import org.springframework.orm.jpa.persistenceunit.DefaultPersistenceUnitManager;
 import org.springframework.orm.jpa.persistenceunit.MutablePersistenceUnitInfo;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,21 +97,12 @@ public class MergePersistenceUnitManager extends DefaultPersistenceUnitManager {
     
     @PostConstruct
     public void configureMergedItems() {
-        String[] tempLocations;
-        try {
-            Field persistenceXmlLocations = DefaultPersistenceUnitManager.class.getDeclaredField("persistenceXmlLocations");
-            persistenceXmlLocations.setAccessible(true);
-            tempLocations = (String[]) persistenceXmlLocations.get(this);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        for (String legacyLocation : tempLocations) {
-            if (!legacyLocation.endsWith("/persistence.xml")) {
-                //do not add the default JPA persistence location by default
-                mergedPersistenceXmlLocations.add(legacyLocation);
-            }
-        }
-        setPersistenceXmlLocations(mergedPersistenceXmlLocations.toArray(new String[mergedPersistenceXmlLocations.size()]));
+        // Previously this read DefaultPersistenceUnitManager's private persistenceXmlLocations
+        // field reflectively only to strip out the default "classpath*:META-INF/persistence.xml"
+        // location (the single default) before re-setting the merged locations. Since the only
+        // default location ends with "/persistence.xml" and was always filtered out, the net
+        // effect is simply to drive the persistence-xml locations from blMergedPersistenceXmlLocations.
+        setPersistenceXmlLocations(mergedPersistenceXmlLocations.toArray(new String[0]));
 
         if (!mergedDataSources.isEmpty()) {
             setDataSources(mergedDataSources);
@@ -138,94 +122,28 @@ public class MergePersistenceUnitManager extends DefaultPersistenceUnitManager {
     }
 
     @Override
-    @SuppressWarnings({ "unchecked", "ToArrayCallWithZeroLengthArrayArgument" })
     public void preparePersistenceUnitInfos() {
-        //Need to use reflection to try and execute the logic in the DefaultPersistenceUnitManager
-        //SpringSource added a block of code in version 3.1 to "protect" the user from having more than one PU with
-        //the same name.  Of course, in our case, this happens before a merge occurs.  They have added
-        //a block of code to throw an exception if more than one PU has the same name.  We want to
-        //use the logic of the DefaultPersistenceUnitManager without the exception in the case of
-        //a duplicate name. This will require reflection in order to do what we need.
-        try {
-            Set<String> persistenceUnitInfoNames = null;
-            Map<String, PersistenceUnitInfo> persistenceUnitInfos = null;
-            ResourcePatternResolver resourcePatternResolver = null;
-            Field[] fields = getClass().getSuperclass().getDeclaredFields();
-            for (Field field : fields) {
-                if ("persistenceUnitInfoNames".equals(field.getName())) {
-                    field.setAccessible(true);
-                    persistenceUnitInfoNames = (Set<String>) field.get(this);
-                } else if ("persistenceUnitInfos".equals(field.getName())) {
-                    field.setAccessible(true);
-                    persistenceUnitInfos = (Map<String, PersistenceUnitInfo>) field.get(this);
-                } else if ("resourcePatternResolver".equals(field.getName())) {
-                    field.setAccessible(true);
-                    resourcePatternResolver = (ResourcePatternResolver) field.get(this);
-                }
-            }
-
-            persistenceUnitInfoNames.clear();
-            persistenceUnitInfos.clear();
-
-            Method readPersistenceUnitInfos =
-                    getClass().
-                            getSuperclass().
-                            getDeclaredMethod("readPersistenceUnitInfos");
-            readPersistenceUnitInfos.setAccessible(true);
-
-            //In Spring 3.0 this returns an array
-            //In Spring 3.1 this returns a List
-            Object pInfosObject = readPersistenceUnitInfos.invoke(this);
-            Object[] puis;
-            if (pInfosObject.getClass().isArray()) {
-                puis = (Object[]) pInfosObject;
-            } else {
-                puis = ((Collection) pInfosObject).toArray();
-            }
-
-            for (Object pui : puis) {
-                MutablePersistenceUnitInfo mPui = (MutablePersistenceUnitInfo) pui;
-                if (mPui.getPersistenceUnitRootUrl() == null) {
-                    Method determineDefaultPersistenceUnitRootUrl =
-                            getClass().
-                                    getSuperclass().
-                                    getDeclaredMethod("determineDefaultPersistenceUnitRootUrl");
-                    determineDefaultPersistenceUnitRootUrl.setAccessible(true);
-                    mPui.setPersistenceUnitRootUrl((URL) determineDefaultPersistenceUnitRootUrl.invoke(this));
-                }
-                ConfigurationOnlyState state = ConfigurationOnlyState.getState();
-                if ((state == null || !state.isConfigurationOnly()) && mPui.getNonJtaDataSource() == null) {
-                    mPui.setNonJtaDataSource(getDefaultDataSource());
-                }
-                if (super.getLoadTimeWeaver() != null) {
-                    Method puiInitMethod = mPui.getClass().getDeclaredMethod("init", LoadTimeWeaver.class);
-                    puiInitMethod.setAccessible(true);
-                    puiInitMethod.invoke(pui, getLoadTimeWeaver());
-                }
-                else {
-                    Method puiInitMethod = mPui.getClass().getDeclaredMethod("init", ClassLoader.class);
-                    puiInitMethod.setAccessible(true);
-                    puiInitMethod.invoke(pui, resourcePatternResolver.getClassLoader());
-                }
-                postProcessPersistenceUnitInfo((MutablePersistenceUnitInfo) pui);
-                String name = mPui.getPersistenceUnitName();
-                persistenceUnitInfoNames.add(name);
-
-                persistenceUnitInfos.put(name, mPui);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("An error occured reflectively invoking methods on " +
-                    "class: " + getClass().getSuperclass().getName(), e);
-        }
+        // Spring's DefaultPersistenceUnitManager throws if more than one persistence unit shares
+        // the same name. In our case that is expected, because multiple persistence.xml files each
+        // declare "blPU" before they are merged. Spring 4.3+ / 6.x gate that exception behind the
+        // protected isPersistenceUnitOverrideAllowed() hook, which we override to return true (see
+        // above). That lets us delegate the read/merge loop to the superclass instead of
+        // reflectively reimplementing it against private fields and methods (the old Java-7 / Spring-3
+        // approach that broke under Java 17 strong encapsulation). The actual merge of the
+        // duplicately-named units happens in our postProcessPersistenceUnitInfo override, which
+        // accumulates everything into mergedPus.
+        super.preparePersistenceUnitInfos();
 
         try {
             List<String> managedClassNames = new ArrayList<String>();
             
             boolean weaverRegistered = true;
             for (PersistenceUnitInfo pui : mergedPus.values()) {
-                if (pui.getProperties().containsKey(AvailableSettings.USE_CLASS_ENHANCER) && "true".equalsIgnoreCase(pui.getProperties().getProperty(AvailableSettings.USE_CLASS_ENHANCER))) {
-                    pui.addTransformer(new InterceptFieldClassFileTransformer(pui.getManagedClassNames()));
-                }
+                // Hibernate 6 performs its own bytecode enhancement during EntityManagerFactory
+                // bootstrap (registering an enhancing ClassTransformer with the LoadTimeWeaver when
+                // enhancement is enabled), so the Hibernate 4 InterceptFieldClassFileTransformer that
+                // used to be registered here has been removed. The Broadleaf copy/merge transformers
+                // below are unrelated to lazy-loading enhancement and are still registered explicitly.
                 for (BroadleafClassTransformer transformer : classTransformers) {
                     try {
                         boolean isTransformerQualified = !(transformer instanceof NullClassTransformer) &&
@@ -304,7 +222,7 @@ public class MergePersistenceUnitManager extends DefaultPersistenceUnitManager {
                             + "\nthere are no bean references to your entity class anywhere else in your Spring applicationContext"
                             + "\nand consult the documentation for your servlet container to determine if classes are loaded"
                             + "\nprior to the Spring context initialization. Also, it is a necessity that "
-                            + "\n'-javaagent:/path/to/spring-instrument-4.1.5.jar' be added to the JVM args of the server."
+                            + "\n'-javaagent:/path/to/spring-instrument.jar' be added to the JVM args of the server."
                             + "\nFinally, ensure that Session Persistence is also disabled by your Servlet Container." 
                             + "\nTo do this in Tomcat, add <Manager pathname=\"\" /> inside of the <Context> element"
                             + "\nin context.xml in your app's META-INF folder or your server's conf folder.";

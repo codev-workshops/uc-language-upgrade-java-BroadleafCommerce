@@ -38,7 +38,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.lang.instrument.IllegalClassFormatException;
+import jakarta.persistence.spi.TransformerException;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -85,7 +85,7 @@ public class MaterializedClobTypeClassTransformer implements BroadleafClassTrans
     }
 
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws TransformerException {
         if (className == null) {
             return null;
         }
@@ -160,7 +160,7 @@ public class MaterializedClobTypeClassTransformer implements BroadleafClassTrans
             }
         } catch(Exception ex) {
             ex.printStackTrace();
-            throw new IllegalClassFormatException("Unable to convert " + convertedClassName + " to sandbox: " + ex.getMessage());
+            throw new TransformerException("Unable to convert " + convertedClassName + " to sandbox: " + ex.getMessage());
         }
     }
 
