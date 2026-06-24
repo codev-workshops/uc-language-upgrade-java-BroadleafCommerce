@@ -31,7 +31,7 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import javassist.ClassPool;
 import javassist.CtClass;

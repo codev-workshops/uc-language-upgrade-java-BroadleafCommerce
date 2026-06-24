@@ -59,7 +59,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @see ResourceBundlingService
@@ -75,7 +75,7 @@ public class ResourceBundlingServiceImpl implements ResourceBundlingService {
     // ex: "global.js" ==> ["classpath:/file1.js", "/js/file2.js"]
     protected Map<String, List<String>> additionalBundleFiles = new HashMap<String, List<String>>();
             
-    @javax.annotation.Resource(name = "blFileService")
+    @jakarta.annotation.Resource(name = "blFileService")
     protected BroadleafFileService fileService;
 
     @Autowired(required = false)
@@ -86,7 +86,7 @@ public class ResourceBundlingServiceImpl implements ResourceBundlingService {
     @Qualifier("blCssResources")
     protected ResourceHttpRequestHandler cssResourceHandler;
 
-    @javax.annotation.Resource(name="blStatisticsService")
+    @jakarta.annotation.Resource(name="blStatisticsService")
     protected StatisticsService statisticsService;
 
     private KeyLockManager keyLockManager = KeyLockManagers.newLock();

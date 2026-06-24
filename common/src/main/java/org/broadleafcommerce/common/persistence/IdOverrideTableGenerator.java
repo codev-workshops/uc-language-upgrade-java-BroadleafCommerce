@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.persistence.Id;
+import jakarta.persistence.Id;
 
 /**
  *

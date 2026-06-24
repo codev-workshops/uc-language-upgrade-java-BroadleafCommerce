@@ -22,7 +22,7 @@ package org.broadleafcommerce.common.web.payment.expression;
 
 import org.broadleafcommerce.common.web.expression.BroadleafVariableExpression;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 

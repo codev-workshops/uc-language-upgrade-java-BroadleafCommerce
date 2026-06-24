@@ -30,7 +30,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.EmptyVisitor;
 
-import javax.persistence.Id;
+import jakarta.persistence.Id;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;

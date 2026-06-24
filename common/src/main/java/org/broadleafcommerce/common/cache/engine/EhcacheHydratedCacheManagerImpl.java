@@ -19,15 +19,8 @@
  */
 package org.broadleafcommerce.common.cache.engine;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheException;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.cache.spi.CacheKey;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -35,6 +28,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.MutableConfiguration;
 
 /**
  * 
@@ -51,21 +49,23 @@ public class EhcacheHydratedCacheManagerImpl extends AbstractHydratedCacheManage
     }
 
     private Map<String, List<String>> cacheMembersByEntity = Collections.synchronizedMap(new HashMap<String, List<String>>(100));
-    private Cache heap = null;
+    private Cache<String, Object> heap = null;
 
     private EhcacheHydratedCacheManagerImpl()  {
-        //CacheManager.getInstance() and CacheManager.create() cannot be called in this constructor because it will create two cache manager instances
+        //the JCache CacheManager is resolved lazily so that the JCache provider is fully started first
     }
     
-    private synchronized Cache getHeap() {
+    private synchronized Cache<String, Object> getHeap() {
         if (heap == null) {
-            if (CacheManager.getInstance().cacheExists("hydrated-cache")) {
-                heap = CacheManager.getInstance().getCache("hydrated-cache");
+            CacheManager cacheManager = Caching.getCachingProvider().getCacheManager();
+            Cache<String, Object> existing = cacheManager.getCache("hydrated-cache", String.class, Object.class);
+            if (existing != null) {
+                heap = existing;
             } else {
-                CacheConfiguration config = new CacheConfiguration("hydrated-cache", 0).eternal(true).overflowToDisk(false).maxElementsInMemory(100000);
-                Cache cache = new Cache(config);
-                CacheManager.create().addCache(cache);
-                heap = cache;
+                MutableConfiguration<String, Object> config = new MutableConfiguration<String, Object>()
+                        .setTypes(String.class, Object.class)
+                        .setStoreByValue(false);
+                heap = cacheManager.createCache("hydrated-cache", config);
             }
         }
         return heap;
@@ -73,21 +73,14 @@ public class EhcacheHydratedCacheManagerImpl extends AbstractHydratedCacheManage
 
     @Override
     public Object getHydratedCacheElementItem(String cacheRegion, String cacheName, Serializable elementKey, String elementItemName) {
-        Object response = null;
-        Element element;
         String myKey = cacheRegion + '_' + cacheName + '_' + elementItemName + '_' + elementKey;
-        element = getHeap().get(myKey);
-        if (element != null) {
-            response = element.getObjectValue();
-        }
-        return response;
+        return getHeap().get(myKey);
     }
 
     @Override
     public void addHydratedCacheElementItem(String cacheRegion, String cacheName, Serializable elementKey, String elementItemName, Object elementValue) {
         String heapKey = cacheRegion + '_' + cacheName + '_' + elementItemName + '_' + elementKey;
         String nameKey = cacheRegion + '_' + cacheName + '_' + elementKey;
-        Element element = new Element(heapKey, elementValue);
         if (!cacheMembersByEntity.containsKey(nameKey)) {
             List<String> myMembers = new ArrayList<String>(50);
             myMembers.add(elementItemName);
@@ -96,15 +89,12 @@ public class EhcacheHydratedCacheManagerImpl extends AbstractHydratedCacheManage
             List<String> myMembers = cacheMembersByEntity.get(nameKey);
             myMembers.add(elementItemName);
         }
-        getHeap().put(element);
+        getHeap().put(heapKey, elementValue);
     }
 
-    protected void removeCache(String cacheRegion, Serializable key) {
+    @Override
+    protected void removeCache(String cacheRegion, Object key) {
         String cacheName = cacheRegion;
-        if (key instanceof CacheKey) {
-            cacheName = ((CacheKey) key).getEntityOrRoleName();
-            key = ((CacheKey) key).getKey();
-        }
         String nameKey = cacheRegion + '_' + cacheName + '_' + key;
         if (cacheMembersByEntity.containsKey(nameKey)) {
             String[] members = new String[cacheMembersByEntity.get(nameKey).size()];
@@ -117,38 +107,9 @@ public class EhcacheHydratedCacheManagerImpl extends AbstractHydratedCacheManage
         }
     }
     
+    @Override
     protected void removeAll(String cacheName) {
         //do nothing
-    }
-
-    @Override
-    public void notifyElementEvicted(Ehcache arg0, Element arg1) {
-        removeCache(arg0.getName(), arg1.getKey());
-    }
-
-    @Override
-    public void notifyElementExpired(Ehcache arg0, Element arg1) {
-        removeCache(arg0.getName(), arg1.getKey());
-    }
-
-    @Override
-    public void notifyElementPut(Ehcache arg0, Element arg1) throws CacheException {
-        //do nothing
-    }
-
-    @Override
-    public void notifyElementRemoved(Ehcache arg0, Element arg1) throws CacheException {
-        removeCache(arg0.getName(), arg1.getKey());
-    }
-
-    @Override
-    public void notifyElementUpdated(Ehcache arg0, Element arg1) throws CacheException {
-        removeCache(arg0.getName(), arg1.getKey());
-    }
-
-    @Override
-    public void notifyRemoveAll(Ehcache arg0) {
-        removeAll(arg0.getName());
     }
 
 }

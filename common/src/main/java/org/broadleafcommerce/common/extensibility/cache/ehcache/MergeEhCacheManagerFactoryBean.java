@@ -29,7 +29,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ public class MergeEhCacheManagerFactoryBean extends EhCacheManagerFactoryBean im
         this.applicationContext = applicationContext;
     }
 
-    @javax.annotation.Resource(name="blMergedCacheConfigLocations")
+    @jakarta.annotation.Resource(name="blMergedCacheConfigLocations")
     protected Set<String> mergedCacheConfigLocations;
 
     protected List<Resource> configLocations;

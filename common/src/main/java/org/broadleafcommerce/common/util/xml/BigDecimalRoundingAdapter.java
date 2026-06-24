@@ -19,13 +19,13 @@
  */
 package org.broadleafcommerce.common.util.xml;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
  *  This class allows us to round Big Decimals to 2 decimal places, generally for
- *  marshalling purposes.  This is to be used with <code>javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters</code>.
+ *  marshalling purposes.  This is to be used with <code>jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapters</code>.
  */
 public class BigDecimalRoundingAdapter extends XmlAdapter<String, BigDecimal> {
 

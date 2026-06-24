@@ -626,6 +626,12 @@
                 <scope>compile</scope>
             </dependency>
             <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${jakarta.annotation.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.hibernate.orm</groupId>
                 <artifactId>hibernate-envers</artifactId>
                 <version>${hibernate.version}</version>
@@ -1099,6 +1105,18 @@
                 <version>${ehcache.version}</version>
                 <scope>compile</scope>
                 <type>jar</type>
+                <exclusions>
+                    <!-- Ehcache's XSD-config support drags in an ancient JAXB build from the
+                         dead maven.java.net repo (expired cert). JAXB is supplied elsewhere. -->
+                    <exclusion>
+                        <groupId>org.glassfish.jaxb</groupId>
+                        <artifactId>jaxb-runtime</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!--Spring Libraries -->

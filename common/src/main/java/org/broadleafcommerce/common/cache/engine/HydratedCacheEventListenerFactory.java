@@ -19,23 +19,23 @@
  */
 package org.broadleafcommerce.common.cache.engine;
 
-import net.sf.ehcache.event.CacheEventListener;
-import net.sf.ehcache.event.CacheEventListenerFactory;
-
 import java.lang.reflect.Method;
 import java.util.Properties;
 
 /**
- * 
+ * Resolves the {@link HydratedCacheManager} for the hydrated-cache subsystem. Under Ehcache 2 this was an
+ * {@code net.sf.ehcache.event.CacheEventListenerFactory} wired through {@code ehcache.xml}; with the move to
+ * Ehcache 3 / JCache the manager is itself a {@code javax.cache.event} listener and is configured
+ * programmatically (defaulting to {@link EhcacheHydratedCacheManagerImpl}).
+ *
  * @author jfischer
  *
  */
-public class HydratedCacheEventListenerFactory extends CacheEventListenerFactory {
+public class HydratedCacheEventListenerFactory {
 
-    private static HydratedCacheManager manager = null;
+    private static HydratedCacheManager manager = EhcacheHydratedCacheManagerImpl.getInstance();
 
-    @Override
-    public CacheEventListener createCacheEventListener(Properties props) {
+    public static HydratedCacheManager createCacheEventListener(Properties props) {
         try {
             if (props == null || props.isEmpty()) {
                 manager = EhcacheHydratedCacheManagerImpl.getInstance();
@@ -48,7 +48,11 @@ public class HydratedCacheEventListenerFactory extends CacheEventListenerFactory
         } catch (Exception e) {
             throw new RuntimeException("Unable to create a CacheEventListener instance", e);
         }
-        return (CacheEventListener) manager;
+        return manager;
+    }
+
+    public static void setConfiguredManager(HydratedCacheManager configuredManager) {
+        manager = configuredManager;
     }
 
     public static HydratedCacheManager getConfiguredManager() {

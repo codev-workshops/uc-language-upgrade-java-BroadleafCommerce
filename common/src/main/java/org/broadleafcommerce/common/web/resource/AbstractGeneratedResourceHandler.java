@@ -52,13 +52,13 @@ public abstract class AbstractGeneratedResourceHandler implements Ordered {
 
     protected static final Log LOG = LogFactory.getLog(AbstractGeneratedResourceHandler.class);
 
-    @javax.annotation.Resource(name="blStatisticsService")
+    @jakarta.annotation.Resource(name="blStatisticsService")
     protected StatisticsService statisticsService;
 
-    @javax.annotation.Resource(name="blStreamingTransactionCapableUtil")
+    @jakarta.annotation.Resource(name="blStreamingTransactionCapableUtil")
     protected StreamingTransactionCapableUtil transUtil;
 
-    @javax.annotation.Resource(name = "blResourceRequestExtensionManager")
+    @jakarta.annotation.Resource(name = "blResourceRequestExtensionManager")
     protected ResourceRequestExtensionManager extensionManager;
 
     protected Cache generatedResourceCache;

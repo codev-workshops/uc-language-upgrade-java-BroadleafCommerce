@@ -34,7 +34,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @Service("blSiteService")
 public class SiteServiceImpl implements SiteService {

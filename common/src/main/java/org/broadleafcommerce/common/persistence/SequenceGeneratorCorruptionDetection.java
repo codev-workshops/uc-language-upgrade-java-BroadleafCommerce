@@ -39,9 +39,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TableGenerator;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TableGenerator;
 
 /**
  * Detect inconsistencies between the values in the SEQUENCE_GENERATOR and the primary

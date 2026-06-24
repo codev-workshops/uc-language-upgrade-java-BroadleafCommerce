@@ -19,7 +19,7 @@
  */
 package org.broadleafcommerce.common.enumeration.service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.broadleafcommerce.common.enumeration.dao.DataDrivenEnumerationDao;
 import org.broadleafcommerce.common.enumeration.domain.DataDrivenEnumeration;

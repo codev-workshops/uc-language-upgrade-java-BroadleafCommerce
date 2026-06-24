@@ -28,6 +28,6 @@
         elementFormDefault = XmlNsForm.QUALIFIED)
 package org.broadleafcommerce.common.sitemap.wrapper;
 
-import javax.xml.bind.annotation.XmlNsForm;
-import javax.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlNsForm;
+import jakarta.xml.bind.annotation.XmlSchema;
 

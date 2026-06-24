@@ -28,8 +28,8 @@ import org.springframework.orm.jpa.persistenceunit.MutablePersistenceUnitInfo;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 
 /**
  * Responsible for determining if an entity has been conditionally enabled. The primary utility of this class is to allow

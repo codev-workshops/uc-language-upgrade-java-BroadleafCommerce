@@ -22,14 +22,14 @@ package org.broadleafcommerce.common.web.util;
 import org.broadleafcommerce.common.config.RuntimeEnvironmentPropertiesConfigurer;
 import org.springframework.web.filter.GenericFilterBean;
 
-import javax.annotation.Resource;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -109,12 +109,12 @@ public class PrecompressedArtifactFilter extends GenericFilterBean {
         // Servlet 2.3 specification.
 
         String path = (String)
-            request.getAttribute("javax.servlet.include.servlet_path");
+            request.getAttribute("jakarta.servlet.include.servlet_path");
 
         // Also take into account the PathInfo stated on
         // SRV.4.4 Request Path Elements.
         String info = (String)
-            request.getAttribute("javax.servlet.include.path_info");
+            request.getAttribute("jakarta.servlet.include.path_info");
 
         if (path == null) {
             path = request.getServletPath();

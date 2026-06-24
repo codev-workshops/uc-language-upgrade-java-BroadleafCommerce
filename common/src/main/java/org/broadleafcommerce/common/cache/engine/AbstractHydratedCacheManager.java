@@ -19,19 +19,27 @@
  */
 package org.broadleafcommerce.common.cache.engine;
 
-import net.sf.ehcache.event.CacheEventListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.cache.event.CacheEntryEvent;
+import javax.cache.event.CacheEntryExpiredListener;
+import javax.cache.event.CacheEntryListenerException;
+import javax.cache.event.CacheEntryRemovedListener;
+import javax.cache.event.CacheEntryUpdatedListener;
+
 /**
  * @author jfischer
  */
-public abstract class AbstractHydratedCacheManager implements CacheEventListener, HydratedCacheManager, HydratedAnnotationManager {
+public abstract class AbstractHydratedCacheManager implements HydratedCacheManager, HydratedAnnotationManager,
+        CacheEntryRemovedListener<Object, Object>, CacheEntryExpiredListener<Object, Object>,
+        CacheEntryUpdatedListener<Object, Object>, Serializable {
 
     private static final Log LOG = LogFactory.getLog(AbstractHydratedCacheManager.class);
 
@@ -72,12 +80,40 @@ public abstract class AbstractHydratedCacheManager implements CacheEventListener
         return myClass;
     }
 
-    @Override
     public void dispose() {
         if (LOG.isInfoEnabled()) {
             LOG.info("Disposing of all hydrated cache members");
         }
         hydrationDescriptors.clear();
+    }
+
+    /**
+     * Invalidate the hydrated cache entries for the given region/key. Implementations supply the
+     * concrete storage clean-up.
+     */
+    protected abstract void removeCache(String cacheRegion, Object key);
+
+    protected abstract void removeAll(String cacheName);
+
+    @Override
+    public void onRemoved(Iterable<CacheEntryEvent<? extends Object, ? extends Object>> events) throws CacheEntryListenerException {
+        handleEvents(events);
+    }
+
+    @Override
+    public void onExpired(Iterable<CacheEntryEvent<? extends Object, ? extends Object>> events) throws CacheEntryListenerException {
+        handleEvents(events);
+    }
+
+    @Override
+    public void onUpdated(Iterable<CacheEntryEvent<? extends Object, ? extends Object>> events) throws CacheEntryListenerException {
+        handleEvents(events);
+    }
+
+    private void handleEvents(Iterable<CacheEntryEvent<? extends Object, ? extends Object>> events) {
+        for (CacheEntryEvent<? extends Object, ? extends Object> event : events) {
+            removeCache(event.getSource().getName(), event.getKey());
+        }
     }
 
     @Override

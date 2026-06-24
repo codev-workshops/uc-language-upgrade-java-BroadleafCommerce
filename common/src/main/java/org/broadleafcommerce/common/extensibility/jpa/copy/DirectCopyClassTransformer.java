@@ -41,8 +41,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityListeners;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityListeners;
 
 import javassist.ClassPool;
 import javassist.CtClass;

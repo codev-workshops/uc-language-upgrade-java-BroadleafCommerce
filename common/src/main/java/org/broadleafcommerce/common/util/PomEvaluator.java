@@ -80,7 +80,7 @@ public class PomEvaluator {
 
         // Hibernate
         knownLibraries.put("org.hibernate", HIBERNATE);
-        knownLibraries.put("org.hibernate.javax.persistence", HIBERNATE);
+        knownLibraries.put("org.hibernate.jakarta.persistence", HIBERNATE);
 
         // Broadleaf
         knownLibraries.put("org.broadleafcommerce", BROADLEAF_OPEN_SOURCE);
@@ -90,10 +90,10 @@ public class PomEvaluator {
         knownLibraries.put("org.thymeleaf", THYMELEAF);
 
         // JavaX
-        knownLibraries.put("javax.xml.bind", JAVAX);
-        knownLibraries.put("javax.mail", JAVAX);
-        knownLibraries.put("javax.servlet", JAVAX);
-        knownLibraries.put("javax.servlet.jsp", JAVAX);
+        knownLibraries.put("jakarta.xml.bind", JAVAX);
+        knownLibraries.put("jakarta.mail", JAVAX);
+        knownLibraries.put("jakarta.servlet", JAVAX);
+        knownLibraries.put("jakarta.servlet.jsp", JAVAX);
         knownLibraries.put("javax.validation", JAVAX);
         knownLibraries.put("jstl", JAVAX);
 

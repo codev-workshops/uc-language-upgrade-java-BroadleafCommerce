@@ -28,8 +28,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * This class insures that if using the successUrl or failureUrl request
@@ -47,7 +47,7 @@ public class LocalRedirectStrategy implements RedirectStrategy {
      * 
      * @see
      * org.springframework.security.web.RedirectStrategy#sendRedirect(javax.
-     * servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse,
+     * servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse,
      * java.lang.String)
      */
     @Override
