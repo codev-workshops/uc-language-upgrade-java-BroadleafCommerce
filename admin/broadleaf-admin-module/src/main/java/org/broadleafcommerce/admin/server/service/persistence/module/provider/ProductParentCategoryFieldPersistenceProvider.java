@@ -41,7 +41,7 @@ import org.springframework.stereotype.Component;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * This field persistence provider manages the default CategoryProductXref reference for a Product instance through

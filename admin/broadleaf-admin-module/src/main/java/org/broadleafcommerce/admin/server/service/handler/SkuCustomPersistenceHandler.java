@@ -20,7 +20,7 @@
 
 package org.broadleafcommerce.admin.server.service.handler;
 
-import static com.google.common.base.CharMatcher.DIGIT;
+import com.google.common.base.CharMatcher;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
@@ -73,7 +73,6 @@ import org.broadleafcommerce.openadmin.server.service.persistence.module.criteri
 import org.broadleafcommerce.openadmin.server.service.persistence.module.criteria.FilterMapping;
 import org.broadleafcommerce.openadmin.server.service.persistence.module.criteria.Restriction;
 import org.broadleafcommerce.openadmin.server.service.persistence.module.criteria.predicate.PredicateProvider;
-import org.hibernate.ejb.HibernateEntityManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -86,14 +85,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 
 /**
  * @author Phillip Verheyden
@@ -213,7 +212,7 @@ public class SkuCustomPersistenceHandler extends CustomPersistenceHandlerAdapter
 
                 boolean isFirstCriteriaNAN = persistencePackage.getCustomCriteria() == null || persistencePackage.getCustomCriteria().length == 0;
                 if (!isFirstCriteriaNAN && useToOneLookupSkuProductOptionValue) {
-                    isFirstCriteriaNAN = !DIGIT.matchesAllOf(persistencePackage.getCustomCriteria()[0]);
+                    isFirstCriteriaNAN = !CharMatcher.inRange('0', '9').matchesAllOf(persistencePackage.getCustomCriteria()[0]);
                 }
                 if (isFirstCriteriaNAN) {
                     //look up all the ProductOptions and then create new fields for each of them
@@ -328,7 +327,7 @@ public class SkuCustomPersistenceHandler extends CustomPersistenceHandlerAdapter
     protected String[] getPolymorphicClasses(Class<?> clazz) {
         DynamicDaoHelperImpl helper = new DynamicDaoHelperImpl();
         Class<?>[] classes = helper.getAllPolymorphicEntitiesFromCeiling(clazz,
-                helper.getSessionFactory((HibernateEntityManager) em), 
+                helper.getSessionFactory(em), 
                 true,
                 skuMetadataCacheService.useCache());
         String[] result = new String[classes.length];
@@ -697,7 +696,7 @@ public class SkuCustomPersistenceHandler extends CustomPersistenceHandlerAdapter
     protected String[] getPolymorphicClasses(Class<?> clazz, EntityManager em, boolean useCache) {
         DynamicDaoHelperImpl helper = new DynamicDaoHelperImpl();
         Class<?>[] classes = helper.getAllPolymorphicEntitiesFromCeiling(clazz,
-                helper.getSessionFactory((HibernateEntityManager) em), true, useCache);
+                helper.getSessionFactory(em), true, useCache);
         String[] result = new String[classes.length];
         for (int i = 0; i < classes.length; i++) {
             result[i] = classes[i].getName();
