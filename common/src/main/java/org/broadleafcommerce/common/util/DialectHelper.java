@@ -45,7 +45,7 @@ public class DialectHelper {
     public synchronized Dialect getHibernateDialect() {
         if (cachedDialect == null) {
             SessionFactoryImplementor factory = (SessionFactoryImplementor) em.unwrap(Session.class).getSessionFactory();
-            cachedDialect = factory.getDialect();
+            cachedDialect = factory.getJdbcServices().getDialect();
         }
         return cachedDialect;
     }

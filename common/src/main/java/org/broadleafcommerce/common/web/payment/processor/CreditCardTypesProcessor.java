@@ -23,9 +23,11 @@ package org.broadleafcommerce.common.web.payment.processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.element.AbstractLocalVariableDefinitionElementProcessor;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import jakarta.annotation.Resource;
 import java.util.HashMap;
@@ -55,7 +57,7 @@ import java.util.Map;
  * @author Elbert Bautista (elbertbautista)
  */
 @Component("blCreditCardTypesProcessor")
-public class CreditCardTypesProcessor extends AbstractLocalVariableDefinitionElementProcessor {
+public class CreditCardTypesProcessor extends AbstractElementTagProcessor {
 
     protected static final Log LOG = LogFactory.getLog(CreditCardTypesProcessor.class);
 
@@ -63,23 +65,11 @@ public class CreditCardTypesProcessor extends AbstractLocalVariableDefinitionEle
     protected CreditCardTypesExtensionManager extensionManager;
 
     public CreditCardTypesProcessor() {
-        super("credit_card_types");
+        super(TemplateMode.HTML, "blc", "credit_card_types", true, null, false, 100);
     }
 
     @Override
-    public int getPrecedence() {
-        return 100;
-    }
-
-    @Override
-    protected boolean removeHostElement(Arguments arguments, Element element) {
-        return false;
-    }
-
-    @Override
-    protected Map<String, Object> getNewLocalVariables(Arguments arguments, Element element) {
-        Map<String, Object> localVars = new HashMap<String, Object>();
-
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
         Map<String, String> creditCardTypes = new HashMap<String, String>();
 
         try {
@@ -89,12 +79,11 @@ public class CreditCardTypesProcessor extends AbstractLocalVariableDefinitionEle
         }
 
         if (!creditCardTypes.isEmpty()) {
-            localVars.put("paymentGatewayCardTypes", creditCardTypes);
+            structureHandler.setLocalVariable("paymentGatewayCardTypes", creditCardTypes);
         }
 
-        return localVars;
+        // Preserve the host element's body while removing the custom <blc:credit_card_types> tag itself.
+        structureHandler.removeTags();
     }
-
-
 
 }

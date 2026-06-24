@@ -170,7 +170,7 @@ public class IdentityExecutionUtils {
         Map<Object, Object> resourceMap = TransactionSynchronizationManager.getResourceMap();
         for (Map.Entry<Object, Object> entry : resourceMap.entrySet()) {
             if (entry.getKey() instanceof EntityManagerFactory && entry.getValue() instanceof EntityManagerHolder) {
-                (((EntityManagerHolder) entry.getValue()).getEntityManager()).getSession();
+                (((EntityManagerHolder) entry.getValue()).getEntityManager()).unwrap(org.hibernate.Session.class);
             }
         }
     }

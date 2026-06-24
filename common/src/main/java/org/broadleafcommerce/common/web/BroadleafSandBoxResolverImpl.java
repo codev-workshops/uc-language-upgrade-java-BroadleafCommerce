@@ -107,7 +107,7 @@ public class BroadleafSandBoxResolverImpl implements BroadleafSandBoxResolver  {
     public SandBox resolveSandBox(WebRequest request, Site site) {
         Long previousSandBoxId = null;
         if (BLCRequestUtils.isOKtoUseSession(request)) {
-            previousSandBoxId = (Long) request.getAttribute(SANDBOX_ID_VAR, WebRequest.SCOPE_GLOBAL_SESSION);
+            previousSandBoxId = (Long) request.getAttribute(SANDBOX_ID_VAR, WebRequest.SCOPE_SESSION);
         }
         SandBox currentSandbox = null;
         if (!sandBoxPreviewEnabled) {
@@ -135,8 +135,8 @@ public class BroadleafSandBoxResolverImpl implements BroadleafSandBoxResolver  {
                     LOG.trace("Removing sandbox from session.");
                 }
                 if (BLCRequestUtils.isOKtoUseSession(request)) {
-                    request.removeAttribute(SANDBOX_DATE_TIME_VAR, WebRequest.SCOPE_GLOBAL_SESSION);
-                    request.removeAttribute(SANDBOX_ID_VAR, WebRequest.SCOPE_GLOBAL_SESSION);
+                    request.removeAttribute(SANDBOX_DATE_TIME_VAR, WebRequest.SCOPE_SESSION);
+                    request.removeAttribute(SANDBOX_ID_VAR, WebRequest.SCOPE_SESSION);
                 }
                 SystemTime.resetLocalTimeSource();
             }
@@ -200,7 +200,7 @@ public class BroadleafSandBoxResolverImpl implements BroadleafSandBoxResolver  {
         if (BLCRequestUtils.isOKtoUseSession(request)) {
             if (sandboxId == null) {
                 // check the session            
-                sandboxId = (Long) request.getAttribute(SANDBOX_ID_VAR, WebRequest.SCOPE_GLOBAL_SESSION);
+                sandboxId = (Long) request.getAttribute(SANDBOX_ID_VAR, WebRequest.SCOPE_SESSION);
 
                 if (LOG.isTraceEnabled()) {
                     if (sandboxId != null) {
@@ -208,7 +208,7 @@ public class BroadleafSandBoxResolverImpl implements BroadleafSandBoxResolver  {
                     }
                 }
             } else {
-                request.setAttribute(SANDBOX_ID_VAR, sandboxId, WebRequest.SCOPE_GLOBAL_SESSION);
+                request.setAttribute(SANDBOX_ID_VAR, sandboxId, WebRequest.SCOPE_SESSION);
             }
         }
         return sandboxId;
@@ -241,12 +241,12 @@ public class BroadleafSandBoxResolverImpl implements BroadleafSandBoxResolver  {
 
         if (BLCRequestUtils.isOKtoUseSession(request)) {
             if (overrideTime == null) {
-                overrideTime = (Date) request.getAttribute(SANDBOX_DATE_TIME_VAR, WebRequest.SCOPE_GLOBAL_SESSION);
+                overrideTime = (Date) request.getAttribute(SANDBOX_DATE_TIME_VAR, WebRequest.SCOPE_SESSION);
             } else {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Setting date-time for sandbox mode to " + overrideTime + " for sandboxDateTimeParam = " + sandboxDateTimeParam);
                 }
-                request.setAttribute(SANDBOX_DATE_TIME_VAR, overrideTime, WebRequest.SCOPE_GLOBAL_SESSION);
+                request.setAttribute(SANDBOX_DATE_TIME_VAR, overrideTime, WebRequest.SCOPE_SESSION);
             }
         }
 
