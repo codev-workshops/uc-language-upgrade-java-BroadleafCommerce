@@ -71,6 +71,9 @@
         <javassist.version>3.30.2-GA</javassist.version>
         <mvel.version>2.5.2.Final</mvel.version>
         <junit.version>4.13.2</junit.version>
+        <!-- Runs the legacy JUnit 4 tests on the JUnit Platform that Spock 2.x brings in.
+             Aligns with the junit-platform 1.9.x transitively pulled by spock-core 2.3. -->
+        <junit.vintage.version>5.9.3</junit.vintage.version>
         <easymock.version>5.2.0</easymock.version>
         <testng.version>7.10.2</testng.version>
         <greenmail.version>2.1.0</greenmail.version>
@@ -143,32 +146,21 @@
                 <plugin>
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
-                    <version>1.5</version>
+                    <version>3.0.2</version>
                     <configuration>
-                        <!-- Staged for the Spock/Groovy 4 phase; bytecode target moved
-                             off 1.7 to a JDK 17-compatible level now. -->
                         <targetBytecode>17</targetBytecode>
                     </configuration>
                     <executions>
-                        <!-- TEMPORARY (Phase 0): the goal bindings are unbound (phase=none).
-                             The legacy Groovy 2.3 / gmavenplus 1.5 stub generator cannot run
-                             on JDK 17 (it triggers an InaccessibleObjectException against
-                             java.base). Groovy compilation of the Spock specs is restored in
-                             the dedicated Spock/Groovy 4 phase, which bumps groovy.version to 4,
-                             spock.* to 2.x and gmavenplus to a JDK 17-capable release. Until
-                             then the reactor builds on JDK 17 with the Groovy test sources
-                             skipped. -->
+                        <!-- gmavenplus 3.x runs on JDK 17 and joint-compiles the Groovy/Spock 2.x
+                             (Groovy 4) test sources. Goals are bound to their default phases
+                             (compile -> compile, compileTests -> test-compile). Stub generation
+                             is unnecessary because the Spock specs depend on Java one-directionally. -->
                         <execution>
-                            <phase>none</phase>
                             <goals>
                                 <goal>addSources</goal>
                                 <goal>addTestSources</goal>
-                                <goal>generateStubs</goal>
                                 <goal>compile</goal>
-                                <goal>testGenerateStubs</goal>
-                                <goal>testCompile</goal>
-                                <goal>removeStubs</goal>
-                                <goal>removeTestStubs</goal>
+                                <goal>compileTests</goal>
                             </goals>
                         </execution>
                     </executions>
@@ -598,6 +590,14 @@
                 <artifactId>jakarta.xml.bind-api</artifactId>
                 <version>${jakarta.xml.bind.version}</version>
             </dependency>
+            <!-- Jakarta XML Binding runtime implementation. The JDK no longer ships JAXB,
+                 so the glassfish runtime must be supplied explicitly (matches the 4.0.x API). -->
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>${jakarta.xml.bind.version}</version>
+                <scope>runtime</scope>
+            </dependency>
             <dependency>
                 <groupId>jakarta.mail</groupId>
                 <artifactId>jakarta.mail-api</artifactId>
@@ -700,6 +700,12 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.vintage</groupId>
+                <artifactId>junit-vintage-engine</artifactId>
+                <version>${junit.vintage.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
