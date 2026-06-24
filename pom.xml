@@ -46,10 +46,39 @@
     </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.version>4.1.9.RELEASE</spring.version>
-        <spring.security.version>3.2.9.RELEASE</spring.security.version>
+        <spring.version>6.1.14</spring.version>
+        <spring.security.version>6.2.8</spring.security.version>
+        <hibernate.version>6.4.10.Final</hibernate.version>
         <maven.source.plugin.version>2.2.1</maven.source.plugin.version>
-        <thymeleaf.version>2.1.4.RELEASE</thymeleaf.version>
+        <thymeleaf.version>3.1.2.RELEASE</thymeleaf.version>
+        <thymeleaf.layout.dialect.version>3.3.0</thymeleaf.layout.dialect.version>
+        <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
+        <jakarta.jsp.version>3.1.1</jakarta.jsp.version>
+        <jakarta.jstl.version>3.0.1</jakarta.jstl.version>
+        <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
+        <jakarta.validation.version>3.0.2</jakarta.validation.version>
+        <jakarta.ws.rs.version>3.1.0</jakarta.ws.rs.version>
+        <jakarta.xml.bind.version>4.0.2</jakarta.xml.bind.version>
+        <jakarta.mail.version>2.1.3</jakarta.mail.version>
+        <jakarta.jms.version>3.1.0</jakarta.jms.version>
+        <jakarta.annotation.version>2.1.1</jakarta.annotation.version>
+        <solr.version>9.4.1</solr.version>
+        <jackson.version>2.17.2</jackson.version>
+        <velocity.version>2.3</velocity.version>
+        <slf4j.version>2.0.13</slf4j.version>
+        <log4j2.version>2.23.1</log4j2.version>
+        <woodstox.version>6.6.2</woodstox.version>
+        <asm.version>9.7</asm.version>
+        <javassist.version>3.30.2-GA</javassist.version>
+        <mvel.version>2.4.14.Final</mvel.version>
+        <ehcache.version>3.10.8</ehcache.version>
+        <hsqldb.version>2.7.3</hsqldb.version>
+        <guava.version>32.1.3-jre</guava.version>
+        <quartz.version>2.3.2</quartz.version>
+        <junit.version>4.13.2</junit.version>
+        <easymock.version>4.3</easymock.version>
+        <testng.version>7.10.2</testng.version>
+        <greenmail.version>2.1.0</greenmail.version>
         <geb.version>0.10.0</geb.version>
         <spock.core.version>2.3-groovy-4.0</spock.core.version>
         <spock.spring.version>2.3-groovy-4.0</spock.spring.version>
@@ -589,54 +618,33 @@
                 <scope>test</scope>
             </dependency>
 
-            <!-- Hibernate Libraries -->
+            <!-- Hibernate Libraries (Hibernate ORM 6 / Jakarta Persistence 3) -->
             <dependency>
-                <groupId>org.hibernate.javax.persistence</groupId>
-                <artifactId>hibernate-jpa-2.0-api</artifactId>
-                <version>1.0.0.Final</version>
+                <groupId>jakarta.persistence</groupId>
+                <artifactId>jakarta.persistence-api</artifactId>
+                <version>${jakarta.persistence.version}</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>org.hibernate</groupId>
+                <groupId>org.hibernate.orm</groupId>
                 <artifactId>hibernate-envers</artifactId>
-                <version>4.1.11.Final</version>
+                <version>${hibernate.version}</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>org.hibernate</groupId>
+                <groupId>org.hibernate.orm</groupId>
                 <artifactId>hibernate-core</artifactId>
-                <version>4.1.11.Final</version>
+                <version>${hibernate.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
+            <!-- hibernate-entitymanager was folded into hibernate-core in Hibernate 5+.
+                 hibernate-ehcache is replaced by hibernate-jcache + a JCache provider (Ehcache 3) in Hibernate 6. -->
             <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-entitymanager</artifactId>
-                <version>4.1.11.Final</version>
-                <type>jar</type>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-jcache</artifactId>
+                <version>${hibernate.version}</version>
                 <scope>compile</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>asm</groupId>
-                        <artifactId>asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>cglib</groupId>
-                        <artifactId>cglib</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-ehcache</artifactId>
-                <version>4.1.11.Final</version>
-                <scope>compile</scope>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>ehcache-core</artifactId>
-                        <groupId>net.sf.ehcache</groupId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <!-- Commons Libraries -->
@@ -707,9 +715,9 @@
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>commons-dbcp</groupId>
-                <artifactId>commons-dbcp</artifactId>
-                <version>1.2.2</version>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-dbcp2</artifactId>
+                <version>2.12.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -742,41 +750,41 @@
                 <scope>compile</scope>
             </dependency>
 
-            <!-- Logging -->
+            <!-- Logging (slf4j 2 + logback; log4j-over-slf4j bridges the legacy org.apache.log4j API) -->
             <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>1.2.12</version>
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>1.6.1</version>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.5.6</version>
                 <type>jar</type>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>jcl-over-slf4j</artifactId>
-                <version>1.6.1</version>
+                <version>${slf4j.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.6.1</version>
+                <version>${slf4j.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
 
             <!--Email System Libraries -->
             <dependency>
-                <groupId>org.apache.velocity</groupId>
-                <artifactId>velocity-tools</artifactId>
-                <version>2.0</version>
+                <groupId>org.apache.velocity.tools</groupId>
+                <artifactId>velocity-tools-generic</artifactId>
+                <version>3.1</version>
                 <type>jar</type>
                 <scope>compile</scope>
                 <exclusions>
@@ -788,17 +796,24 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.velocity</groupId>
-                <artifactId>velocity</artifactId>
-                <version>1.6.2</version>
+                <artifactId>velocity-engine-core</artifactId>
+                <version>${velocity.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>mail</artifactId>
-                <version>1.4.1</version>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
+                <version>${jakarta.mail.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-mail</artifactId>
+                <version>2.0.3</version>
+                <type>jar</type>
+                <scope>runtime</scope>
             </dependency>
 
             <!-- XML Libraries -->
@@ -828,77 +843,77 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.module</groupId>
                 <artifactId>jackson-module-jaxb-annotations</artifactId>
-                <version>2.5.0</version>
+                <version>${jackson.version}</version>
             </dependency>
             <!-- Add in Jackson's XML converter along with a faster serializer (Woodstox) -->
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-xml</artifactId>
-                <version>2.5.0</version>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.codehaus.woodstox</groupId>
-                <artifactId>woodstox-core-asl</artifactId>
-                <version>4.1.4</version>
+                <groupId>com.fasterxml.woodstox</groupId>
+                <artifactId>woodstox-core</artifactId>
+                <version>${woodstox.version}</version>
             </dependency>
             
             <!-- Added for JAXRS backwards compatibility with the Broadleaf REST APIs in Broadleaf 4.0 -->
             <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>jsr311-api</artifactId>
-                <version>1.1.1</version>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${jakarta.ws.rs.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
-                <version>2.1</version>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jakarta.xml.bind.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.jaxrs</groupId>
                 <artifactId>jackson-jaxrs-json-provider</artifactId>
-                <version>2.5.0</version>
+                <version>${jackson.version}</version>
             </dependency>
             
 
-            <!-- JMS Libraries -->
+            <!-- JMS Libraries (Jakarta Messaging 3) -->
             <dependency>
-                <groupId>org.apache.geronimo.specs</groupId>
-                <artifactId>geronimo-jms_1.1_spec</artifactId>
-                <version>1.1.1</version>
+                <groupId>jakarta.jms</groupId>
+                <artifactId>jakarta.jms-api</artifactId>
+                <version>${jakarta.jms.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
 
-            <!-- Servlet API -->
+            <!-- Servlet API (Jakarta Servlet 6 / JSP 3) -->
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>2.5</version>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${jakarta.servlet.version}</version>
                 <type>jar</type>
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>javax.servlet.jsp</groupId>
-                <artifactId>jsp-api</artifactId>
-                <version>2.1</version>
+                <groupId>jakarta.servlet.jsp</groupId>
+                <artifactId>jakarta.servlet.jsp-api</artifactId>
+                <version>${jakarta.jsp.version}</version>
                 <type>jar</type>
                 <scope>provided</scope>
             </dependency>
 
-            <!--Presentation Layer Related Libraries -->
+            <!--Presentation Layer Related Libraries (Jakarta JSTL 3 + Thymeleaf 3 / Spring 6) -->
             <dependency>
-                <groupId>taglibs</groupId>
-                <artifactId>standard</artifactId>
-                <version>1.1.2</version>
+                <groupId>jakarta.servlet.jsp.jstl</groupId>
+                <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+                <version>3.0.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>jstl</groupId>
-                <artifactId>jstl</artifactId>
-                <version>1.1.2</version>
+                <groupId>org.glassfish.web</groupId>
+                <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+                <version>${jakarta.jstl.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -911,7 +926,7 @@
             </dependency>
             <dependency>
                 <groupId>org.thymeleaf</groupId>
-                <artifactId>thymeleaf-spring4</artifactId>
+                <artifactId>thymeleaf-spring6</artifactId>
                 <version>${thymeleaf.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
@@ -919,7 +934,7 @@
             <dependency>
                 <groupId>nz.net.ultraq.thymeleaf</groupId>
                 <artifactId>thymeleaf-layout-dialect</artifactId>
-                <version>1.2.5</version>
+                <version>${thymeleaf.layout.dialect.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -928,36 +943,28 @@
             <dependency>
                 <groupId>com.icegreen</groupId>
                 <artifactId>greenmail</artifactId>
-                <version>1.3</version>
+                <version>${greenmail.version}</version>
                 <type>jar</type>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.11</version>
+                <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.easymock</groupId>
                 <artifactId>easymock</artifactId>
-                <version>2.5.1</version>
-                <type>jar</type>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.easymock</groupId>
-                <artifactId>easymockclassextension</artifactId>
-                <version>2.4</version>
+                <version>${easymock.version}</version>
                 <type>jar</type>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
-                <version>5.9</version>
+                <version>${testng.version}</version>
                 <type>jar</type>
-                <classifier>jdk15</classifier>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -1004,72 +1011,16 @@
                 <scope>test</scope>
             </dependency>
 
-            <!-- Search Related Libraries -->
+            <!-- Search Related Libraries (SolrJ 9 client; embedded solr-core dropped) -->
             <dependency>
                 <artifactId>solr-solrj</artifactId>
                 <groupId>org.apache.solr</groupId>
-                <version>4.10.3</version>
+                <version>${solr.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
-                <exclusions>
-                    <!-- This brings in a very old version of Woodstox, we are manually including this above, next to the
-                        Jackson dependencies -->
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>wstx-asl</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
-            <dependency>
-                <artifactId>solr-core</artifactId>
-                <groupId>org.apache.solr</groupId>
-                <version>4.10.3</version>
-                <type>jar</type>
-                <scope>compile</scope>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>slf4j-jdk14</artifactId>
-                        <groupId>org.slf4j</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.servlet.jsp</groupId>
-                        <artifactId>jsp-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty.orbit</groupId>
-                        <artifactId>javax.servlet</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <!-- This brings in a very old version of Woodstox, we are manually including this above, next to the
-                        Jackson dependencies -->
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>wstx-asl</artifactId>
-                    </exclusion>
-                    <!-- The jdk.tools transitive dependency uses system scope -->
-                        <!-- which has to be resolved in a platform agnostic way -->
-                        <!-- in order to have a clean compile in Eclipse. That -->
-                        <!-- turned out to be surprisingly difficult to achieve. -->
-        
-                        <!-- From the dependency tree below we can see that -->
-                        <!-- jdk.tools is pulled in by hadoop-annotations -->
-                        <!-- and since this is a normal JDK system jar we can avoid the -->
-                        <!-- problem by excluding the jdk.tools dependency. -->
-        
-                        <!-- Relevant output from mvn dependency:tree follows -->
-                        <!-- +- org.broadleafcommerce:broadleaf-framework:jar:{version}:compile -->
-                        <!--    +- org.apache.solr:solr-core:jar:4.4.0:compile -->
-                        <!--        +- org.apache.hadoop:hadoop-annotations:jar:2.0.5-alpha:compile -->
-                        <!--            \- jdk.tools:jdk.tools:jar:1.6:system -->
-                    <exclusion>
-                        <groupId>jdk.tools</groupId>
-                        <artifactId>jdk.tools</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+            <!-- Embedded org.apache.solr:solr-core removed in the Java 17 migration:
+                 the search service is reworked to talk to an external Solr via SolrJ 9. -->
 
             <!-- Byte Code Manipulation Libraries -->
             <dependency>
@@ -1080,23 +1031,23 @@
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>asm</groupId>
+                <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
-                <version>3.3</version>
+                <version>${asm.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>asm</groupId>
+                <groupId>org.ow2.asm</groupId>
                 <artifactId>asm-commons</artifactId>
-                <version>3.3</version>
+                <version>${asm.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
-                <version>3.30.2-GA</version>
+                <version>${javassist.version}</version>
                 <scope>compile</scope>
             </dependency>
 
@@ -1104,7 +1055,7 @@
             <dependency>
                 <groupId>org.quartz-scheduler</groupId>
                 <artifactId>quartz</artifactId>
-                <version>2.2.0</version>
+                <version>${quartz.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -1113,7 +1064,7 @@
             <dependency>
                 <groupId>org.mvel</groupId>
                 <artifactId>mvel2</artifactId>
-                <version>2.2.1.Final</version>
+                <version>${mvel.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -1136,16 +1087,16 @@
 
             <!--Cache Libraries -->
             <dependency>
-                <groupId>net.sf.jsr107cache</groupId>
-                <artifactId>jsr107cache</artifactId>
-                <version>1.0</version>
+                <groupId>javax.cache</groupId>
+                <artifactId>cache-api</artifactId>
+                <version>1.1.1</version>
                 <type>jar</type>
-                <scope>runtime</scope>
+                <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>net.sf.ehcache</groupId>
+                <groupId>org.ehcache</groupId>
                 <artifactId>ehcache</artifactId>
-                <version>2.7.2</version>
+                <version>${ehcache.version}</version>
                 <scope>compile</scope>
                 <type>jar</type>
             </dependency>
@@ -1414,16 +1365,16 @@
 
             <!--Persistence Libraries -->
             <dependency>
-                <groupId>commons-pool</groupId>
-                <artifactId>commons-pool</artifactId>
-                <version>1.5.6</version>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-pool2</artifactId>
+                <version>2.12.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.hsqldb</groupId>
                 <artifactId>hsqldb</artifactId>
-                <version>2.3.1</version>
+                <version>${hsqldb.version}</version>
                 <type>jar</type>
                 <scope>test</scope>
             </dependency>
@@ -1495,14 +1446,14 @@
                 <version>4.3.0.Final</version>
             </dependency>
             <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>1.0.0.GA</version>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${jakarta.validation.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>24.1.1-jre</version>
+                <version>${guava.version}</version>
             </dependency>
             <dependency>
                 <groupId>de.jkeylockmanager</groupId>
