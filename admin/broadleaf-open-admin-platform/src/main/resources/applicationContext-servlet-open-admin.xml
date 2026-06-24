@@ -80,7 +80,7 @@
         <property name="showDebugMessage" value="${exception.showDebugMessage}" />
     </bean>
 
-    <bean id="blAdminWebTemplateResolver" class="org.thymeleaf.templateresolver.ServletContextTemplateResolver">
+    <bean id="blAdminWebTemplateResolver" class="org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver">
         <property name="prefix" value="/WEB-INF/templates/admin/" />
         <property name="suffix" value=".html" />
         <property name="templateMode" value="HTML5" />
@@ -113,11 +113,11 @@
         </property>
     </bean>
                 
-    <bean id="blAdminWebTemplateEngine" class="org.thymeleaf.spring4.SpringTemplateEngine">
+    <bean id="blAdminWebTemplateEngine" class="org.thymeleaf.spring6.SpringTemplateEngine">
         <property name="messageResolvers">
             <set>
                 <ref bean="blAdminMessageResolver" />
-                <bean class="org.thymeleaf.spring4.messageresolver.SpringMessageResolver" />
+                <bean class="org.thymeleaf.spring6.messageresolver.SpringMessageResolver" />
             </set>
         </property>
         <property name="templateResolvers" ref="blAdminWebTemplateResolvers" />

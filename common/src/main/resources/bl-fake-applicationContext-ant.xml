@@ -28,11 +28,11 @@
          THE "build-sql" ANT TASK.  THIS TASK REQUIRES THE DATA SOURCE BEANS TO BE 
          CONFIUGRED, BUT DOES NOT ACTUALLY NEED ACCESS TO THE DATABASES. -->
 
-    <bean id="webDS" class="org.apache.commons.dbcp.BasicDataSource"/>
+    <bean id="webDS" class="org.apache.commons.dbcp2.BasicDataSource"/>
     
-    <bean id="webSecureDS" class="org.apache.commons.dbcp.BasicDataSource"/>
+    <bean id="webSecureDS" class="org.apache.commons.dbcp2.BasicDataSource"/>
 
-    <bean id="webStorageDS" class="org.apache.commons.dbcp.BasicDataSource"/>
+    <bean id="webStorageDS" class="org.apache.commons.dbcp2.BasicDataSource"/>
     
     <!-- This is used to override the component that checks the sequences.  It won't work 
          unless you can connect to a real database. Since, for the ant task that generates DDL, 

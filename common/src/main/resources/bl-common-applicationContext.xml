@@ -167,7 +167,7 @@
         </property>
     </bean>
     
-    <bean id="blSpringCacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
+    <bean id="blSpringCacheManager" class="org.springframework.cache.jcache.JCacheCacheManager">
         <property name="cacheManager" ref="blCacheManager"/>
     </bean>    
 
@@ -175,7 +175,7 @@
     <!-- To enable logging set log level in Log4j to INFO  -->
     <bean id="blLoggingMailSender" class="org.broadleafcommerce.common.email.service.LoggingMailSender" />
 
-    <bean id="blVelocityEngine" class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
+    <bean id="blVelocityEngine" class="org.broadleafcommerce.common.email.service.message.VelocityEngineFactoryBean">
       <property name="velocityProperties">
          <value>
             resource.loader=class
@@ -355,7 +355,7 @@
         </property>
     </bean>
     
-    <bean id="thymeleafSpringStandardDialect" class="org.thymeleaf.spring4.dialect.SpringStandardDialect" />
+    <bean id="thymeleafSpringStandardDialect" class="org.thymeleaf.spring6.dialect.SpringStandardDialect" />
     
     <bean id="blVariableExpressionEvaluator" class="org.broadleafcommerce.common.web.expression.BroadleafVariableExpressionEvaluator" />
     <bean id="blDataDrivenEnumerationProcessor" class="org.broadleafcommerce.common.web.processor.DataDrivenEnumerationProcessor" />
