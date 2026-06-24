@@ -23,8 +23,8 @@ import org.broadleafcommerce.core.catalog.domain.Sku;
 import org.broadleafcommerce.core.catalog.service.dynamic.DynamicSkuPricingService;
 import org.broadleafcommerce.core.catalog.service.dynamic.SkuPricingConsiderationContext;
 
-import javax.servlet.Filter;
-import javax.servlet.ServletRequest;
+import jakarta.servlet.Filter;
+import jakarta.servlet.ServletRequest;
 import java.util.HashMap;
 
 /**

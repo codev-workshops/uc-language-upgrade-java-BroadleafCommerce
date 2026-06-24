@@ -20,9 +20,6 @@
 
 package org.broadleafcommerce.core.web.processor;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,18 +28,16 @@ import org.broadleafcommerce.common.web.BroadleafRequestContext;
 import org.broadleafcommerce.core.web.service.SimpleCacheKeyResolver;
 import org.broadleafcommerce.core.web.service.TemplateCacheKeyResolverService;
 import org.springframework.web.context.request.WebRequest;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Attribute;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.ProcessorResult;
-import org.thymeleaf.processor.attr.AbstractAttrProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
 import org.thymeleaf.standard.expression.StandardExpressions;
-import org.thymeleaf.standard.processor.attr.StandardFragmentAttrProcessor;
+import org.thymeleaf.templatemode.TemplateMode;
 
-import java.util.Set;
-
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * <p>
@@ -77,13 +72,11 @@ import javax.annotation.Resource;
  * @see {@link TemplateCacheKeyResolverService}
  * @see {@link SimpleCacheKeyResolver}
  */
-public class BroadleafCacheProcessor extends AbstractAttrProcessor {
+public class BroadleafCacheProcessor extends AbstractAttributeTagProcessor {
 
     private static final Log LOG = LogFactory.getLog(BroadleafCacheProcessor.class);
 
     public static final String ATTR_NAME = "cache";
-
-    protected Cache cache;
 
     @Resource(name = "blSystemPropertiesService")
     protected SystemPropertiesService systemPropertiesService;
@@ -92,51 +85,10 @@ public class BroadleafCacheProcessor extends AbstractAttrProcessor {
     protected TemplateCacheKeyResolverService cacheKeyResolver;
 
     public BroadleafCacheProcessor() {
-        super(ATTR_NAME);
+        super(TemplateMode.HTML, "blc", null, false, ATTR_NAME, true, Integer.MIN_VALUE, true);
     }
 
-    public void fixElement(Element element, Arguments arguments) {
-        boolean elementAdded = false;
-        boolean removeElement = false;
-        Set<String> attributeNames = element.getAttributeMap().keySet();
-
-        for (String a : attributeNames) {
-            String attrName = a.toLowerCase();
-            if (attrName.startsWith("th")) {
-                if (attrName.equals("th:substituteby") || (attrName.equals("th:replace") || attrName.equals("th:include"))) {
-                    if (!elementAdded) {
-                        Element extraDiv = new Element("div");
-                        String attrValue = element.getAttributeValue(attrName);
-                        element.removeAttribute(attrName);
-                        extraDiv.setAttribute(attrName, attrValue);
-                        element.addChild(extraDiv);
-                        elementAdded = true;
-                        element.setNodeProperty("templateName", attrValue);
-
-                        // This will ensure that the substituteby and replace processors only run for the child element
-                        element.setRecomputeProcessorsImmediately(true);
-                    }
-                } else if (attrName.equals("th:remove")) {
-                    Attribute attr = element.getAttributeMap().get(attrName);
-                    if ("tag".equals(attr.getValue())) {
-                        removeElement = true;
-
-                        // The cache functionality will remove the element. 
-                        element.setAttribute(attrName, "none");
-                    }
-                }
-            }
-        }
-
-        if (!elementAdded || removeElement) {
-            element.setNodeProperty("blcOutputParentNode", Boolean.TRUE);
-        }
-    }
-
-    protected boolean shouldCache(Arguments args, Element element, String attributeName) {
-        String cacheAttrValue = element.getAttributeValue(attributeName);
-        element.removeAttribute(attributeName);
-
+    protected boolean shouldCache(ITemplateContext context, String cacheAttrValue) {
         if (StringUtils.isEmpty(cacheAttrValue)) {
             return false;
         }
@@ -149,9 +101,9 @@ public class BroadleafCacheProcessor extends AbstractAttrProcessor {
         }
 
         // Check for an expression
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(args.getConfiguration())
-                .parseExpression(args.getConfiguration(), args, cacheAttrValue);
-        Object o = expression.execute(args.getConfiguration(), args);
+        IStandardExpression expression = StandardExpressions.getExpressionParser(context.getConfiguration())
+                .parseExpression(context, cacheAttrValue);
+        Object o = expression.execute(context);
         if (o instanceof Boolean) {
             return (Boolean) o;
         } else if (o instanceof String) {
@@ -163,103 +115,14 @@ public class BroadleafCacheProcessor extends AbstractAttrProcessor {
     }
 
     @Override
-    public ProcessorResult processAttribute(final Arguments arguments, final Element element, String attributeName) {
-        if (shouldCache(arguments, element, attributeName)) {
-            fixElement(element, arguments);
-            if (checkCacheForElement(arguments, element)) {
-                // This template has been cached.
-                element.clearChildren();
-                element.clearAttributes();
-                element.setRecomputeProcessorsImmediately(true);
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName,
+            String attributeValue, IElementTagStructureHandler structureHandler) {
+        if (shouldCache(context, attributeValue)) {
+            String cacheKey = cacheKeyResolver.resolveCacheKey(context, tag);
+            if (StringUtils.isEmpty(cacheKey) && LOG.isTraceEnabled()) {
+                LOG.trace("Template not cached due to empty cacheKey");
             }
         }
-        return ProcessorResult.OK;
-    }
-
-    /**
-     * If this template was found in cache, adds the response to the element and returns true.
-     * 
-     * If not found in cache, adds the cacheKey to the element so that the Writer can cache after the
-     * first process.
-     * 
-     * @param arguments
-     * @param element
-     * @return
-     */
-    protected boolean checkCacheForElement(Arguments arguments, Element element) {
-
-        if (isCachingEnabled()) {
-            String cacheKey = cacheKeyResolver.resolveCacheKey(arguments, element);
-    
-            if (!StringUtils.isEmpty(cacheKey)) {
-                element.setNodeProperty("cacheKey", cacheKey);
-    
-                net.sf.ehcache.Element cacheElement = getCache().get(cacheKey);
-                if (cacheElement != null && !checkExpired(element, cacheElement)) {
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("Template Cache Hit with cacheKey " + cacheKey + " found in cache.");
-                    }
-                    element.setNodeProperty("blCacheResponse", cacheElement.getObjectValue());
-                    return true;
-                } else {
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("Template Cache Miss with cacheKey " + cacheKey + " not found in cache.");
-                    }
-                }
-            } else {
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace("Template not cached due to empty cacheKey");
-                }
-            }
-        } else {
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("Template caching disabled - not retrieving template from cache");
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns true if the item has been 
-     * @param element
-     * @param cacheElement
-     * @return
-     */
-    protected boolean checkExpired(Element element, net.sf.ehcache.Element cacheElement) {
-        if (cacheElement.isExpired()) {
-            return true;
-        } else {
-            String cacheTimeout = element.getAttributeValue("cacheTimeout");
-            if (!StringUtils.isEmpty(cacheTimeout) && StringUtils.isNumeric(cacheTimeout)) {
-                Long timeout = Long.valueOf(cacheTimeout) * 1000;
-                Long expiryTime = cacheElement.getCreationTime() + timeout;
-                if (expiryTime < System.currentTimeMillis()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    protected String getFragmentSignatureUnprefixedAttributeName(final Arguments arguments, final Element element,
-            final String attributeName, final String attributeValue) {
-        return StandardFragmentAttrProcessor.ATTR_NAME;
-    }
-
-    @Override
-    public int getPrecedence() {
-        return Integer.MIN_VALUE;
-    }
-
-    public Cache getCache() {
-        if (cache == null) {
-            cache = CacheManager.getInstance().getCache("blTemplateElements");
-        }
-        return cache;
-    }
-
-    public void setCache(Cache cache) {
-        this.cache = cache;
     }
 
     public boolean isCachingEnabled() {

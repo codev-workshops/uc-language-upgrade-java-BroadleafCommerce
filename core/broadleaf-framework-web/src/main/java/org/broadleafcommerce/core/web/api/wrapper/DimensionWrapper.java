@@ -27,8 +27,8 @@ import org.springframework.context.ApplicationContext;
 
 import java.math.BigDecimal;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.bind.annotation.XmlElement;
 
 /**
  * JAXB wrapper for Dimension

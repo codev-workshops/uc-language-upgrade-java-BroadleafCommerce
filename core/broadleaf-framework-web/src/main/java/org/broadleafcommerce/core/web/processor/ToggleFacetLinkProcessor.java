@@ -25,17 +25,16 @@ import org.broadleafcommerce.core.search.domain.SearchCriteria;
 import org.broadleafcommerce.core.search.domain.SearchFacetResultDTO;
 import org.broadleafcommerce.core.web.service.SearchFacetDTOService;
 import org.broadleafcommerce.core.web.util.ProcessorUtils;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.standard.expression.IStandardExpression;
 import org.thymeleaf.standard.expression.StandardExpressions;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * A Thymeleaf processor that processes the value attribute on the element it's tied to
@@ -44,7 +43,7 @@ import javax.servlet.http.HttpServletRequest;
  * 
  * @author apazzolini
  */
-public class ToggleFacetLinkProcessor extends AbstractAttributeModifierAttrProcessor {
+public class ToggleFacetLinkProcessor extends AbstractBroadleafAttributeModifierProcessor {
     
     @Resource(name = "blSearchFacetDTOService")
     protected SearchFacetDTOService facetService;
@@ -53,17 +52,12 @@ public class ToggleFacetLinkProcessor extends AbstractAttributeModifierAttrProce
      * Sets the name of this processor to be used in Thymeleaf template
      */
     public ToggleFacetLinkProcessor() {
-        super("togglefacetlink");
-    }
-    
-    @Override
-    public int getPrecedence() {
-        return 10000;
+        super("togglefacetlink", 10000);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
+    protected Map<String, String> getModifiedAttributeValues(ITemplateContext context, IProcessableElementTag tag, String attributeValue) {
         Map<String, String> attrs = new HashMap<String, String>();
         
         BroadleafRequestContext blcContext = BroadleafRequestContext.getBroadleafRequestContext();
@@ -72,9 +66,9 @@ public class ToggleFacetLinkProcessor extends AbstractAttributeModifierAttrProce
         String baseUrl = request.getRequestURL().toString();
         Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
         
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue(attributeName));
-        SearchFacetResultDTO result = (SearchFacetResultDTO) expression.execute(arguments.getConfiguration(), arguments);
+        IStandardExpression expression = StandardExpressions.getExpressionParser(context.getConfiguration())
+                .parseExpression(context, attributeValue);
+        SearchFacetResultDTO result = (SearchFacetResultDTO) expression.execute(context);
         
         String key = facetService.getUrlKey(result);
         String value = facetService.getValue(result);
@@ -93,20 +87,5 @@ public class ToggleFacetLinkProcessor extends AbstractAttributeModifierAttrProce
         
         attrs.put("href", url);
         return attrs;
-    }
-
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
     }
 }

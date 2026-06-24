@@ -22,12 +22,14 @@ package org.broadleafcommerce.core.web.processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.broadleafcommerce.core.catalog.domain.ProductOptionValue;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.ProcessorResult;
-import org.thymeleaf.processor.attr.AbstractAttrProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
 import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -35,20 +37,21 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
 
-public class ProductOptionValueProcessor extends AbstractAttrProcessor  {
+public class ProductOptionValueProcessor extends AbstractAttributeTagProcessor  {
 
     private static final Log LOG = LogFactory.getLog(ProductOptionValueProcessor.class);
     
     public ProductOptionValueProcessor() {
-        super("product_option_value");
+        super(TemplateMode.HTML, "blc", null, false, "product_option_value", true, 10000, true);
     }
     
     @Override
-    protected ProcessorResult processAttribute(Arguments arguments, Element element, String attributeName) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName,
+            String attributeValue, IElementTagStructureHandler structureHandler) {
         
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue(attributeName));
-        ProductOptionValue productOptionValue = (ProductOptionValue) expression.execute(arguments.getConfiguration(), arguments);
+        IStandardExpression expression = StandardExpressions.getExpressionParser(context.getConfiguration())
+                .parseExpression(context, attributeValue);
+        ProductOptionValue productOptionValue = (ProductOptionValue) expression.execute(context);
 
         ProductOptionValueDTO dto = new ProductOptionValueDTO();
         dto.setOptionId(productOptionValue.getProductOption().getId());
@@ -61,20 +64,11 @@ public class ProductOptionValueProcessor extends AbstractAttrProcessor  {
             ObjectMapper mapper = new ObjectMapper();
             Writer strWriter = new StringWriter();
             mapper.writeValue(strWriter, dto);
-            element.setAttribute("data-product-option-value", strWriter.toString());
-            element.removeAttribute(attributeName);
-            return ProcessorResult.OK;
+            structureHandler.setAttribute("data-product-option-value", strWriter.toString());
         } catch (Exception ex) {
             LOG.error("There was a problem writing the product option value to JSON", ex);
         }
         
-        return null;
-        
-    }
-
-    @Override
-    public int getPrecedence() {
-        return 10000;
     }
 
     private class ProductOptionValueDTO {

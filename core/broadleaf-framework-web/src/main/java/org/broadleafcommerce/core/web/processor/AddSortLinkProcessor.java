@@ -23,16 +23,15 @@ import org.broadleafcommerce.common.web.BroadleafRequestContext;
 import org.broadleafcommerce.core.search.domain.SearchCriteria;
 import org.broadleafcommerce.core.web.controller.catalog.BroadleafCategoryController;
 import org.broadleafcommerce.core.web.util.ProcessorUtils;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * <p>
@@ -64,7 +63,7 @@ import javax.servlet.http.HttpServletRequest;
  * 
  * @author apazzolini
  */
-public class AddSortLinkProcessor extends AbstractAttributeModifierAttrProcessor {
+public class AddSortLinkProcessor extends AbstractBroadleafAttributeModifierProcessor {
     
     protected boolean allowMultipleSorts = false;
     
@@ -72,17 +71,12 @@ public class AddSortLinkProcessor extends AbstractAttributeModifierAttrProcessor
      * Sets the name of this processor to be used in Thymeleaf template
      */
     public AddSortLinkProcessor() {
-        super("addsortlink");
-    }
-    
-    @Override
-    public int getPrecedence() {
-        return 10000;
+        super("addsortlink", 10000);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
+    protected Map<String, String> getModifiedAttributeValues(ITemplateContext context, IProcessableElementTag tag, String attributeValue) {
         Map<String, String> attrs = new HashMap<String, String>();
         
         BroadleafRequestContext blcContext = BroadleafRequestContext.getBroadleafRequestContext();
@@ -92,7 +86,7 @@ public class AddSortLinkProcessor extends AbstractAttributeModifierAttrProcessor
         Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
         
         String key = SearchCriteria.SORT_STRING;
-        String sortField = element.getAttributeValue(attributeName);
+        String sortField = attributeValue;
         
         List<String[]> sortedFields = new ArrayList<String[]>();
         
@@ -155,20 +149,5 @@ public class AddSortLinkProcessor extends AbstractAttributeModifierAttrProcessor
         attrs.put("class", classString);
         attrs.put("href", url);
         return attrs;
-    }
-
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
     }
 }

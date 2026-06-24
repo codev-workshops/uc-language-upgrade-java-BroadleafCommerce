@@ -25,7 +25,7 @@ import org.springframework.util.MultiValueMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 /**
  * Utility to convert from JAXRS types into something Spring-MVC compatible

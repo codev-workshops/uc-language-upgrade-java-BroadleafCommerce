@@ -36,12 +36,13 @@ import org.broadleafcommerce.core.order.service.OrderService;
 import org.broadleafcommerce.core.payment.domain.OrderPayment;
 import org.broadleafcommerce.profile.core.domain.Address;
 import org.springframework.beans.factory.annotation.Value;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
 
 import java.util.Map;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * A Thymeleaf processor that will output Google Analytics tracking Javascript. When used on an order confirmation page
@@ -84,23 +85,18 @@ public class GoogleAnalyticsProcessor extends AbstractModelVariableModifierProce
      * Sets the name of this processor to be used in Thymeleaf template
      */
     public GoogleAnalyticsProcessor() {
-        super("googleanalytics");
+        super("googleanalytics", 100000);
     }
 
     @Override
-    public int getPrecedence() {
-        return 100000;
-    }
+    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
 
-    @Override
-    protected void modifyModelAttributes(Arguments arguments, Element element) {
-
-        String orderNumber = element.getAttributeValue("orderNumber");
+        String orderNumber = tag.getAttributeValue("orderNumber");
         Order order = null;
         if (orderNumber != null) {
             order = orderService.findOrderByOrderNumber(orderNumber);
         }
-        addToModel(arguments, "analytics", analytics(getWebPropertyId(), order));
+        addToModel(structureHandler, "analytics", analytics(getWebPropertyId(), order));
     }
 
     /**
