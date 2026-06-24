@@ -22,8 +22,9 @@ package org.broadleafcommerce.common.web.processor;
 import org.broadleafcommerce.common.util.BLCSystemProperty;
 import org.broadleafcommerce.common.web.dialect.AbstractModelVariableModifierProcessor;
 import org.broadleafcommerce.common.web.expression.PropertiesVariableExpression;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
 
 
 /**
@@ -43,24 +44,19 @@ import org.thymeleaf.dom.Element;
 public class ConfigVariableProcessor extends AbstractModelVariableModifierProcessor {
 
     public ConfigVariableProcessor() {
-        super("config");
-    }
-    
-    @Override
-    public int getPrecedence() {
-        return 10000;
+        super("config", 10000);
     }
 
     @Override
-    protected void modifyModelAttributes(Arguments arguments, Element element) {
-        String resultVar = element.getAttributeValue("resultVar");
+    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        String resultVar = tag.getAttributeValue("resultVar");
         if (resultVar == null) {
             resultVar = "value";
         }
         
-        String attributeName = element.getAttributeValue("name");
+        String attributeName = tag.getAttributeValue("name");
         String attributeValue = BLCSystemProperty.resolveSystemProperty(attributeName);
         
-        addToModel(arguments, resultVar, attributeValue);
+        addToModel(structureHandler, resultVar, attributeValue);
     }
 }

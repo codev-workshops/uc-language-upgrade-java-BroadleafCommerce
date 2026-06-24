@@ -24,8 +24,9 @@ import org.broadleafcommerce.common.enumeration.domain.DataDrivenEnumeration;
 import org.broadleafcommerce.common.enumeration.domain.DataDrivenEnumerationValue;
 import org.broadleafcommerce.common.enumeration.service.DataDrivenEnumerationService;
 import org.broadleafcommerce.common.web.dialect.AbstractModelVariableModifierProcessor;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,12 +57,12 @@ public class DataDrivenEnumerationProcessor extends AbstractModelVariableModifie
      * @param elementName
      */
     public DataDrivenEnumerationProcessor() {
-        super("enumeration");
+        super("enumeration", 1);
     }
 
     @Override
-    protected void modifyModelAttributes(Arguments arguments, Element element) {
-        String key = element.getAttributeValue("key");
+    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        String key = tag.getAttributeValue("key");
         if (StringUtils.isEmpty(key)) {
             throw new IllegalArgumentException("No 'key' parameter was passed to find enumeration values");
         }
@@ -72,7 +73,7 @@ public class DataDrivenEnumerationProcessor extends AbstractModelVariableModifie
         }
         List<DataDrivenEnumerationValue> enumValues = new ArrayList<DataDrivenEnumerationValue>(ddEnum.getEnumValues());
         
-        final String sort = element.getAttributeValue("sort");
+        final String sort = tag.getAttributeValue("sort");
         if (StringUtils.isNotEmpty(sort)) {
             Collections.sort(enumValues, new Comparator<DataDrivenEnumerationValue>() {
 
@@ -87,12 +88,7 @@ public class DataDrivenEnumerationProcessor extends AbstractModelVariableModifie
             });
         }
         
-        addToModel(arguments, "enumValues", enumValues);
-    }
-
-    @Override
-    public int getPrecedence() {
-        return 1;
+        addToModel(structureHandler, "enumValues", enumValues);
     }
 
 }

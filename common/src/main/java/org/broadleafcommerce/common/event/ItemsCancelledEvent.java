@@ -32,8 +32,8 @@ public class ItemsCancelledEvent extends BroadleafApplicationEvent {
 
     public ItemsCancelledEvent(Long fulfillmentGroupId, Map<Long, Integer> cancelledItems) {
         super(fulfillmentGroupId);
-        Assert.notNull(fulfillmentGroupId);
-        Assert.notEmpty(cancelledItems);
+        Assert.notNull(fulfillmentGroupId, "fulfillmentGroupId must not be null");
+        Assert.notEmpty(cancelledItems, "cancelledItems must not be empty");
         this.itemsAndQuantitiesCancelled = Collections.unmodifiableMap(cancelledItems);
     }
 

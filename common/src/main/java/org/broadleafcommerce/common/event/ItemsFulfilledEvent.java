@@ -38,8 +38,8 @@ public class ItemsFulfilledEvent extends BroadleafApplicationEvent {
 
     public ItemsFulfilledEvent(Long fulfillmentGroupId, Map<Long, Integer> fulfilled) {
         super(fulfillmentGroupId);
-        Assert.notNull(fulfillmentGroupId);
-        Assert.notEmpty(fulfilled);
+        Assert.notNull(fulfillmentGroupId, "fulfillmentGroupId must not be null");
+        Assert.notEmpty(fulfilled, "fulfilled must not be empty");
         this.itemsAndQuantitiesFulfilled = Collections.unmodifiableMap(fulfilled);
     }
 

@@ -145,7 +145,7 @@ public class HydratedCacheManagerImpl implements HydratedCacheManager, HydratedA
                 if (LOG.isInfoEnabled()) {
                     LOG.info("Clearing hydrated cache for cache name: " + cacheRegion + "_" + cacheName + "_" + key);
                 }
-                cache.removeCacheElement(cacheRegion, cacheName, key);
+                cache.removeCacheElement(cacheRegion, cacheName, (Serializable) key);
             }
         }
     }

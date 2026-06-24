@@ -301,7 +301,7 @@ public class SparseTranslationOverrideStrategy implements TranslationOverrideStr
                     Type idType = (Type) idMetadata.get("type");
                     if (String.class.equals(idType.getReturnedClass())) {
                         testObject = em.find(entities[entities.length - 1], entityId);
-                    } else if (idType instanceof LongType) {
+                    } else if (Long.class.equals(idType.getReturnedClass())) {
                         testObject = em.find(entities[entities.length - 1], Long.parseLong(entityId));
                     }
                 } catch (ClassNotFoundException e) {

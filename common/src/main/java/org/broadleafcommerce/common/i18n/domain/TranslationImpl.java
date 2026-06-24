@@ -36,7 +36,6 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Index;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Table;
-import org.hibernate.annotations.Type;
 
 import java.io.Serializable;
 
@@ -96,7 +95,6 @@ public class TranslationImpl implements Serializable, Translation {
 
     @Column(name = "TRANSLATED_VALUE", length = Integer.MAX_VALUE - 1)
     @Lob
-    @Type(type = "org.hibernate.type.StringClobType")
     @AdminPresentation(friendlyName = "TranslationImpl_TranslatedValue", prominent = true, requiredOverride = RequiredOverride.REQUIRED)
     protected String translatedValue;
 

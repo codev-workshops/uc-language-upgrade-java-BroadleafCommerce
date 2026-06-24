@@ -19,37 +19,57 @@
  */
 package org.broadleafcommerce.common.web.expression;
 
-import org.thymeleaf.context.IProcessingContext;
-import org.thymeleaf.spring4.expression.SpelVariableExpressionEvaluator;
+import org.thymeleaf.context.IExpressionContext;
+import org.thymeleaf.expression.IExpressionObjectFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import jakarta.annotation.Resource;
 
 /**
  * Provides a skeleton to register multiple {@link BroadleafVariableExpression} implementors.
- * 
+ *
+ * <p>Thymeleaf 2 exposed custom {@code #expression} objects by subclassing the SpEL variable expression evaluator
+ * and overriding {@code computeAdditionalExpressionObjects}. Thymeleaf 3 removed that extension point in favour of
+ * the {@link IExpressionObjectFactory} contributed by an {@code IExpressionObjectDialect}, so this class now
+ * implements that factory and exposes each registered {@link BroadleafVariableExpression} as an expression object
+ * keyed by its name.</p>
+ *
  * @author Andre Azzolini (apazzolini)
  */
-public class BroadleafVariableExpressionEvaluator extends SpelVariableExpressionEvaluator {
-    
+public class BroadleafVariableExpressionEvaluator implements IExpressionObjectFactory {
+
     @Resource(name = "blVariableExpressions")
     protected List<BroadleafVariableExpression> expressions = new ArrayList<BroadleafVariableExpression>();
-    
+
     @Override
-    protected Map<String,Object> computeAdditionalExpressionObjects(final IProcessingContext processingContext) {
-        Map<String, Object> map = new HashMap<String, Object>();
-        
+    public Set<String> getAllExpressionObjectNames() {
+        Set<String> names = new HashSet<String>();
         for (BroadleafVariableExpression expression : expressions) {
             if (!(expression instanceof NullBroadleafVariableExpression)) {
-                map.put(expression.getName(), expression);
+                names.add(expression.getName());
             }
         }
-        
-        return map;
+        return names;
+    }
+
+    @Override
+    public Object buildObject(IExpressionContext context, String expressionObjectName) {
+        for (BroadleafVariableExpression expression : expressions) {
+            if (!(expression instanceof NullBroadleafVariableExpression)
+                    && expression.getName().equals(expressionObjectName)) {
+                return expression;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean isCacheable(String expressionObjectName) {
+        return true;
     }
 
 }

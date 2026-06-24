@@ -25,10 +25,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.broadleafcommerce.common.util.BLCNumberUtils;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
-import org.hibernate.SessionFactory;
+import org.hibernate.Session;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.metamodel.MappingMetamodel;
+import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -69,11 +71,14 @@ public class SequenceGeneratorCorruptionDetection implements ApplicationListener
     @Transactional("blTransactionManager")
     public void onApplicationEvent(ContextRefreshedEvent event) {
         if (detectSequenceGeneratorInconsistencies) {
-            SessionFactory sessionFactory = (em).getSession().getSessionFactory();
-            for (Object item : sessionFactory.getAllClassMetadata().values()) {
-                ClassMetadata metadata = (ClassMetadata) item;
+            SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) em.unwrap(Session.class).getSessionFactory();
+            MappingMetamodel metamodel = sessionFactory.getMappingMetamodel();
+            for (EntityPersister metadata : metamodel.streamEntityDescriptors().collect(java.util.stream.Collectors.toList())) {
                 String idProperty = metadata.getIdentifierPropertyName();
                 Class<?> mappedClass = metadata.getMappedClass();
+                if (idProperty == null || mappedClass == null) {
+                    continue;
+                }
                 Field idField;
                 try {
                     idField = mappedClass.getDeclaredField(idProperty);

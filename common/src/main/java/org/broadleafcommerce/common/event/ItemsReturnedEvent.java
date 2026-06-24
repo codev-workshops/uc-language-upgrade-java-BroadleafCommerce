@@ -32,8 +32,8 @@ public class ItemsReturnedEvent extends BroadleafApplicationEvent {
 
     public ItemsReturnedEvent(Long orderId, Map<Long, Integer> returnedItems) {
         super(orderId);
-        Assert.notNull(orderId);
-        Assert.notEmpty(returnedItems);
+        Assert.notNull(orderId, "orderId must not be null");
+        Assert.notEmpty(returnedItems, "returnedItems must not be empty");
         this.itemsAndQuantitiesReturned = Collections.unmodifiableMap(returnedItems);
     }
 
