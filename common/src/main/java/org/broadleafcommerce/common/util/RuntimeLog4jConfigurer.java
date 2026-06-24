@@ -19,10 +19,6 @@
  */
 package org.broadleafcommerce.common.util;
 
-import org.springframework.util.Log4jConfigurer;
-
-import java.io.FileNotFoundException;
-
 /**
  * @author Jeff Fischer
  */
@@ -34,12 +30,13 @@ public class RuntimeLog4jConfigurer {
         return log4jConfigLocation;
     }
 
+    /**
+     * Sets the configuration location. Spring's {@code org.springframework.util.Log4jConfigurer} (a Log4j 1.x
+     * helper) was removed in Spring 5+; with the migration to Log4j 2 / slf4j 2 logging configuration is
+     * resolved by Log4j 2's own bootstrap (e.g. the {@code log4j2.configurationFile} system property), so this
+     * setter simply records the location.
+     */
     public void setLog4jConfigLocation(String log4jConfigLocation) {
         this.log4jConfigLocation = log4jConfigLocation;
-        try {
-            Log4jConfigurer.initLogging(log4jConfigLocation);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

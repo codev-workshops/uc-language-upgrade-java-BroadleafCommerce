@@ -19,8 +19,7 @@
  */
 package org.broadleafcommerce.common.vendor.service.cache;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.Element;
+import javax.cache.Cache;
 import org.aspectj.lang.ProceedingJoinPoint;
 
 import java.io.Serializable;
@@ -37,13 +36,13 @@ public class ServiceResponseCache {
 
     public Object processRequest(ProceedingJoinPoint call) throws Throwable {
         CacheRequest cacheRequest = (CacheRequest) call.getArgs()[0];
-        Cache cache = ((ServiceResponseCacheable) call.getTarget()).getCache();
+        Cache<Object, Object> cache = ((ServiceResponseCacheable) call.getTarget()).getCache();
         List<Serializable> cacheItemResponses = new ArrayList<Serializable>();
         Iterator<CacheItemRequest> itr = cacheRequest.getCacheItemRequests().iterator();
         while(itr.hasNext()) {
             CacheItemRequest itemRequest = itr.next();
-            if (cache.isKeyInCache(itemRequest.key())) {
-                cacheItemResponses.add(cache.get(itemRequest.key()).getValue()); 
+            if (cache.containsKey(itemRequest.key())) {
+                cacheItemResponses.add((Serializable) cache.get(itemRequest.key()));
                 itr.remove();
             }
         }
@@ -52,8 +51,7 @@ public class ServiceResponseCache {
         Object[] responses = new Object[cacheItemResponses.size() + returnValue.getCacheItemResponses().length];
         responses = cacheItemResponses.toArray(responses);
         for (int j=0; j<returnValue.getCacheItemResponses().length; j++) {
-            Element element = new Element(cacheRequest.getCacheItemRequests().get(j).key(), returnValue.getCacheItemResponses()[j]);
-            cache.put(element);
+            cache.put(cacheRequest.getCacheItemRequests().get(j).key(), returnValue.getCacheItemResponses()[j]);
         }
         System.arraycopy(returnValue.getCacheItemResponses(), 0, responses, cacheItemResponses.size(), returnValue.getCacheItemResponses().length);
         returnValue.setCacheItemResponses(responses);

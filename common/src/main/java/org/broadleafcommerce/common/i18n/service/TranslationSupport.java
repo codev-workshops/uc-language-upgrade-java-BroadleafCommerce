@@ -27,7 +27,7 @@ import org.broadleafcommerce.common.i18n.domain.Translation;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.ehcache.Cache;
+import javax.cache.Cache;
 
 /**
  * {@link TranslationService} functionality, primarily in support of {@link TranslationOverrideStrategy} instances.
@@ -51,7 +51,7 @@ public interface TranslationSupport {
      *
      * @return
      */
-    Cache getCache();
+    Cache<Object, Object> getCache();
 
     /**
      *

@@ -37,12 +37,9 @@ import org.broadleafcommerce.common.site.domain.Site;
 import org.broadleafcommerce.common.util.dao.DynamicDaoHelper;
 import org.broadleafcommerce.common.util.dao.DynamicDaoHelperImpl;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.ejb.HibernateEntityManager;
-import org.hibernate.ejb.QueryHints;
-import org.hibernate.ejb.criteria.CriteriaBuilderImpl;
-import org.hibernate.type.LongType;
-import org.hibernate.type.StringType;
+import org.hibernate.jpa.QueryHints;
 import org.hibernate.type.Type;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -297,12 +294,12 @@ public class SparseTranslationOverrideStrategy implements TranslationOverrideStr
             if (restrictAssociation) {
                 try {
                     Class<?> type = Class.forName(entityType.getType());
-                    SessionFactory sessionFactory = ((CriteriaBuilderImpl) em.getCriteriaBuilder()).getEntityManagerFactory().getSessionFactory();
+                    SessionFactory sessionFactory = em.unwrap(Session.class).getSessionFactory();
                     Class<?>[] entities = helper.getAllPolymorphicEntitiesFromCeiling(type, sessionFactory, true, true);
                     //This should already be in level 1 cache and this should not cause a hit to the database.
-                    Map<String, Object> idMetadata = helper.getIdMetadata(entities[entities.length - 1], (HibernateEntityManager) em);
+                    Map<String, Object> idMetadata = helper.getIdMetadata(entities[entities.length - 1], em);
                     Type idType = (Type) idMetadata.get("type");
-                    if (idType instanceof StringType) {
+                    if (String.class.equals(idType.getReturnedClass())) {
                         testObject = em.find(entities[entities.length - 1], entityId);
                     } else if (idType instanceof LongType) {
                         testObject = em.find(entities[entities.length - 1], Long.parseLong(entityId));

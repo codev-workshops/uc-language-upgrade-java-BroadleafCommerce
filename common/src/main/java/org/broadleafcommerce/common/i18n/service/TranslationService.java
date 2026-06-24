@@ -20,7 +20,7 @@
 
 package org.broadleafcommerce.common.i18n.service;
 
-import net.sf.ehcache.Cache;
+import javax.cache.Cache;
 
 import org.broadleafcommerce.common.extension.ResultType;
 import org.broadleafcommerce.common.i18n.domain.TranslatedEntity;
@@ -129,7 +129,7 @@ public interface TranslationService {
      *
      * @return the translation specific cache
      */
-    Cache getCache();
+    Cache<Object, Object> getCache();
 
     /**
      * Intended for use with the {@link DynamicTranslationProvider} to determine the default value when a 

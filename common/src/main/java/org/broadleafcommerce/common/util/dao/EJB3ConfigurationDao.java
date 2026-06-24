@@ -19,15 +19,20 @@
  */
 package org.broadleafcommerce.common.util.dao;
 
-import org.hibernate.ejb.Ejb3Configuration;
+import org.hibernate.boot.Metadata;
 
 /**
- * 
+ * Provides access to the Hibernate boot-time {@link Metadata} (mapping information).
+ *
+ * <p>Under Hibernate 4 this exposed an {@code org.hibernate.ejb.Ejb3Configuration}. That type was removed in
+ * Hibernate 5+; the equivalent mapping metadata is now represented by {@link Metadata}, whose
+ * {@code getEntityBinding(String)} replaces the former {@code Configuration#getClassMapping(String)}.</p>
+ *
  * @author jfischer
  *
  */
 public interface EJB3ConfigurationDao {
 
-    public abstract Ejb3Configuration getConfiguration();
+    public abstract Metadata getConfiguration();
 
 }

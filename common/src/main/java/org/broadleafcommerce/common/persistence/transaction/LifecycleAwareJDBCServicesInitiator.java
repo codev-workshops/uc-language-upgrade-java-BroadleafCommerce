@@ -19,24 +19,24 @@
  */
 package org.broadleafcommerce.common.persistence.transaction;
 
+import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.engine.jdbc.spi.JdbcServices;
-import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 import java.util.Map;
 
 /**
- * {@link BasicServiceInitiator} implementation for introducing the custom {@link JdbcServices} implementation
+ * {@link StandardServiceInitiator} implementation for introducing the custom {@link JdbcServices} implementation
  * to the Hibernate service registry.
  *
  * @author Jeff Fischer
  */
-public class LifecycleAwareJDBCServicesInitiator implements BasicServiceInitiator<JdbcServices> {
+public class LifecycleAwareJDBCServicesInitiator implements StandardServiceInitiator<JdbcServices> {
 
     public static final LifecycleAwareJDBCServicesInitiator INSTANCE = new LifecycleAwareJDBCServicesInitiator();
 
     @Override
-    public JdbcServices initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+    public JdbcServices initiateService(Map<String, Object> configurationValues, ServiceRegistryImplementor registry) {
         return new LifecycleAwareJDBCServices();
     }
 

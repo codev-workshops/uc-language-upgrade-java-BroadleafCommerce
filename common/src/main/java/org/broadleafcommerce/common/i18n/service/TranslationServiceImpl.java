@@ -47,8 +47,10 @@ import java.util.Map.Entry;
 
 import jakarta.annotation.Resource;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.MutableConfiguration;
 
 @Service("blTranslationService")
 public class TranslationServiceImpl implements TranslationService, TranslationSupport {
@@ -65,7 +67,7 @@ public class TranslationServiceImpl implements TranslationService, TranslationSu
     @Resource(name="blSandBoxHelper")
     protected SandBoxHelper sandBoxHelper;
     
-    protected Cache cache;
+    protected Cache<Object, Object> cache;
 
     @Resource(name="blTranslationServiceExtensionManager")
     protected TranslationServiceExtensionManager extensionManager;
@@ -162,9 +164,14 @@ public class TranslationServiceImpl implements TranslationService, TranslationSu
     }
 
     @Override
-    public Cache getCache() {
+    public Cache<Object, Object> getCache() {
         if (cache == null) {
-            cache = CacheManager.getInstance().getCache("blTranslationElements");
+            CacheManager cacheManager = Caching.getCachingProvider().getCacheManager();
+            cache = cacheManager.getCache("blTranslationElements");
+            if (cache == null) {
+                cache = cacheManager.createCache("blTranslationElements",
+                        new MutableConfiguration<Object, Object>().setStoreByValue(false));
+            }
         }
         return cache;
     }

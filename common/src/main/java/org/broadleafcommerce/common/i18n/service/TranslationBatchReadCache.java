@@ -32,9 +32,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.MutableConfiguration;
 
 /**
  * Thread-local cache structure that contains all of the {@link Translation}s for a batch of processing. This is mainly
@@ -48,14 +49,20 @@ public class TranslationBatchReadCache {
     
     public static final String CACHE_NAME = "blBatchTranslationCache";
 
-    protected static Cache getCache() {
-        return CacheManager.getInstance().getCache(CACHE_NAME);
+    protected static Cache<Object, Object> getCache() {
+        CacheManager cacheManager = Caching.getCachingProvider().getCacheManager();
+        Cache<Object, Object> cache = cacheManager.getCache(CACHE_NAME);
+        if (cache == null) {
+            cache = cacheManager.createCache(CACHE_NAME,
+                    new MutableConfiguration<Object, Object>().setStoreByValue(false));
+        }
+        return cache;
     }
     
     protected static Map<String, Translation> getThreadlocalCache() {
         long threadId = Thread.currentThread().getId();
-        Element cacheElement = getCache().get(threadId);
-        return cacheElement == null ? null : (Map<String, Translation>) cacheElement.getObjectValue();
+        Object cacheElement = getCache().get(threadId);
+        return cacheElement == null ? null : (Map<String, Translation>) cacheElement;
     }
     
     public static void clearCache() {
@@ -84,7 +91,7 @@ public class TranslationBatchReadCache {
         
         threadlocalCache.putAll(additionalTranslations);
         
-        getCache().put(new Element(threadId, threadlocalCache));
+        getCache().put(threadId, threadlocalCache);
     }
     
     public static Translation getFromCache(TranslatedEntity entityType, String id, String propertyName, String localeCode) {

@@ -19,21 +19,25 @@
  */
 package org.broadleafcommerce.common.dialect;
 
-import org.hibernate.dialect.MySQL5InnoDBDialect;
+import org.hibernate.dialect.MySQLDialect;
+import org.hibernate.type.SqlTypes;
 
 /**
  * Intended to allow installations migrating from BLC version 2.0 to not be forced to make a schema
  * change for boolean fields when migrating to BLC version 3.0, and above.
  *
- * @deprecated use org.hibernate.dialect.MySQL5InnoDBDialect instead
+ * @deprecated use org.hibernate.dialect.MySQLDialect instead
  * @author Jeff Fischer
  */
 @Deprecated
-public class Broadleaf2CompatibilityMySQL5InnoDBDialect extends MySQL5InnoDBDialect {
+public class Broadleaf2CompatibilityMySQL5InnoDBDialect extends MySQLDialect {
 
-    public Broadleaf2CompatibilityMySQL5InnoDBDialect() {
-        super();
-        registerColumnType( java.sql.Types.BOOLEAN, "bit" );
+    @Override
+    protected String columnType(int sqlTypeCode) {
+        if (sqlTypeCode == SqlTypes.BOOLEAN) {
+            return "bit";
+        }
+        return super.columnType(sqlTypeCode);
     }
 
 }

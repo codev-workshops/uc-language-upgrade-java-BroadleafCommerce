@@ -28,8 +28,6 @@ import org.broadleafcommerce.common.extensibility.jpa.convert.BroadleafClassTran
 import org.broadleafcommerce.common.extensibility.jpa.convert.BroadleafPersistenceUnitDeclaringClassTransformer;
 import org.broadleafcommerce.common.extensibility.jpa.convert.EntityMarkerClassTransformer;
 import org.broadleafcommerce.common.extensibility.jpa.copy.NullClassTransformer;
-import org.hibernate.ejb.AvailableSettings;
-import org.hibernate.ejb.instrument.InterceptFieldClassFileTransformer;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.jmx.export.MBeanExporter;
@@ -223,9 +221,10 @@ public class MergePersistenceUnitManager extends DefaultPersistenceUnitManager {
             
             boolean weaverRegistered = true;
             for (PersistenceUnitInfo pui : mergedPus.values()) {
-                if (pui.getProperties().containsKey(AvailableSettings.USE_CLASS_ENHANCER) && "true".equalsIgnoreCase(pui.getProperties().getProperty(AvailableSettings.USE_CLASS_ENHANCER))) {
-                    pui.addTransformer(new InterceptFieldClassFileTransformer(pui.getManagedClassNames()));
-                }
+                // Hibernate 4's org.hibernate.ejb.instrument.InterceptFieldClassFileTransformer (triggered by the
+                // legacy hibernate.ejb.use_class_enhancer property) was removed in Hibernate 5+. Bytecode
+                // enhancement is now performed by Broadleaf's own classTransformers (below) and/or build-time
+                // enhancement, so the built-in Hibernate enhancer registration no longer applies.
                 for (BroadleafClassTransformer transformer : classTransformers) {
                     try {
                         boolean isTransformerQualified = !(transformer instanceof NullClassTransformer) &&

@@ -19,9 +19,10 @@
  */
 package org.broadleafcommerce.common.config.service;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.MutableConfiguration;
 
 import org.apache.commons.lang3.StringUtils;
 import org.broadleafcommerce.common.config.RuntimeEnvironmentPropertiesManager;
@@ -49,7 +50,7 @@ public class SystemPropertiesServiceImpl implements SystemPropertiesService{
 
     private static final String NULL_RESPONSE = "*NULL_RESPONSE*";
 
-    protected Cache systemPropertyCache;
+    protected Cache<Object, Object> systemPropertyCache;
 
     @Resource(name="blSystemPropertiesDao")
     protected SystemPropertiesDao systemPropertiesDao;
@@ -114,19 +115,16 @@ public class SystemPropertiesServiceImpl implements SystemPropertiesService{
 
     protected void addPropertyToCache(String propertyName, String propertyValue) {
         String key = buildKey(propertyName);
-        if (systemPropertyCacheTimeout < 0) {
-            getSystemPropertyCache().put(new Element(key, propertyValue));
-        } else {
-            getSystemPropertyCache().put(new Element(key, propertyValue, systemPropertyCacheTimeout, 
-                    systemPropertyCacheTimeout));
-        }
+        // The per-entry TTL (systemPropertyCacheTimeout) supported by Ehcache 2's Element is not part of the
+        // JCache put API; cache expiry is now governed by the region's configured ExpiryPolicy.
+        getSystemPropertyCache().put(key, propertyValue);
     }
 
     protected String getPropertyFromCache(String propertyName) {
         String key = buildKey(propertyName);
-        Element cacheElement = getSystemPropertyCache().get(key);
-        if (cacheElement != null && cacheElement.getObjectValue() != null) {
-            return (String) cacheElement.getObjectValue();
+        Object cacheElement = getSystemPropertyCache().get(key);
+        if (cacheElement != null) {
+            return (String) cacheElement;
         }
         return null;
     }
@@ -164,9 +162,14 @@ public class SystemPropertiesServiceImpl implements SystemPropertiesService{
         return key;
     }
 
-    protected Cache getSystemPropertyCache() {
+    protected Cache<Object, Object> getSystemPropertyCache() {
         if (systemPropertyCache == null) {
-            systemPropertyCache = CacheManager.getInstance().getCache("blSystemPropertyElements");
+            CacheManager cacheManager = Caching.getCachingProvider().getCacheManager();
+            systemPropertyCache = cacheManager.getCache("blSystemPropertyElements");
+            if (systemPropertyCache == null) {
+                systemPropertyCache = cacheManager.createCache("blSystemPropertyElements",
+                        new MutableConfiguration<Object, Object>().setStoreByValue(false));
+            }
         }
         return systemPropertyCache;
     }

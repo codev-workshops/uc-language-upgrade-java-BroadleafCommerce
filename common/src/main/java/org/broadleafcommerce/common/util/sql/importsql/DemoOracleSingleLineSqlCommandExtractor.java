@@ -21,7 +21,8 @@ package org.broadleafcommerce.common.util.sql.importsql;
 
 import org.broadleafcommerce.common.logging.SupportLogManager;
 import org.broadleafcommerce.common.logging.SupportLogger;
-import org.hibernate.tool.hbm2ddl.SingleLineSqlCommandExtractor;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.tool.schema.internal.script.SingleLineSqlScriptExtractor;
 
 import java.io.Reader;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ import java.util.regex.Pattern;
  *
  * @author Jeff Fischer
  */
-public class DemoOracleSingleLineSqlCommandExtractor extends SingleLineSqlCommandExtractor {
+public class DemoOracleSingleLineSqlCommandExtractor extends SingleLineSqlScriptExtractor {
 
     private static final SupportLogger LOGGER = SupportLogManager.getLogger("UserOverride", DemoOracleSingleLineSqlCommandExtractor.class);
 
@@ -50,13 +51,13 @@ public class DemoOracleSingleLineSqlCommandExtractor extends SingleLineSqlComman
     protected boolean alreadyRun = false;
 
     @Override
-    public String[] extractCommands(Reader reader) {
+    public List<String> extractCommands(Reader reader, Dialect dialect) {
         if (!alreadyRun) {
             alreadyRun = true;
             LOGGER.support("Converting hibernate.hbm2ddl.import_files sql statements for compatibility with Oracle");
         }
 
-        String[] statements = super.extractCommands(reader);
+        String[] statements = super.extractCommands(reader, dialect).toArray(new String[0]);
         handleBooleans(statements);
 
         //remove Oracle incompatible - multi-row inserts
@@ -100,7 +101,7 @@ public class DemoOracleSingleLineSqlCommandExtractor extends SingleLineSqlComman
             }
         }
 
-        return statements;
+        return Arrays.asList(statements);
     }
 
     protected void handleBooleans(String[] statements) {

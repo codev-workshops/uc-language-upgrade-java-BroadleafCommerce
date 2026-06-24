@@ -21,9 +21,12 @@ package org.broadleafcommerce.common.util.sql.importsql;
 
 import org.broadleafcommerce.common.logging.SupportLogManager;
 import org.broadleafcommerce.common.logging.SupportLogger;
-import org.hibernate.tool.hbm2ddl.SingleLineSqlCommandExtractor;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.tool.schema.internal.script.SingleLineSqlScriptExtractor;
 
 import java.io.Reader;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This is a utility class that is only meant to be used for testing the BLC demo on SQL Server. In our current
@@ -32,7 +35,7 @@ import java.io.Reader;
  *
  * @author Jeff Fischer
  */
-public class DemoSqlServerSingleLineSqlCommandExtractor extends SingleLineSqlCommandExtractor {
+public class DemoSqlServerSingleLineSqlCommandExtractor extends SingleLineSqlScriptExtractor {
 
     private static final long serialVersionUID = 1L;
 
@@ -48,16 +51,16 @@ public class DemoSqlServerSingleLineSqlCommandExtractor extends SingleLineSqlCom
     protected boolean alreadyRun = false;
 
     @Override
-    public String[] extractCommands(Reader reader) {
+    public List<String> extractCommands(Reader reader, Dialect dialect) {
         if (!alreadyRun) {
             alreadyRun = true;
             LOGGER.support("Converting hibernate.hbm2ddl.import_files sql statements for compatibility with SQL Server");
         }
 
-        String[] statements = super.extractCommands(reader);
+        String[] statements = super.extractCommands(reader, dialect).toArray(new String[0]);
         handleBooleans(statements);
 
-        return statements;
+        return Arrays.asList(statements);
     }
 
     protected void handleBooleans(String[] statements) {

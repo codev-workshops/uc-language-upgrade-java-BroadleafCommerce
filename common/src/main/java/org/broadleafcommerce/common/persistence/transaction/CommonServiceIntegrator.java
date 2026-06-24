@@ -19,32 +19,26 @@
  */
 package org.broadleafcommerce.common.persistence.transaction;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.spi.BootstrapContext;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.integrator.spi.ServiceContributingIntegrator;
-import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.service.ServiceRegistryBuilder;
+import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
 /**
  * Support introduction of customized or additional services to the Hibernate service registry.
  *
+ * <p>Under Hibernate 4 this was a {@code ServiceContributingIntegrator} whose {@code prepareServices}
+ * registered the custom {@link LifecycleAwareJDBCServicesInitiator}. In Hibernate 6 the {@code Integrator}
+ * contract no longer contributes service initiators; that responsibility moved to a
+ * {@code org.hibernate.service.spi.ServiceContributor} (see {@link CommonServiceContributor}).</p>
+ *
  * @author Jeff Fischer
  */
-public class CommonServiceIntegrator implements ServiceContributingIntegrator {
+public class CommonServiceIntegrator implements Integrator {
 
     @Override
-    public void prepareServices(ServiceRegistryBuilder serviceRegistryBuilder) {
-        serviceRegistryBuilder.addInitiator(LifecycleAwareJDBCServicesInitiator.INSTANCE);
-    }
-
-    @Override
-    public void integrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
-        //do nothing
-    }
-
-    @Override
-    public void integrate(MetadataImplementor metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+    public void integrate(Metadata metadata, BootstrapContext bootstrapContext, SessionFactoryImplementor sessionFactory) {
         //do nothing
     }
 

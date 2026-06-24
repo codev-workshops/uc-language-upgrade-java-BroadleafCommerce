@@ -19,37 +19,34 @@
  */
 package org.broadleafcommerce.common.util.dao;
 
-import org.hibernate.ejb.Ejb3Configuration;
-
-import java.util.HashMap;
+import org.hibernate.boot.Metadata;
 
 import jakarta.persistence.spi.PersistenceUnitInfo;
 
 /**
- * 
+ * Holds the Hibernate boot-time {@link Metadata} for a persistence unit.
+ *
+ * <p>Under Hibernate 4 this lazily built an {@code Ejb3Configuration} from the {@link PersistenceUnitInfo}.
+ * In Hibernate 5+ {@code Ejb3Configuration} was removed and the mapping metadata is produced by the standard
+ * bootstrap; the resulting {@link Metadata} is captured during bootstrap (see
+ * {@code org.broadleafcommerce.common.persistence.transaction.CommonServiceIntegrator}) and supplied here via
+ * {@link #setConfiguration(Metadata)}.</p>
+ *
  * @author jfischer
  *
  */
 public class EJB3ConfigurationDaoImpl implements EJB3ConfigurationDao {
 
-    private Ejb3Configuration configuration = null;
+    private Metadata configuration = null;
 
     protected PersistenceUnitInfo persistenceUnitInfo;
 
-    public Ejb3Configuration getConfiguration() {
-        synchronized(this) {
-            if (configuration == null) {
-                Ejb3Configuration temp = new Ejb3Configuration();
-                String previousValue = persistenceUnitInfo.getProperties().getProperty("hibernate.hbm2ddl.auto");
-                persistenceUnitInfo.getProperties().setProperty("hibernate.hbm2ddl.auto", "none");
-                configuration = temp.configure(persistenceUnitInfo, new HashMap());
-                configuration.getHibernateConfiguration().buildSessionFactory();
-                if (previousValue != null) {
-                    persistenceUnitInfo.getProperties().setProperty("hibernate.hbm2ddl.auto", previousValue);
-                }
-            }
-        }
+    public Metadata getConfiguration() {
         return configuration;
+    }
+
+    public void setConfiguration(Metadata configuration) {
+        this.configuration = configuration;
     }
 
     public PersistenceUnitInfo getPersistenceUnitInfo() {

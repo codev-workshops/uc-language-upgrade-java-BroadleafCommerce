@@ -21,8 +21,8 @@ package org.broadleafcommerce.common.util;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.type.Type;
 
 import java.util.ArrayList;
@@ -74,16 +74,17 @@ public class UpdateExecutor {
         List<Long[]> runs = buildRuns(ids);
         for (Long[] run : runs) {
             String queryString = String.format(template, buildInClauseTemplate(run.length));
-            SQLQuery query = em.unwrap(Session.class).createSQLQuery(queryString);
-            int counter = 0;
+            NativeQuery query = em.unwrap(Session.class).createNativeQuery(queryString);
+            // Hibernate 6 native queries use 1-based ordinal parameters (Hibernate 4 SQLQuery was 0-based).
+            int counter = 1;
             if (!ArrayUtils.isEmpty(params)) {
                 for (Object param : params) {
-                    query.setParameter(counter, param, types[counter]);
+                    query.setParameter(counter, param);
                     counter++;
                 }
             }
             for (Long id : run) {
-                query.setLong(counter, id);
+                query.setParameter(counter, id);
                 counter++;
             }
             response += query.executeUpdate();

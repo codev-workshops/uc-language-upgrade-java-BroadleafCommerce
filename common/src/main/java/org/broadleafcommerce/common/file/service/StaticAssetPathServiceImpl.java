@@ -20,7 +20,6 @@
 package org.broadleafcommerce.common.file.service;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.velocity.tools.view.ImportSupport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -160,7 +159,7 @@ public class StaticAssetPathServiceImpl implements StaticAssetPathService {
                 returnValue = envPrefix + returnValue;
             }
         } else {
-            if (returnValue != null && ! ImportSupport.isAbsoluteUrl(returnValue)) {
+            if (returnValue != null && ! isAbsoluteUrl(returnValue)) {
                 if (! returnValue.startsWith("/")) {
                     returnValue = "/" + returnValue;
                 }
@@ -242,6 +241,18 @@ public class StaticAssetPathServiceImpl implements StaticAssetPathService {
             urlPrefix = urlPrefix + "/";
         }
         return urlPrefix;
+    }
+
+    /**
+     * Determines whether the given URL is absolute (i.e. it begins with a scheme such as {@code http:}). This
+     * replaces {@code org.apache.velocity.tools.view.ImportSupport#isAbsoluteUrl(String)}, which is no longer
+     * available on the classpath after the velocity-tools upgrade.
+     */
+    protected boolean isAbsoluteUrl(String url) {
+        if (url == null) {
+            return false;
+        }
+        return url.matches("^[a-zA-Z][a-zA-Z0-9+.\\-]*:.*$");
     }
 
 }
