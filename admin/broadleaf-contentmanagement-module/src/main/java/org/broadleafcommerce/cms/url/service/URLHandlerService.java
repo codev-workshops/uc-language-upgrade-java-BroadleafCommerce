@@ -19,7 +19,6 @@
  */
 package org.broadleafcommerce.cms.url.service;
 
-import net.sf.ehcache.Cache;
 
 import java.util.List;
 

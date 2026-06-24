@@ -19,7 +19,7 @@
  */
 package org.broadleafcommerce.cms.web;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 
 /**

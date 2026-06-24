@@ -19,9 +19,10 @@
  */
 package org.broadleafcommerce.cms.page.service;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.MutableConfiguration;
 
 import org.apache.commons.beanutils.BeanComparator;
 import org.apache.commons.logging.Log;
@@ -53,7 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * Created by bpolster.
@@ -195,9 +196,9 @@ public class PageServiceImpl implements PageService {
     @Override
     @SuppressWarnings("unchecked")
     public void removePageFromCache(String key) {
-        Element e = getPageMapCache().get(key);
-        if (e != null && e.getObjectValue() != null) {
-            List<String> keys = (List<String>) e.getObjectValue();
+        Object e = getPageMapCache().get(key);
+        if (e != null) {
+            List<String> keys = (List<String>) e;
             for (String k : keys) {
                 getPageCache().remove(k);
             }
@@ -292,7 +293,7 @@ public class PageServiceImpl implements PageService {
     @Override
     public Cache getPageCache() {
         if (pageCache == null) {
-            pageCache = CacheManager.getInstance().getCache("cmsPageCache");
+            pageCache = lookupCache("cmsPageCache");
         }
         return pageCache;
     }
@@ -300,9 +301,19 @@ public class PageServiceImpl implements PageService {
     @Override
     public Cache getPageMapCache() {
         if (pageMapCache == null) {
-            pageMapCache = CacheManager.getInstance().getCache("cmsPageMapCache");
+            pageMapCache = lookupCache("cmsPageMapCache");
         }
         return pageMapCache;
+    }
+
+    protected Cache<Object, Object> lookupCache(String cacheName) {
+        CacheManager cacheManager = Caching.getCachingProvider().getCacheManager();
+        Cache<Object, Object> cache = cacheManager.getCache(cacheName);
+        if (cache == null) {
+            cache = cacheManager.createCache(cacheName,
+                    new MutableConfiguration<Object, Object>().setStoreByValue(false));
+        }
+        return cache;
     }
 
     protected String buildKey(SandBox sandBox, Page page) {
@@ -313,7 +324,7 @@ public class PageServiceImpl implements PageService {
     }
 
     protected void addPageListToCache(List<PageDTO> pageList, String key, String uri, Long sandBox, Long site) {
-        getPageCache().put(new Element(key, pageList));
+        getPageCache().put(key, pageList);
         
         addPageMapCacheEntry(key, uri, sandBox, site);
         if (site != null) {
@@ -325,13 +336,13 @@ public class PageServiceImpl implements PageService {
     protected void addPageMapCacheEntry(String keyToStore, String uri, Long sandBox, Long site) {
         String key = getPageMapCacheKey(uri, sandBox, site);
 
-        Element e = getPageMapCache().get(key);
-        if (e == null || e.getObjectValue() == null) {
+        Object e = getPageMapCache().get(key);
+        if (e == null) {
             List<String> keys = new ArrayList<String>();
             keys.add(keyToStore);
-            getPageMapCache().put(new Element(key, keys));
+            getPageMapCache().put(key, keys);
         } else {
-            ((List<String>) e.getObjectValue()).add(keyToStore);
+            ((List<String>) e).add(keyToStore);
         }
     }
     
@@ -341,10 +352,10 @@ public class PageServiceImpl implements PageService {
     }
 
     protected List<PageDTO> getPageListFromCache(String key) {
-        Element cacheElement = getPageCache().get(key);
-        if (cacheElement != null && cacheElement.getValue() != null) {
+        Object cacheElement = getPageCache().get(key);
+        if (cacheElement != null) {
             statisticsService.addCacheStat(CacheStatType.PAGE_CACHE_HIT_RATE.toString(), true);
-            return (List<PageDTO>) cacheElement.getValue();
+            return (List<PageDTO>) cacheElement;
         }
         statisticsService.addCacheStat(CacheStatType.PAGE_CACHE_HIT_RATE.toString(), false);
         return null;

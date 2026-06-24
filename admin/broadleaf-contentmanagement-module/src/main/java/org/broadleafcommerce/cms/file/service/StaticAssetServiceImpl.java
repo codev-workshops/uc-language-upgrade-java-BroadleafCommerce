@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import eu.medsea.mimeutil.MimeType;
 import eu.medsea.mimeutil.MimeUtil;

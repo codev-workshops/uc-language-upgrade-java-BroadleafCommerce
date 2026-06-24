@@ -19,7 +19,7 @@
  */
 package org.broadleafcommerce.cms.page.service;
 
-import net.sf.ehcache.Cache;
+import javax.cache.Cache;
 
 import org.broadleafcommerce.cms.page.domain.Page;
 import org.broadleafcommerce.cms.page.domain.PageField;

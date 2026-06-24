@@ -19,9 +19,10 @@
  */
 package org.broadleafcommerce.cms.structure.service;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.MutableConfiguration;
 
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -56,8 +57,6 @@ import org.broadleafcommerce.common.structure.dto.ItemCriteriaDTO;
 import org.broadleafcommerce.common.structure.dto.StructuredContentDTO;
 import org.broadleafcommerce.common.util.FormatUtil;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Projections;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -69,7 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * @author bpolster
@@ -129,19 +128,8 @@ public class StructuredContentServiceImpl implements StructuredContentService {
     }
 
     @Override
-    public List<StructuredContent> findContentItems(Criteria c) {
-        return c.list();
-    }
-
-    @Override
     public List<StructuredContent> findAllContentItems() {
         return structuredContentDao.findAllContentItems();
-    }
-
-    @Override
-    public Long countContentItems(Criteria c) {
-        c.setProjection(Projections.rowCount());
-        return (Long) c.uniqueResult();
     }
 
     /**
@@ -444,7 +432,12 @@ public class StructuredContentServiceImpl implements StructuredContentService {
     @Override
     public Cache getStructuredContentCache() {
         if (structuredContentCache == null) {
-            structuredContentCache = CacheManager.getInstance().getCache("cmsStructuredContentCache");
+            CacheManager cacheManager = Caching.getCachingProvider().getCacheManager();
+            structuredContentCache = cacheManager.getCache("cmsStructuredContentCache");
+            if (structuredContentCache == null) {
+                structuredContentCache = cacheManager.createCache("cmsStructuredContentCache",
+                        new MutableConfiguration<Object, Object>().setStoreByValue(false));
+            }
         }
         return structuredContentCache;
     }
@@ -718,19 +711,19 @@ public class StructuredContentServiceImpl implements StructuredContentService {
 
     @Override
     public void addStructuredContentListToCache(String key, List<StructuredContentDTO> scDTOList) {
-        getStructuredContentCache().put(new Element(key, scDTOList));
+        getStructuredContentCache().put(key, scDTOList);
     }
 
     protected void addSingleStructuredContentToCache(String key, StructuredContentDTO scDTO) {
-        getStructuredContentCache().put(new Element(key, scDTO));
+        getStructuredContentCache().put(key, scDTO);
     }
 
     protected StructuredContentDTO getSingleStructuredContentFromCache(String key) {
-        Element scElement = getStructuredContentCache().get(key);
+        Object scElement = getStructuredContentCache().get(key);
 
         if (scElement != null) {
             statisticsService.addCacheStat(CacheStatType.STRUCTURED_CONTENT_CACHE_HIT_RATE.toString(), true);
-            return (StructuredContentDTO) scElement.getValue();
+            return (StructuredContentDTO) scElement;
         }
 
         statisticsService.addCacheStat(CacheStatType.STRUCTURED_CONTENT_CACHE_HIT_RATE.toString(), false);
@@ -740,12 +733,12 @@ public class StructuredContentServiceImpl implements StructuredContentService {
 
     @Override
     public List<StructuredContentDTO> getStructuredContentListFromCache(String key) {
-        Element scElement = getStructuredContentCache().get(key);
+        Object scElement = getStructuredContentCache().get(key);
 
         if (scElement != null) {
             statisticsService.addCacheStat(CacheStatType.STRUCTURED_CONTENT_CACHE_HIT_RATE.toString(), true);
 
-            return (List<StructuredContentDTO>) scElement.getObjectValue();
+            return (List<StructuredContentDTO>) scElement;
         }
 
         statisticsService.addCacheStat(CacheStatType.STRUCTURED_CONTENT_CACHE_HIT_RATE.toString(), false);
