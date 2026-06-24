@@ -19,7 +19,7 @@
  */
 package org.broadleafcommerce.openadmin.server.service.persistence.datasource;
 
-import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.InvocationTargetException;

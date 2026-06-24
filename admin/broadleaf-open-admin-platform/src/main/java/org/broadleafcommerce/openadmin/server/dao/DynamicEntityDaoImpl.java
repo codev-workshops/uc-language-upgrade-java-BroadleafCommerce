@@ -47,10 +47,8 @@ import org.broadleafcommerce.openadmin.server.service.AppConfigurationService;
 import org.broadleafcommerce.openadmin.server.service.persistence.module.FieldManager;
 import org.broadleafcommerce.openadmin.server.service.persistence.validation.FieldNamePropertyValidator;
 import org.broadleafcommerce.openadmin.server.service.type.FieldProviderResponse;
-import org.hibernate.Criteria;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
-import org.hibernate.ejb.HibernateEntityManager;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.type.ComponentType;
@@ -83,8 +81,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
 
 /**
  * 
@@ -152,11 +150,6 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
     }
 
     @Override
-    public Criteria createCriteria(Class<?> entityClass) {
-        return ((HibernateEntityManager) getStandardEntityManager()).getSession().createCriteria(entityClass);
-    }
-    
-    @Override
     public <T> T persist(T entity) {
         standardEntityManager.persist(entity);
         standardEntityManager.flush();
@@ -208,7 +201,7 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
 
     @Override
     public PersistentClass getPersistentClass(String targetClassName) {
-        return ejb3ConfigurationDao.getConfiguration().getClassMapping(targetClassName);
+        return ejb3ConfigurationDao.getConfiguration().getEntityBinding(targetClassName);
     }
 
     @Override
@@ -813,22 +806,22 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
 
     @Override
     public SessionFactory getSessionFactory() {
-        return dynamicDaoHelper.getSessionFactory((HibernateEntityManager) standardEntityManager);
+        return dynamicDaoHelper.getSessionFactory(standardEntityManager);
     }
 
     @Override
     public Map<String, Object> getIdMetadata(Class<?> entityClass) {
-        return dynamicDaoHelper.getIdMetadata(entityClass, (HibernateEntityManager) standardEntityManager);
+        return dynamicDaoHelper.getIdMetadata(entityClass, standardEntityManager);
     }
 
     @Override
     public List<String> getPropertyNames(Class<?> entityClass) {
-        return dynamicDaoHelper.getPropertyNames(entityClass, (HibernateEntityManager) standardEntityManager);
+        return dynamicDaoHelper.getPropertyNames(entityClass, standardEntityManager);
     }
 
     @Override
     public List<Type> getPropertyTypes(Class<?> entityClass) {
-        return dynamicDaoHelper.getPropertyTypes(entityClass, (HibernateEntityManager) standardEntityManager);
+        return dynamicDaoHelper.getPropertyTypes(entityClass, standardEntityManager);
     }
 
     protected Map<String, FieldMetadata> getPropertiesForEntityClass(
@@ -864,12 +857,10 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
         propertyTypes.add(idType);
 
         PersistentClass persistentClass = getPersistentClass(targetClass.getName());
-        Iterator testIter = persistentClass.getPropertyIterator();
         List<Property> propertyList = new ArrayList<>();
 
         //check the properties for problems
-        while(testIter.hasNext()) {
-            Property property = (Property) testIter.next();
+        for (Property property : persistentClass.getProperties()) {
             if (property.getName().contains(".")) {
                 throw new IllegalArgumentException("Properties from entities that utilize a period character ('.') in their name are incompatible with this system. The property name in question is: (" + property.getName() + ") from the class: (" + targetClass.getName() + ")");
             }
@@ -1323,11 +1314,8 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
         } catch (MappingException e) {
             property = persistentClass.getProperty(prefix + propertyName);
         }
-        Iterator componentPropertyIterator = ((org.hibernate.mapping.Component) property.getValue()).getPropertyIterator();
-        List<Property> componentPropertyList = new ArrayList<>();
-        while(componentPropertyIterator.hasNext()) {
-            componentPropertyList.add((Property) componentPropertyIterator.next());
-        }
+        List<Property> componentPropertyList = new ArrayList<>(
+                ((org.hibernate.mapping.Component) property.getValue()).getProperties());
         Map<String, FieldMetadata> newFields = new HashMap<>();
         buildProperties(
             targetClass,

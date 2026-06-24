@@ -38,7 +38,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import java.io.IOException;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * Commonality shared between {@link RuleFieldPersistenceProvider} and {@link RuleFieldValidator}

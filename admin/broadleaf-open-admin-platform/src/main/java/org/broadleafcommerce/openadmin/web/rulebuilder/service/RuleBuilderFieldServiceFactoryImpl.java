@@ -21,7 +21,7 @@ package org.broadleafcommerce.openadmin.web.rulebuilder.service;
 
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 
 /**

@@ -101,9 +101,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.Resource;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
+import jakarta.annotation.Resource;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 
 
 /**

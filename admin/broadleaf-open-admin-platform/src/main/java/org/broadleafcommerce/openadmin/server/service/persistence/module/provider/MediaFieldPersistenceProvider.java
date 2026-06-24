@@ -57,8 +57,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
-import javax.persistence.OneToMany;
+import jakarta.annotation.Resource;
+import jakarta.persistence.OneToMany;
 
 /**
  * @author Brian Polster

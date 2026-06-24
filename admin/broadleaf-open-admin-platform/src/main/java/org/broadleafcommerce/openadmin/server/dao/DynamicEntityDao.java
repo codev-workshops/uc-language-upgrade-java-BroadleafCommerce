@@ -29,7 +29,6 @@ import org.broadleafcommerce.openadmin.dto.MergedPropertyType;
 import org.broadleafcommerce.openadmin.dto.PersistencePerspective;
 import org.broadleafcommerce.openadmin.server.dao.provider.metadata.FieldMetadataProvider;
 import org.broadleafcommerce.openadmin.server.service.persistence.module.FieldManager;
-import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.type.Type;
@@ -40,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * 
@@ -115,8 +114,6 @@ public interface DynamicEntityDao {
     List<Type> getPropertyTypes(Class<?> entityClass);
 
     List<String> getPropertyNames(Class<?> entityClass);
-
-    Criteria createCriteria(Class<?> entityClass);
 
     Field[] getAllFields(Class<?> targetClass);
 

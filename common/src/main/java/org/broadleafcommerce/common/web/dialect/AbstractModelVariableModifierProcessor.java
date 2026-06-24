@@ -49,7 +49,11 @@ public abstract class AbstractModelVariableModifierProcessor extends AbstractEle
     }
 
     public AbstractModelVariableModifierProcessor(String elementName, int precedence) {
-        super(TemplateMode.HTML, DIALECT_PREFIX, elementName, true, null, false, precedence);
+        this(DIALECT_PREFIX, elementName, precedence);
+    }
+
+    public AbstractModelVariableModifierProcessor(String dialectPrefix, String elementName, int precedence) {
+        super(TemplateMode.HTML, dialectPrefix, elementName, true, null, false, precedence);
     }
 
     @Override

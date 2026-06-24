@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 
 /**

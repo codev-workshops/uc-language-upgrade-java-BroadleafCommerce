@@ -28,10 +28,11 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * A Thymeleaf processor that will add the appropriate AdminUser to the model.
@@ -47,22 +48,17 @@ public class AdminUserProcessor extends AbstractModelVariableModifierProcessor {
     protected AdminSecurityService securityService;
 
     public AdminUserProcessor() {
-        super("admin_user");
+        super("blc_admin", "admin_user", 10000);
     }
 
     @Override
-    protected void modifyModelAttributes(Arguments arguments, Element element) {
-        String resultVar = element.getAttributeValue("resultVar");
+    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        String resultVar = tag.getAttributeValue("resultVar");
 
         AdminUser user = getPersistentAdminUser();
         if (user != null) {
-            addToModel(arguments, resultVar, user);
+            addToModel(structureHandler, resultVar, user);
         }
-    }
-
-    @Override
-    public int getPrecedence() {
-        return 10000;
     }
 
     protected AdminUser getPersistentAdminUser() {

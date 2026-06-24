@@ -29,7 +29,6 @@ import org.broadleafcommerce.openadmin.server.service.persistence.PersistenceMan
 import org.broadleafcommerce.openadmin.server.service.persistence.PersistenceManagerFactory;
 import org.broadleafcommerce.openadmin.server.service.persistence.TargetModeType;
 import org.hibernate.SessionFactory;
-import org.hibernate.ejb.HibernateEntityManager;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -40,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * 
@@ -69,7 +68,7 @@ public class FieldManager {
     public Field getField(Class<?> clazz, String fieldName) throws IllegalStateException {
         PersistenceManager persistenceManager = getPersistenceManager();
         SessionFactory sessionFactory = persistenceManager.getDynamicEntityDao().getDynamicDaoHelper().
-                getSessionFactory((HibernateEntityManager) persistenceManager.getDynamicEntityDao().getStandardEntityManager());
+                getSessionFactory(persistenceManager.getDynamicEntityDao().getStandardEntityManager());
         BLCFieldUtils fieldUtils = new BLCFieldUtils(sessionFactory, true, persistenceManager.getDynamicEntityDao().useCache(),
                 persistenceManager.getDynamicEntityDao().getEjb3ConfigurationDao(), entityConfiguration,
                 persistenceManager.getDynamicEntityDao().getDynamicDaoHelper());
