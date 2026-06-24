@@ -22,7 +22,7 @@ package org.broadleafcommerce.common.payment.service;
 
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
 
 /**

@@ -36,7 +36,7 @@ import org.springframework.web.servlet.resource.ResourceTransformerChain;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Wraps Spring's {@link CachingResourceResolver} but adds in support to disable with 

@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * The purpose for this class is to provide an alternate approach to an HQL UPDATE query for batch updates on Hibernate filtered

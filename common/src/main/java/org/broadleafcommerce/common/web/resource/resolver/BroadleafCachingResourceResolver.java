@@ -36,7 +36,7 @@ import org.springframework.web.servlet.resource.ResourceResolverChain;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * A ResourceResolver that handles using the theme as part of the cache key and adds in

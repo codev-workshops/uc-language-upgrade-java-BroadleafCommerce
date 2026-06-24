@@ -34,8 +34,8 @@ import org.thymeleaf.standard.expression.StandardExpressions;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 
 
 /**

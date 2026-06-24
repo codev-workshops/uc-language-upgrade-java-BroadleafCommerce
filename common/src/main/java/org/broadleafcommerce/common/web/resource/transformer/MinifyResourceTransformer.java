@@ -29,7 +29,7 @@ import org.springframework.web.servlet.resource.ResourceTransformerChain;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * A {@link org.springframework.web.servlet.resource.ResourceTransformer} that minifies

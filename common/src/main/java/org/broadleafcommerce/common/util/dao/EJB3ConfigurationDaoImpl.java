@@ -23,7 +23,7 @@ import org.hibernate.ejb.Ejb3Configuration;
 
 import java.util.HashMap;
 
-import javax.persistence.spi.PersistenceUnitInfo;
+import jakarta.persistence.spi.PersistenceUnitInfo;
 
 /**
  * 

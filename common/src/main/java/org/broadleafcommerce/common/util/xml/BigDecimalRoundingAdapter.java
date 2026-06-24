@@ -19,7 +19,7 @@
  */
 package org.broadleafcommerce.common.util.xml;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 

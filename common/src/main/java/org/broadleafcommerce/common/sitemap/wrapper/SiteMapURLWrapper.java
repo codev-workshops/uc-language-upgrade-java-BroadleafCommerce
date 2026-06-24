@@ -27,9 +27,9 @@ import org.broadleafcommerce.common.util.FormatUtil;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * Representation of SiteMapURLEntry that can be used to generate an XML element.

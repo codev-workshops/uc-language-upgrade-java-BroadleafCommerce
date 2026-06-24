@@ -31,7 +31,7 @@ import org.springframework.web.servlet.resource.ResourceResolverChain;
 import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * A {@code ResourceResolver} that is used to serve previously bundled files.
