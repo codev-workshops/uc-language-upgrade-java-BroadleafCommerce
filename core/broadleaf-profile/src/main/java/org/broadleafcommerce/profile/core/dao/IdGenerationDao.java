@@ -19,7 +19,7 @@
  */
 package org.broadleafcommerce.profile.core.dao;
 
-import javax.persistence.OptimisticLockException;
+import jakarta.persistence.OptimisticLockException;
 
 import org.broadleafcommerce.profile.core.domain.IdGeneration;
 

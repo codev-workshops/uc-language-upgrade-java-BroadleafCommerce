@@ -23,15 +23,15 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.broadleafcommerce.common.persistence.EntityConfiguration;
 import org.broadleafcommerce.profile.core.domain.Customer;
 import org.broadleafcommerce.profile.core.domain.CustomerImpl;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.QueryHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 @Repository("blCustomerDao")
 public class CustomerDaoImpl implements CustomerDao {

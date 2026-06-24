@@ -26,7 +26,7 @@ import org.broadleafcommerce.common.email.service.info.EmailInfo;
 import org.broadleafcommerce.common.security.util.PasswordReset;
 import org.broadleafcommerce.profile.core.domain.Customer;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
