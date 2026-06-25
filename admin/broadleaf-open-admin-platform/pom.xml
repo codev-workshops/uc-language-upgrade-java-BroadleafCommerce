@@ -90,8 +90,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!-- Surefire 3 runs on the JUnit Platform (pulled in by Spock 2). Include the JUnit
+                         *Test classes alongside the Spock *Spec classes so both are discovered. -->
                     <includes>
                         <include>**/*Spec*</include>
+                        <include>**/*Test*</include>
                     </includes>
                     <excludes>
                         <exclude>**/browsertest/**</exclude>
@@ -206,7 +209,7 @@
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
+            <artifactId>javax.servlet-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -226,8 +229,8 @@
             <artifactId>spring-security-config</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -239,6 +242,18 @@
         <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!--
+            The existing JUnit test (RuleFieldPersistenceProviderTest) is JUnit 4. Surefire 3 runs on the
+            JUnit Platform (pulled in by Spock 2), so the JUnit Vintage engine is required for the legacy
+            JUnit tests to be discovered and executed. Version is pinned to align with junit-platform 1.9.x
+            (not managed in the root pom).
+        -->
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>5.9.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

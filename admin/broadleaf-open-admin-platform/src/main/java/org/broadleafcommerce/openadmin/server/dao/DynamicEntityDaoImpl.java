@@ -208,7 +208,7 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
 
     @Override
     public PersistentClass getPersistentClass(String targetClassName) {
-        return ejb3ConfigurationDao.getConfiguration().getClassMapping(targetClassName);
+        return ejb3ConfigurationDao.getConfiguration().getEntityBinding(targetClassName);
     }
 
     @Override
