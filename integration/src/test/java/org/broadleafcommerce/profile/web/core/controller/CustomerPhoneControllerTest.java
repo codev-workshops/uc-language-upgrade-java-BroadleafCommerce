@@ -48,7 +48,7 @@ public class CustomerPhoneControllerTest extends BaseTest {
     @Resource
     private CustomerService customerService;
     private final List<Long> createdCustomerPhoneIds = new ArrayList<Long>();
-    private final Long userId = 1L;
+    private Long userId;
     private MockHttpServletRequest request;
     private static final String SUCCESS = "customerPhones";
 
@@ -58,6 +58,13 @@ public class CustomerPhoneControllerTest extends BaseTest {
     public void createCustomerPhoneFromController(PhoneNameForm phoneNameForm) {
         BindingResult errors = new BeanPropertyBindingResult(phoneNameForm, "phoneNameForm");
 
+        if (userId == null) {
+            Customer newCustomer = customerService.createCustomerFromId(null);
+            newCustomer.setUsername("customerPhoneControllerCustomer");
+            newCustomer.setPassword("password");
+            userId = customerService.saveCustomer(newCustomer).getId();
+        }
+
         Customer customer = customerService.readCustomerById(userId);
         request = this.getNewServletInstance();
         request.setAttribute(CustomerStateRequestProcessor.getCustomerRequestAttributeName(), customer);
@@ -65,7 +72,7 @@ public class CustomerPhoneControllerTest extends BaseTest {
         String view = customerPhoneController.savePhone(phoneNameForm, errors, request, null, null);
         assert (view.indexOf(SUCCESS) >= 0);
 
-        List<CustomerPhone> phones = customerPhoneService.readAllCustomerPhonesByCustomerId(1L);
+        List<CustomerPhone> phones = customerPhoneService.readAllCustomerPhonesByCustomerId(userId);
 
         boolean inPhoneList = false;
 
@@ -86,7 +93,7 @@ public class CustomerPhoneControllerTest extends BaseTest {
     @Transactional
     public void makePhoneDefaultOnCustomerPhoneController() {
         Long nonDefaultPhoneId = null;
-        List<CustomerPhone> phones_1 = customerPhoneService.readAllCustomerPhonesByCustomerId(1L);
+        List<CustomerPhone> phones_1 = customerPhoneService.readAllCustomerPhonesByCustomerId(userId);
 
         for (CustomerPhone p : phones_1) {
             if (!p.getPhone().isDefault()) {
@@ -100,7 +107,7 @@ public class CustomerPhoneControllerTest extends BaseTest {
         String view = customerPhoneController.makePhoneDefault(nonDefaultPhoneId, request);
         assert (view.indexOf("viewPhone") >= 0);
 
-        List<CustomerPhone> phones = customerPhoneService.readAllCustomerPhonesByCustomerId(1L);
+        List<CustomerPhone> phones = customerPhoneService.readAllCustomerPhonesByCustomerId(userId);
 
         for (CustomerPhone p : phones) {
             if (p.getId() == nonDefaultPhoneId) {
@@ -114,7 +121,7 @@ public class CustomerPhoneControllerTest extends BaseTest {
     @Test(groups = "readCustomerPhoneFromController", dependsOnGroups = "createCustomerPhoneFromController")
     @Transactional
     public void readCustomerPhoneFromController() {
-        List<CustomerPhone> phones_1 = customerPhoneService.readAllCustomerPhonesByCustomerId(1L);
+        List<CustomerPhone> phones_1 = customerPhoneService.readAllCustomerPhonesByCustomerId(userId);
         int phones_1_size = phones_1.size();
 
         request = this.getNewServletInstance();
@@ -122,7 +129,7 @@ public class CustomerPhoneControllerTest extends BaseTest {
         String view = customerPhoneController.deletePhone(createdCustomerPhoneIds.get(0), request);
         assert (view.indexOf("viewPhone") >= 0);
 
-        List<CustomerPhone> phones_2 = customerPhoneService.readAllCustomerPhonesByCustomerId(1L);
+        List<CustomerPhone> phones_2 = customerPhoneService.readAllCustomerPhonesByCustomerId(userId);
         assert ((phones_1_size - phones_2.size()) == 1);
     }
 
@@ -142,7 +149,7 @@ public class CustomerPhoneControllerTest extends BaseTest {
     @Test(groups = "viewExistingCustomerPhoneFromController", dependsOnGroups = "createCustomerPhoneFromController")
     @Transactional
     public void viewExistingCustomerPhoneFromController() {
-        List<CustomerPhone> phones_1 = customerPhoneService.readAllCustomerPhonesByCustomerId(1L);
+        List<CustomerPhone> phones_1 = customerPhoneService.readAllCustomerPhonesByCustomerId(userId);
         PhoneNameForm pnf = new PhoneNameForm();
 
         BindingResult errors = new BeanPropertyBindingResult(pnf, "phoneNameForm");

@@ -57,6 +57,7 @@ public class OrderTest extends OrderBaseTest {
     private Long orderId = null;
     private int numOrderItems = 0;
     private Long bundleOrderItemId;
+    private String orderTestUsername;
 
     @Resource(name = "blOrderItemService")
     private OrderItemService orderItemService;
@@ -74,8 +75,8 @@ public class OrderTest extends OrderBaseTest {
     @Transactional
     @Rollback(false)
     public void createCartForCustomer() {
-        String userName = "customer1";
-        Customer customer = customerService.readCustomerByUsername(userName);
+        Customer customer = customerService.saveCustomer(createNamedCustomer());
+        this.orderTestUsername = customer.getUsername();
 
         Order order = orderService.createNewCartForCustomer(customer);
         assert order != null;
@@ -87,8 +88,7 @@ public class OrderTest extends OrderBaseTest {
     @Transactional
     @Rollback(false)
     public void findCurrentCartForCustomer() {
-        String userName = "customer1";
-        Customer customer = customerService.readCustomerByUsername(userName);
+        Customer customer = customerService.readCustomerByUsername(orderTestUsername);
 
         Order order = orderService.findCartForCustomer(customer);
         assert order != null;
@@ -645,8 +645,7 @@ public class OrderTest extends OrderBaseTest {
     @Test(groups = { "getOrdersForCustomer" }, dependsOnGroups = { "readCustomer", "findCurrentCartForCustomer" })
     @Transactional
     public void getOrdersForCustomer() {
-        String username = "customer1";
-        Customer customer = customerService.readCustomerByUsername(username);
+        Customer customer = customerService.readCustomerByUsername(orderTestUsername);
         List<Order> orders = orderService.findOrdersForCustomer(customer);
         assert orders != null;
         assert orders.size() > 0;
@@ -757,10 +756,10 @@ public class OrderTest extends OrderBaseTest {
     @Transactional
     public void addPaymentToOrder(OrderPayment paymentInfo) {
         Order order = orderService.findOrderById(orderId);
-        orderService.addPaymentToOrder(order, paymentInfo, null);
+        OrderPayment addedPayment = orderService.addPaymentToOrder(order, paymentInfo, null);
 
         order = orderService.findOrderById(orderId);
-        OrderPayment payment = order.getPayments().get(order.getPayments().indexOf(paymentInfo));
+        OrderPayment payment = order.getPayments().get(order.getPayments().indexOf(addedPayment));
         assert payment != null;
         assert payment.getOrder() != null;
         assert payment.getOrder().equals(order);
