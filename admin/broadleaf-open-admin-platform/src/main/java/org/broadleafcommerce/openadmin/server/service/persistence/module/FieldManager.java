@@ -29,7 +29,7 @@ import org.broadleafcommerce.openadmin.server.service.persistence.PersistenceMan
 import org.broadleafcommerce.openadmin.server.service.persistence.PersistenceManagerFactory;
 import org.broadleafcommerce.openadmin.server.service.persistence.TargetModeType;
 import org.hibernate.SessionFactory;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.jpa.HibernateEntityManager;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;

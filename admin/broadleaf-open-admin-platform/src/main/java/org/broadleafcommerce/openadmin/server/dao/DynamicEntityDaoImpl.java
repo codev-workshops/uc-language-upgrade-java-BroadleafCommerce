@@ -50,7 +50,7 @@ import org.broadleafcommerce.openadmin.server.service.type.FieldProviderResponse
 import org.hibernate.Criteria;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.jpa.HibernateEntityManager;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.type.ComponentType;
@@ -208,7 +208,7 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
 
     @Override
     public PersistentClass getPersistentClass(String targetClassName) {
-        return ejb3ConfigurationDao.getConfiguration().getClassMapping(targetClassName);
+        return ejb3ConfigurationDao.getMetadata().getEntityBinding(targetClassName);
     }
 
     @Override

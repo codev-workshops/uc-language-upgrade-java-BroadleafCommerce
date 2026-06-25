@@ -42,6 +42,10 @@ public abstract class AbstractModelVariableModifierProcessor extends AbstractEle
         super(TemplateMode.HTML, dialectPrefix, elementName, true, null, false, 1000);
     }
 
+    public AbstractModelVariableModifierProcessor(String dialectPrefix, String elementName, int precedence) {
+        super(TemplateMode.HTML, dialectPrefix, elementName, true, null, false, precedence);
+    }
+
     @Override
     protected void doProcess(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
         modifyModelAttributes(context, tag, structureHandler);

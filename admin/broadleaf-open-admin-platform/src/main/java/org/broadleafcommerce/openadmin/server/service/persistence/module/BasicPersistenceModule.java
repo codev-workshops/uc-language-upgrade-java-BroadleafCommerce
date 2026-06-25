@@ -306,9 +306,9 @@ public class BasicPersistenceModule implements PersistenceModule, RecordHelper, 
             }
         });
         Session session = getPersistenceManager().getDynamicEntityDao().getStandardEntityManager().unwrap(Session.class);
-        FlushMode originalFlushMode = session.getFlushMode();
+        FlushMode originalFlushMode = session.getHibernateFlushMode();
         try {
-            session.setFlushMode(FlushMode.MANUAL);
+            session.setHibernateFlushMode(FlushMode.MANUAL);
             RuntimeException entityPersistenceException = null;
             for (Property property : sortedProperties) {
                 BasicFieldMetadata metadata = (BasicFieldMetadata) mergedProperties.get(property.getName());
@@ -426,7 +426,7 @@ public class BasicPersistenceModule implements PersistenceModule, RecordHelper, 
         } catch (InstantiationException e) {
             throw new PersistenceException(e);
         } finally {
-            session.setFlushMode(originalFlushMode);
+            session.setHibernateFlushMode(originalFlushMode);
         }
         return instance;
     }

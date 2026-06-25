@@ -23,14 +23,14 @@ import org.broadleafcommerce.openadmin.web.rulebuilder.dto.FieldWrapper;
 import org.broadleafcommerce.openadmin.web.rulebuilder.service.RuleBuilderFieldService;
 import org.broadleafcommerce.openadmin.web.rulebuilder.service.RuleBuilderFieldServiceFactory;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.element.AbstractLocalVariableDefinitionElementProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
+import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import javax.annotation.Resource;
 
@@ -38,30 +38,24 @@ import javax.annotation.Resource;
  * @author Elbert Bautista (elbertbautista)
  */
 @Component("blAdminFieldBuilderProcessor")
-public class AdminFieldBuilderProcessor extends AbstractLocalVariableDefinitionElementProcessor {
+public class AdminFieldBuilderProcessor extends AbstractElementTagProcessor {
 
     @Resource(name = "blRuleBuilderFieldServiceFactory")
     protected RuleBuilderFieldServiceFactory ruleBuilderFieldServiceFactory;
 
-    /**
-     * Sets the name of this processor to be used in Thymeleaf template
-     */
     public AdminFieldBuilderProcessor() {
-        super("admin_field_builder");
+        super(TemplateMode.HTML, "blc", "admin_field_builder", true, null, false, 100);
     }
 
     @Override
-    public int getPrecedence() {
-        return 100;
-    }
-
-    @Override
-    protected Map<String, Object> getNewLocalVariables(Arguments arguments, Element element) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag,
+            IElementTagStructureHandler structureHandler) {
         FieldWrapper fieldWrapper = new FieldWrapper();
         
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue("fieldBuilder"));
-        String fieldBuilder = (String) expression.execute(arguments.getConfiguration(), arguments);
+        String fieldBuilderValue = tag.getAttributeValue("fieldBuilder");
+        IStandardExpressionParser parser = StandardExpressions.getExpressionParser(context.getConfiguration());
+        IStandardExpression expression = parser.parseExpression(context, fieldBuilderValue);
+        String fieldBuilder = (String) expression.execute(context);
 
         if (fieldBuilder != null) {
             RuleBuilderFieldService ruleBuilderFieldService = ruleBuilderFieldServiceFactory.createInstance(fieldBuilder);
@@ -70,13 +64,7 @@ public class AdminFieldBuilderProcessor extends AbstractLocalVariableDefinitionE
             }
         }
         
-        Map<String, Object> newVars = new HashMap<String, Object>();
-        newVars.put("fieldWrapper", fieldWrapper);
-        return newVars;
-    }
-
-    @Override
-    protected boolean removeHostElement(Arguments arguments, Element element) {
-        return false;
+        structureHandler.setLocalVariable("fieldWrapper", fieldWrapper);
+        structureHandler.removeElement();
     }
 }

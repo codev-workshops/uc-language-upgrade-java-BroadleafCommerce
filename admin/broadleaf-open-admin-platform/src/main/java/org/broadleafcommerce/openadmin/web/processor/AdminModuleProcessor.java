@@ -29,8 +29,9 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
 
 import javax.annotation.Resource;
 
@@ -54,26 +55,18 @@ public class AdminModuleProcessor extends AbstractModelVariableModifierProcessor
     @Resource(name = "blAdminSecurityService")
     protected AdminSecurityService securityService;
 
-    /**
-     * Sets the name of this processor to be used in Thymeleaf template
-     */
     public AdminModuleProcessor() {
-        super("admin_module");
+        super("blc", "admin_module", 10001);
     }
 
     @Override
-    public int getPrecedence() {
-        return 10001;
-    }
-
-    @Override
-    protected void modifyModelAttributes(Arguments arguments, Element element) {
-        String resultVar = element.getAttributeValue("resultVar");
+    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        String resultVar = tag.getAttributeValue("resultVar");
 
         AdminUser user = getPersistentAdminUser();
         if (user != null) {
             AdminMenu menu = adminNavigationService.buildMenu(user);
-            addToModel(arguments, resultVar, menu);
+            addToModel(structureHandler, resultVar, menu);
         }
 
     }

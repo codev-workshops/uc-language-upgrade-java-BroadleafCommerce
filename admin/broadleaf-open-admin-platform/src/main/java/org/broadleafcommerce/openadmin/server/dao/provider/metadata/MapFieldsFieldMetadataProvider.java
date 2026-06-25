@@ -41,6 +41,7 @@ import org.broadleafcommerce.openadmin.server.service.type.FieldProviderResponse
 import org.hibernate.internal.TypeLocatorImpl;
 import org.hibernate.type.Type;
 import org.hibernate.type.TypeResolver;
+import org.hibernate.type.spi.TypeConfiguration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -128,7 +129,8 @@ public class MapFieldsFieldMetadataProvider extends DefaultFieldMetadataProvider
         //look for any map field metadata that was previously added for the requested field
         for (Map.Entry<String, FieldMetadata> entry : addMetadataFromFieldTypeRequest.getPresentationAttributes().entrySet()) {
             if (entry.getKey().startsWith(addMetadataFromFieldTypeRequest.getRequestedPropertyName() + FieldManager.MAPFIELDSEPARATOR)) {
-                TypeLocatorImpl typeLocator = new TypeLocatorImpl(new TypeResolver());
+                TypeConfiguration typeConfiguration = new TypeConfiguration();
+                TypeLocatorImpl typeLocator = new TypeLocatorImpl(typeConfiguration.getTypeResolver());
 
                 Type myType = null;
                 //first, check if an explicit type was declared
