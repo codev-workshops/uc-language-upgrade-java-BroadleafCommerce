@@ -54,19 +54,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <!--
-                    The root pom pins maven-compiler-plugin 3.1, which predates the <release> option (needs 3.6+).
-                    Override locally to a version that honours the release flag so common compiles against the JDK 17
-                    platform APIs. (Local override only; the root pom is untouched in this phase.)
-                -->
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
-                <configuration>
-                    <release>${java.version}</release>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <executions>
                     <execution>
