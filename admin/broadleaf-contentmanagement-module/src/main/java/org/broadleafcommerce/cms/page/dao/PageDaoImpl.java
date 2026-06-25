@@ -33,7 +33,7 @@ import org.broadleafcommerce.common.time.SystemTime;
 import org.broadleafcommerce.common.util.dao.TQRestriction;
 import org.broadleafcommerce.common.util.dao.TQRestriction.Mode;
 import org.broadleafcommerce.common.util.dao.TypedQueryBuilder;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.QueryHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
