@@ -20,8 +20,8 @@
 package org.broadleafcommerce.cms.web.processor;
 
 import org.broadleafcommerce.common.file.service.StaticAssetPathService;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,34 +50,19 @@ public class HrefUrlRewriteProcessor extends UrlRewriteProcessor {
     }
 
     @Override
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
+    protected Map<String, String> getModifiedAttributeValues(ITemplateContext context, IProcessableElementTag tag, String attributeValue) {
         Map<String, String> attrs = new HashMap<String, String>();
-        
-        String elementName = element.getNormalizedName();
-        String useCDN = element.getAttributeValue("useCDN");
+
+        String elementName = tag.getElementCompleteName();
+        String useCDN = tag.getAttributeValue("useCDN");
 
         if (LINK.equals(elementName) || (useCDN != null && "true".equals(useCDN))) {
-            attrs = super.getModifiedAttributeValues(arguments, element, attributeName);
+            attrs = super.getModifiedAttributeValues(context, tag, attributeValue);
             String srcAttr = attrs.remove("src");
             attrs.put(HREF, srcAttr);
         } else {
-            attrs.put(HREF, element.getAttributeValue(attributeName));
+            attrs.put(HREF, attributeValue);
         }
         return attrs;
-    }
-
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
     }
 }
