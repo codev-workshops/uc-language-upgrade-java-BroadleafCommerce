@@ -109,12 +109,19 @@
             <artifactId>easymock</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymockclassextension</artifactId>
-        </dependency>
-        <dependency>
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache</artifactId>
+        </dependency>
+        <!--
+            The existing tests are JUnit 4 (BatchRetrieveDaoTest). Surefire 3 runs on the JUnit Platform
+            (pulled in by Spock 2), so the JUnit Vintage engine is required for those legacy tests to be
+            discovered and executed. Version is pinned to align with junit-platform 1.9.x (not managed in the root pom).
+        -->
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>5.9.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
