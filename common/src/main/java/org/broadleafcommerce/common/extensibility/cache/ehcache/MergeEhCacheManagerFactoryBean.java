@@ -19,25 +19,24 @@
  */
 package org.broadleafcommerce.common.extensibility.cache.ehcache;
 
-import org.broadleafcommerce.common.extensibility.context.ResourceInputStream;
-import org.broadleafcommerce.common.extensibility.context.merge.MergeXmlConfigResource;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.FatalBeanException;
 import org.springframework.cache.jcache.JCacheManagerFactoryBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 
-import jakarta.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Merges multiple cache configuration locations into a single JCache configuration. Under Ehcache 2 this extended
- * Spring's {@code org.springframework.cache.ehcache.EhCacheManagerFactoryBean}; both that factory bean and the
- * Ehcache 2 {@code net.sf.ehcache.CacheManager} were removed when migrating to Ehcache 3 / JCache, so this now
- * extends {@link JCacheManagerFactoryBean} and supplies the merged configuration via its cache manager URI.
+ * Produces the JCache {@link javax.cache.CacheManager} used by Broadleaf. Under Ehcache 2 this extended Spring's
+ * {@code org.springframework.cache.ehcache.EhCacheManagerFactoryBean} and merged a set of Ehcache 2 XML config files
+ * into a single {@code net.sf.ehcache.CacheManager}. Both that factory bean and the Ehcache 2 config schema were
+ * removed when migrating to Ehcache 3 / JCache, and the legacy {@code bl-*-ehcache.xml} files are not valid Ehcache 3
+ * configuration. This now extends {@link JCacheManagerFactoryBean} and supplies the JCache provider's default
+ * {@code CacheManager}; individual cache regions are created on demand (see {@code AbstractCacheMissAware},
+ * {@code AbstractHydratedCacheManager} and the auto-creating {@code blSpringCacheManager}), mirroring the Ehcache 2
+ * {@code defaultCache} dynamic-creation behaviour.
  */
 public class MergeEhCacheManagerFactoryBean extends JCacheManagerFactoryBean implements ApplicationContextAware {
 
@@ -52,34 +51,6 @@ public class MergeEhCacheManagerFactoryBean extends JCacheManagerFactoryBean imp
     protected Set<String> mergedCacheConfigLocations;
 
     protected List<Resource> configLocations;
-
-
-    @PostConstruct
-    public void configureMergedItems() {
-        List<Resource> temp = new ArrayList<Resource>();
-        if (mergedCacheConfigLocations != null && !mergedCacheConfigLocations.isEmpty()) {
-            for (String location : mergedCacheConfigLocations) {
-                temp.add(applicationContext.getResource(location));
-            }
-        }
-        if (configLocations != null && !configLocations.isEmpty()) {
-            for (Resource resource : configLocations) {
-                temp.add(resource);
-            }
-        }
-        try {
-            MergeXmlConfigResource merge = new MergeXmlConfigResource();
-            ResourceInputStream[] sources = new ResourceInputStream[temp.size()];
-            int j=0;
-            for (Resource resource : temp) {
-                sources[j] = new ResourceInputStream(resource.getInputStream(), resource.getURL().toString());
-                j++;
-            }
-            setCacheManagerUri(merge.getMergedConfigResource(sources).getURI());
-        } catch (Exception e) {
-            throw new FatalBeanException("Unable to merge cache locations", e);
-        }
-    }
 
     public void setConfigLocations(List<Resource> configLocations) throws BeansException {
         this.configLocations = configLocations;

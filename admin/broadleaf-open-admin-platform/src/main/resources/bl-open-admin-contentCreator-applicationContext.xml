@@ -92,7 +92,7 @@
 
     <bean id="prodEntityManager" class="org.springframework.orm.jpa.support.SharedEntityManagerBean">
         <property name="entityManagerFactory" ref="entityManagerFactory"/>
-        <property name="entityManagerInterface" value="org.hibernate.ejb.HibernateEntityManager"/>
+        <property name="entityManagerInterface" value="org.hibernate.Session"/>
     </bean>
 
     <mo:override id="blMetadataOverrides"/>
@@ -228,7 +228,7 @@
         </property>
     </bean>
 
-    <bean id="blSpringCacheManager" class="org.springframework.cache.jcache.JCacheCacheManager">
+    <bean id="blSpringCacheManager" class="org.broadleafcommerce.common.extensibility.cache.jcache.AutoCreateJCacheCacheManager">
         <property name="cacheManager" ref="blCacheManager"/>
     </bean>
 

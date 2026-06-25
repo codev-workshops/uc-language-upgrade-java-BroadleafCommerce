@@ -28,7 +28,7 @@
                      WHERE shippingRate.feeType = :feeType
                            AND shippingRate.feeSubType = :feeSubType 
                            AND shippingRate.bandUnitQuantity &gt; :bandUnitQuantity 
-                 ORDER BY band_unit_qty         
+                 ORDER BY shippingRate.bandUnitQuantity         
         </query>
     </named-query>
     

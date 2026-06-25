@@ -46,7 +46,7 @@
     </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <blc.add.opens>--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.math=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED</blc.add.opens>
+        <blc.add.opens>--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.math=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED -Djdk.attach.allowAttachSelf=true -javaagent:${settings.localRepository}/org/springframework/spring-instrument/${spring.version}/spring-instrument-${spring.version}.jar</blc.add.opens>
         <spring.version>6.1.14</spring.version>
         <spring.security.version>6.2.8</spring.security.version>
         <hibernate.version>6.4.10.Final</hibernate.version>
@@ -63,6 +63,7 @@
         <jakarta.mail.version>2.1.3</jakarta.mail.version>
         <jakarta.jms.version>3.1.0</jakarta.jms.version>
         <jakarta.annotation.version>2.1.1</jakarta.annotation.version>
+        <jakarta.transaction.version>2.0.1</jakarta.transaction.version>
         <solr.version>9.4.1</solr.version>
         <jackson.version>2.17.2</jackson.version>
         <velocity.version>2.3</velocity.version>
@@ -386,10 +387,12 @@
             <artifactId>jaxb-api</artifactId>
             <version>2.3.1</version>
         </dependency>
+        <!-- Jakarta XML Binding (JAXB) 4.x runtime impl. Hibernate ORM 6 parses orm.xml with jakarta.xml.bind and
+             requires org.glassfish.jaxb.runtime.v2.ContextFactory, which only ships in the 4.x runtime. -->
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-            <version>2.3.1</version>
+            <version>${jakarta.xml.bind.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -633,6 +636,14 @@
                 <groupId>jakarta.annotation</groupId>
                 <artifactId>jakarta.annotation-api</artifactId>
                 <version>${jakarta.annotation.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <!-- Jakarta Transactions (JTA) 2.x: Hibernate ORM 6 references jakarta.transaction.*; pin 2.0.1 so the
+                 transitional jakarta.transaction-api:1.3.3 (still javax.transaction.*) pulled in transitively does not win. -->
+            <dependency>
+                <groupId>jakarta.transaction</groupId>
+                <artifactId>jakarta.transaction-api</artifactId>
+                <version>${jakarta.transaction.version}</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>

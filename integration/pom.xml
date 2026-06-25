@@ -88,7 +88,7 @@
                         <id>default-test</id>
                         <configuration>
                             <skipTests>true</skipTests>
-                            <argLine>-Xmx1024m
+                            <argLine>-Xmx2048m -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl
                                 -Dlegacy=true ${surefire.argLine} ${blc.add.opens}</argLine>
                         </configuration>
                     </execution>
@@ -102,7 +102,7 @@
                             <excludes>
                                 <exclude>**/Legacy**Test.java</exclude>
                             </excludes>
-                            <argLine>-Xmx1024m ${surefire.argLine} ${blc.add.opens}</argLine>
+                            <argLine>-Xmx2048m -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl ${surefire.argLine} ${blc.add.opens}</argLine>
                         </configuration>
                     </execution>
                 </executions>

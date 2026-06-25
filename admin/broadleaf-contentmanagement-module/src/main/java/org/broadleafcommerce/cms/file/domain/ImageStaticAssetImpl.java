@@ -38,7 +38,6 @@ import jakarta.persistence.Table;
 @Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(value = { AdminAuditableListener.class })
 @Table(name = "BLC_IMG_STATIC_ASSET")
-@Cache(usage= CacheConcurrencyStrategy.NONSTRICT_READ_WRITE, region="blCMSElements")
 public class ImageStaticAssetImpl extends StaticAssetImpl implements ImageStaticAsset {
 
     @Column(name ="WIDTH")

@@ -57,6 +57,7 @@
                             <value>org\.springframework.*</value>
                             <value>javassist.*</value>
                             <value>javax.*</value>
+                            <value>jakarta.*</value>
                             <value>org.broadleafcommerce.openadmin.web.compatibility.JSCompatibilityRequestWrapper</value>
                         </array>
                     </property>
@@ -97,11 +98,11 @@
             	<value>javassist.bytecode.annotation.BooleanMemberValue</value>
             	<value>javassist.bytecode.annotation.MemberValue</value>
             	<value>javassist.bytecode.annotation.StringMemberValue</value>
-            	<value>javax.annotation.Resource</value>
-            	<value>javax.persistence.EntityListeners</value>
-            	<value>javax.persistence.Embeddable</value>
-            	<value>javax.persistence.Entity</value>
-            	<value>javax.persistence.MappedSuperclass</value>
+            	<value>jakarta.annotation.Resource</value>
+            	<value>jakarta.persistence.EntityListeners</value>
+            	<value>jakarta.persistence.Embeddable</value>
+            	<value>jakarta.persistence.Entity</value>
+            	<value>jakarta.persistence.MappedSuperclass</value>
             	<value>org.apache.commons.lang3.StringUtils</value>
             	<value>org.broadleafcommerce.common.logging.LifeCycleEvent</value>
             	<value>org.broadleafcommerce.common.logging.SupportLogManager</value>
@@ -167,7 +168,7 @@
         </property>
     </bean>
     
-    <bean id="blSpringCacheManager" class="org.springframework.cache.jcache.JCacheCacheManager">
+    <bean id="blSpringCacheManager" class="org.broadleafcommerce.common.extensibility.cache.jcache.AutoCreateJCacheCacheManager">
         <property name="cacheManager" ref="blCacheManager"/>
     </bean>    
 
@@ -197,7 +198,7 @@
     <bean id="blWebCommonClasspathTemplateResolver" class="org.thymeleaf.templateresolver.ClassLoaderTemplateResolver">
         <property name="prefix" value="common_style/templates/" />
         <property name="suffix" value=".html" />
-        <property name="templateMode" value="HTML5" />        
+        <property name="templateMode" value="HTML" />        
         <property name="characterEncoding" value="UTF-8" />
         <property name="cacheable" value="${cache.page.templates}"/>
         <property name="cacheTTLMs" value="${cache.page.templates.ttl}" />

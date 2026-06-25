@@ -27,7 +27,7 @@
                         http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.2.xsd">
 
 
-    <sec:http auto-config="true" >
+    <sec:http auto-config="true" request-matcher="ant" >
         <sec:intercept-url pattern="/account/**" access="ROLE_USER" />      
         <sec:form-login login-page='/registerCustomer/registerCustomer.htm' 
                         default-target-url='/welcome.htm'

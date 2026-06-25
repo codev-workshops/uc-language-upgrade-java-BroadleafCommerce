@@ -81,8 +81,14 @@
         </property>
     </bean>
     
+    <!-- Java agent backed weaver used to apply Broadleaf's JPA ClassTransformers (DirectCopy / EntityMarker).
+         When the spring-instrument java agent is attached the entity classes are transformed; when it is not,
+         addTransformer throws and MergePersistenceUnitManager gracefully skips transformation validation. -->
+    <bean id="blLoadTimeWeaver" class="org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver"/>
+
     <bean id="blPersistenceUnitManager" class="org.broadleafcommerce.common.extensibility.jpa.MergePersistenceUnitManager">
         <property name="persistenceUnitPostProcessors" ref="blPersistenceUnitPostProcessors"/>
+        <property name="loadTimeWeaver" ref="blLoadTimeWeaver"/>
     </bean>
 
     <bean id="blAutoDDLStatusExporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
