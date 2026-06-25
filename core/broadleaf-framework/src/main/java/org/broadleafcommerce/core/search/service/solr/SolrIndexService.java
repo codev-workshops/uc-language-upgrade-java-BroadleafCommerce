@@ -19,7 +19,7 @@
  */
 package org.broadleafcommerce.core.search.service.solr;
 
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.broadleafcommerce.common.exception.ServiceException;
 import org.broadleafcommerce.common.locale.domain.Locale;
@@ -112,7 +112,7 @@ public interface SolrIndexService {
      * @throws ServiceException
      * @throws IOException
      */
-    public void optimizeIndex(SolrServer server) throws ServiceException, IOException;
+    public void optimizeIndex(SolrClient server) throws ServiceException, IOException;
 
     /**
      * Allows a commit to be called.  By default, the details of the commit will depend on system properties, including:
@@ -127,23 +127,23 @@ public interface SolrIndexService {
      * @throws IOException
      */
 
-    public void commit(SolrServer server) throws ServiceException, IOException;
+    public void commit(SolrClient server) throws ServiceException, IOException;
 
     /**
-     * This allows an external caller to force a commit to the SolrServer.  See Solr Documentation for 
+     * This allows an external caller to force a commit to the SolrClient.  See Solr Documentation for 
      * additional details.  If using softCommit, you should ensure that a hardCommit is performed, either 
      * using autoCommit, or at the end of the commit process to flush the changes to the disk.
      * 
      * Note that this method will force a commit even if solr.index.commit=false
      * 
-     * @param server - the SolrServer to update
+     * @param server - the SolrClient to update
      * @param softCommit - soft commit is an efficient commit that does not write the data to the file system
      * @param waitSearcher - whether or not to wait for a new searcher to be created
      * @param waitFlush - whether or not to wait for a flush to disk.
      * @throws ServiceException
      * @throws IOException
      */
-    public void commit(SolrServer server, boolean softCommit, boolean waitSearcher, boolean waitFlush) throws ServiceException, IOException;
+    public void commit(SolrClient server, boolean softCommit, boolean waitSearcher, boolean waitFlush) throws ServiceException, IOException;
 
     /**
      * Prints out the docs to the trace logger

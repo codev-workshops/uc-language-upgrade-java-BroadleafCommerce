@@ -86,7 +86,7 @@ import org.broadleafcommerce.profile.core.domain.PhoneImpl;
 import org.broadleafcommerce.profile.core.domain.State;
 import org.broadleafcommerce.profile.core.domain.StateImpl;
 import org.easymock.IAnswer;
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

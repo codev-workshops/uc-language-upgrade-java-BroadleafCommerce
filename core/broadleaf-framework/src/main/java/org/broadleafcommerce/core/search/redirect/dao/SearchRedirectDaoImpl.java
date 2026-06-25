@@ -21,7 +21,7 @@ package org.broadleafcommerce.core.search.redirect.dao;
 
 import org.broadleafcommerce.common.time.SystemTime;
 import org.broadleafcommerce.core.search.redirect.domain.SearchRedirect;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.QueryHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;

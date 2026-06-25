@@ -83,11 +83,6 @@
                     <argLine>${surefire.argLine}</argLine>
                 </configuration>
             </plugin>
-            <!-- Jacoco Code Coverage Plugin -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -157,10 +152,6 @@
             <artifactId>easymock</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymockclassextension</artifactId>
-        </dependency>
-        <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
         </dependency>
@@ -170,8 +161,8 @@
         </dependency>
         <!-- Tests -->
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -181,8 +172,19 @@
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
+            <artifactId>javax.servlet-api</artifactId>
             <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+        <!--
+            Surefire 3 runs on the JUnit Platform (pulled in by Spock 2), so the JUnit Vintage engine
+            is required for the existing JUnit 3/4 tests to be discovered and executed. Version is
+            pinned to align with junit-platform 1.9.x (not managed in the root pom).
+        -->
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>5.9.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
