@@ -26,14 +26,17 @@ import org.broadleafcommerce.common.currency.util.BroadleafCurrencyUtils;
 import org.broadleafcommerce.common.money.Money;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
 import org.broadleafcommerce.common.web.dialect.AbstractModelVariableModifierProcessor;
+import org.broadleafcommerce.common.web.dialect.BLCDialect;
 import org.broadleafcommerce.core.catalog.domain.Product;
 import org.broadleafcommerce.core.catalog.domain.ProductOption;
 import org.broadleafcommerce.core.catalog.domain.ProductOptionValue;
 import org.broadleafcommerce.core.catalog.domain.Sku;
 import org.broadleafcommerce.core.catalog.service.CatalogService;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
+import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,27 +69,22 @@ public class ProductOptionsProcessor extends AbstractModelVariableModifierProces
     protected static final Map<Object, String> JSON_CACHE = Collections.synchronizedMap(new LRUMap<Object, String>(500));
 
     public ProductOptionsProcessor() {
-        super("product_options");
+        super(BLCDialect.DEFAULT_PREFIX, "product_options", 10000);
     }
 
     @Override
-    public int getPrecedence() {
-        return 10000;
-    }
-
-    @Override
-    protected void modifyModelAttributes(Arguments arguments, Element element) {
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue("productId"));
-        Long productId = (Long) expression.execute(arguments.getConfiguration(), arguments);
+    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        IStandardExpressionParser expressionParser = StandardExpressions.getExpressionParser(context.getConfiguration());
+        IStandardExpression expression = expressionParser.parseExpression(context, tag.getAttributeValue("productId"));
+        Long productId = (Long) expression.execute(context);
         Product product = catalogService.findProductById(productId);
         if (product != null) {
-            addAllProductOptionsToModel(arguments, product);
-            addProductOptionPricingToModel(arguments, product);
+            addAllProductOptionsToModel(structureHandler, product);
+            addProductOptionPricingToModel(structureHandler, product);
         }
     }
     
-    private void addProductOptionPricingToModel(Arguments arguments, Product product) {
+    private void addProductOptionPricingToModel(IElementTagStructureHandler structureHandler, Product product) {
         List<Sku> skus = product.getSkus();
         List<ProductOptionPricingDTO> skuPricing = new ArrayList<ProductOptionPricingDTO>();
         for (Sku sku : skus) {
@@ -112,10 +110,10 @@ public class ProductOptionsProcessor extends AbstractModelVariableModifierProces
             dto.setSelectedOptions(values);
             skuPricing.add(dto);
         }
-        writeJSONToModel(arguments, "skuPricing", skuPricing);
+        writeJSONToModel(structureHandler, "skuPricing", skuPricing);
     }
     
-    private void addAllProductOptionsToModel(Arguments arguments, Product product) {
+    private void addAllProductOptionsToModel(IElementTagStructureHandler structureHandler, Product product) {
         List<ProductOption> productOptions = product.getProductOptions();
         List<ProductOptionDTO> dtos = new ArrayList<ProductOptionDTO>();
         for (ProductOption option : productOptions) {
@@ -129,10 +127,10 @@ public class ProductOptionsProcessor extends AbstractModelVariableModifierProces
             dto.setValues(values);
             dtos.add(dto);
         }
-        writeJSONToModel(arguments, "allProductOptions", dtos);
+        writeJSONToModel(structureHandler, "allProductOptions", dtos);
     }
     
-    private void writeJSONToModel(Arguments arguments, String modelKey, Object o) {
+    private void writeJSONToModel(IElementTagStructureHandler structureHandler, String modelKey, Object o) {
         try {
             String jsonValue = JSON_CACHE.get(o);
             if (jsonValue == null) {
@@ -142,7 +140,7 @@ public class ProductOptionsProcessor extends AbstractModelVariableModifierProces
                 jsonValue = strWriter.toString();
                 JSON_CACHE.put(o, jsonValue);
             }
-            addToModel(arguments, modelKey, jsonValue);
+            addToModel(structureHandler, modelKey, jsonValue);
         } catch (Exception ex) {
             LOG.error("There was a problem writing the product option map to JSON", ex);
         }

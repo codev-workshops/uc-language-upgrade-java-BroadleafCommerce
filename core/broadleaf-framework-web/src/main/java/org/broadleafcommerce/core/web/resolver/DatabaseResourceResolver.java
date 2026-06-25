@@ -22,8 +22,6 @@ package org.broadleafcommerce.core.web.resolver;
 import org.broadleafcommerce.common.extension.ExtensionResultHolder;
 import org.broadleafcommerce.common.extension.ExtensionResultStatusType;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.TemplateProcessingParameters;
-import org.thymeleaf.resourceresolver.IResourceResolver;
 
 import java.io.InputStream;
 
@@ -31,26 +29,27 @@ import javax.annotation.Resource;
 
 
 /**
- * An implementation of {@link IResourceResolver} that provides an extension point for retrieving
- * templates from the database.
- * 
+ * Provides an extension point for retrieving templates from the database. Used by {@link DatabaseTemplateResolver}.
+ *
+ * <p>Thymeleaf 3 removed the {@code IResourceResolver} / {@code TemplateProcessingParameters} API, so this is no longer
+ * a Thymeleaf type; it is a plain helper bean that resolves a template's contents (as an {@link InputStream}) by name
+ * through the {@link DatabaseResourceResolverExtensionManager}.
+ *
  * @author Andre Azzolini (apazzolini)
  */
 @Service("blDatabaseResourceResolver")
-public class DatabaseResourceResolver implements IResourceResolver {
-    
-    @Override
+public class DatabaseResourceResolver {
+
     public String getName() {
         return "BL_DATABASE";
     }
-    
+
     @Resource(name = "blDatabaseResourceResolverExtensionManager")
     protected DatabaseResourceResolverExtensionManager extensionManager;
 
-    @Override
-    public InputStream getResourceAsStream(TemplateProcessingParameters params, String resourceName) {
+    public InputStream getResourceAsStream(String resourceName) {
         ExtensionResultHolder erh = new ExtensionResultHolder();
-        ExtensionResultStatusType result = extensionManager.getProxy().resolveResource(erh, params, resourceName);
+        ExtensionResultStatusType result = extensionManager.getProxy().resolveResource(erh, resourceName);
         if (result ==  ExtensionResultStatusType.HANDLED) {
             return (InputStream) erh.getContextMap().get(DatabaseResourceResolverExtensionHandler.IS_KEY);
         }

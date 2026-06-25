@@ -22,9 +22,10 @@ package org.broadleafcommerce.core.web.service;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.standard.expression.IStandardExpression;
+import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
 
 /**
@@ -42,48 +43,42 @@ public class SimpleCacheKeyResolver implements TemplateCacheKeyResolverService {
      * 
      * If cacheKey is "none" then null will be returned causing the template not to be cached.
      * 
-     * @param templateName - Name of the template that is subject to being cached. 
-     * @param cacheKey - Value of the parameter passed in from the template
      * @return
      */
     @Override
-    public String resolveCacheKey(Arguments arguments, Element element) {
+    public String resolveCacheKey(ITemplateContext context, IProcessableElementTag element) {
         StringBuilder sb = new StringBuilder();
-        sb.append(getStringValue(arguments, element, "cacheKey", true));
-        sb.append(resolveTemplateName(arguments, element));
-        sb.append(resolveLineNumber(arguments, element));
+        sb.append(getStringValue(context, element, "cacheKey"));
+        sb.append(resolveTemplateName(context, element));
+        sb.append(resolveLineNumber(context, element));
         return sb.toString();
     }
     
 
-    protected String resolveTemplateName(Arguments arguments, Element element) {
-        String templateName = getStringValue(arguments, element, "templateName", true);
+    protected String resolveTemplateName(ITemplateContext context, IProcessableElementTag element) {
+        String templateName = getStringValue(context, element, "templateName");
 
         if (StringUtils.isEmpty(templateName)) {
-            templateName = (String) element.getNodeProperty("templateName");
+            templateName = element.getTemplateName();
         }
 
-        if (StringUtils.isEmpty(templateName)) {
-            templateName = element.getDocumentName();
+        if (StringUtils.isEmpty(templateName) && context.getTemplateData() != null) {
+            templateName = context.getTemplateData().getTemplate();
         }
         
         return templateName;
     }
     
-    protected Integer resolveLineNumber(Arguments arguments, Element element) {
-        Integer line = element.getLineNumber();
-        return line == null ? 0 : line;
+    protected Integer resolveLineNumber(ITemplateContext context, IProcessableElementTag element) {
+        return element.hasLocation() ? element.getLine() : 0;
     }
 
-    protected String getStringValue(Arguments arguments, Element element, String attrName, boolean removeAttribute) {
+    protected String getStringValue(ITemplateContext context, IProcessableElementTag element, String attrName) {
         if (element.hasAttribute(attrName)) {
             String cacheKeyParam = element.getAttributeValue(attrName);
-            Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                    .parseExpression(arguments.getConfiguration(), arguments, cacheKeyParam);
-            if (removeAttribute) {
-                element.removeAttribute(attrName);
-            }
-            return expression.execute(arguments.getConfiguration(), arguments).toString();
+            IStandardExpressionParser expressionParser = StandardExpressions.getExpressionParser(context.getConfiguration());
+            IStandardExpression expression = expressionParser.parseExpression(context, cacheKeyParam);
+            return expression.execute(context).toString();
 
         }
         return "";

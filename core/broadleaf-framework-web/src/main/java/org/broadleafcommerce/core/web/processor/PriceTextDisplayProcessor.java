@@ -22,11 +22,16 @@ package org.broadleafcommerce.core.web.processor;
 import org.broadleafcommerce.common.currency.util.BroadleafCurrencyUtils;
 import org.broadleafcommerce.common.money.Money;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractTextChildModifierAttrProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.broadleafcommerce.common.web.dialect.BLCDialect;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
+import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.templatemode.TemplateMode;
 
 /**
  * A Thymeleaf processor that renders a Money object according to the currently set locale options.
@@ -36,28 +41,29 @@ import org.thymeleaf.standard.expression.StandardExpressions;
  * 
  * @author apazzolini
  */
-public class PriceTextDisplayProcessor extends AbstractTextChildModifierAttrProcessor {
+public class PriceTextDisplayProcessor extends AbstractAttributeTagProcessor {
+
+    protected static final int PRECEDENCE = 1500;
 
     /**
      * Sets the name of this processor to be used in Thymeleaf template
      */
     public PriceTextDisplayProcessor() {
-        super("price");
-    }
-    
-    @Override
-    public int getPrecedence() {
-        return 1500;
+        super(TemplateMode.HTML, BLCDialect.DEFAULT_PREFIX, null, false, "price", true, PRECEDENCE, true);
     }
 
     @Override
-    protected String getText(Arguments arguments, Element element, String attributeName) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue, IElementTagStructureHandler structureHandler) {
+        structureHandler.setBody(getText(context, attributeValue), false);
+    }
+
+    protected String getText(ITemplateContext context, String attributeValue) {
         
         Money price = null;
 
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue(attributeName));
-        Object result = expression.execute(arguments.getConfiguration(), arguments);
+        IStandardExpressionParser expressionParser = StandardExpressions.getExpressionParser(context.getConfiguration());
+        IStandardExpression expression = expressionParser.parseExpression(context, attributeValue);
+        Object result = expression.execute(context);
         if (result instanceof Money) {
             price = (Money) result;
         } else if (result instanceof Number) {

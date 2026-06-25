@@ -49,12 +49,16 @@ import org.broadleafcommerce.profile.core.service.CountryService;
 import org.broadleafcommerce.profile.core.service.CustomerAddressService;
 import org.broadleafcommerce.profile.core.service.StateService;
 import org.broadleafcommerce.profile.web.core.CustomerState;
+import org.broadleafcommerce.common.web.dialect.BLCDialect;
 import org.joda.time.DateTime;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.element.AbstractLocalVariableDefinitionElementProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
+import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import java.text.DateFormatSymbols;
 import java.text.DecimalFormat;
@@ -86,7 +90,9 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author Elbert Bautista (elbertbautista)
  */
-public class OnePageCheckoutProcessor extends AbstractLocalVariableDefinitionElementProcessor {
+public class OnePageCheckoutProcessor extends AbstractElementTagProcessor {
+
+    protected static final int PRECEDENCE = 100;
 
     @Resource(name = "blStateService")
     protected StateService stateService;
@@ -110,49 +116,39 @@ public class OnePageCheckoutProcessor extends AbstractLocalVariableDefinitionEle
     protected OrderToPaymentRequestDTOService orderToPaymentRequestDTOService;
 
     public OnePageCheckoutProcessor() {
-        super("one_page_checkout");
+        super(TemplateMode.HTML, BLCDialect.DEFAULT_PREFIX, "one_page_checkout", true, null, false, PRECEDENCE);
     }
 
     @Override
-    public int getPrecedence() {
-        return 100;
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        Map<String, Object> newVars = getNewLocalVariables(context, tag);
+        for (Map.Entry<String, Object> entry : newVars.entrySet()) {
+            structureHandler.setLocalVariable(entry.getKey(), entry.getValue());
+        }
     }
 
-    @Override
-    protected boolean removeHostElement(Arguments arguments, Element element) {
-        // TODO: This is currently required else the entire form will be removed. What should happen is that the
-        // root element should be removed (since that is the unprocessed Thymeleaf element) but all of the children elements
-        // should be hooked up to this element's parent
-        return false;
-    }
+    protected Map<String, Object> getNewLocalVariables(ITemplateContext context, IProcessableElementTag element) {
 
-    @Override
-    protected Map<String, Object> getNewLocalVariables(Arguments arguments, Element element) {
+        IStandardExpressionParser expressionParser = StandardExpressions.getExpressionParser(context.getConfiguration());
 
         //Pre-populate the command objects
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue("orderInfoForm"));
-        OrderInfoForm orderInfoForm = (OrderInfoForm) expression.execute(arguments.getConfiguration(), arguments);
+        IStandardExpression expression = expressionParser.parseExpression(context, element.getAttributeValue("orderInfoForm"));
+        OrderInfoForm orderInfoForm = (OrderInfoForm) expression.execute(context);
 
-        expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue("shippingInfoForm"));
-        ShippingInfoForm shippingInfoForm = (ShippingInfoForm) expression.execute(arguments.getConfiguration(), arguments);
+        expression = expressionParser.parseExpression(context, element.getAttributeValue("shippingInfoForm"));
+        ShippingInfoForm shippingInfoForm = (ShippingInfoForm) expression.execute(context);
         
-        expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue("billingInfoForm"));
-        BillingInfoForm billingInfoForm = (BillingInfoForm) expression.execute(arguments.getConfiguration(), arguments);
+        expression = expressionParser.parseExpression(context, element.getAttributeValue("billingInfoForm"));
+        BillingInfoForm billingInfoForm = (BillingInfoForm) expression.execute(context);
 
-        expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue("orderInfoHelpMessage"));
-        String orderInfoHelpMessage = (String) expression.execute(arguments.getConfiguration(), arguments);
+        expression = expressionParser.parseExpression(context, element.getAttributeValue("orderInfoHelpMessage"));
+        String orderInfoHelpMessage = (String) expression.execute(context);
 
-        expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue("billingInfoHelpMessage"));
-        String billingInfoHelpMessage = (String) expression.execute(arguments.getConfiguration(), arguments);
+        expression = expressionParser.parseExpression(context, element.getAttributeValue("billingInfoHelpMessage"));
+        String billingInfoHelpMessage = (String) expression.execute(context);
 
-        expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue("shippingInfoHelpMessage"));
-        String shippingInfoHelpMessage = (String) expression.execute(arguments.getConfiguration(), arguments);
+        expression = expressionParser.parseExpression(context, element.getAttributeValue("shippingInfoHelpMessage"));
+        String shippingInfoHelpMessage = (String) expression.execute(context);
 
 
         prepopulateCheckoutForms(CartState.getCart(), orderInfoForm, shippingInfoForm, billingInfoForm);

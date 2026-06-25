@@ -117,7 +117,7 @@
 
     <bean id="blWebDatabaseTemplateResolver" class="org.broadleafcommerce.core.web.resolver.DatabaseTemplateResolver">
         <property name="resourceResolver" ref="blDatabaseResourceResolver" />
-        <property name="templateMode" value="HTML5" />
+        <property name="templateMode" value="HTML" />
         <property name="characterEncoding" value="UTF-8" />
         <property name="cacheable" value="${cache.page.templates}"/>
         <property name="cacheTTLMs" value="${cache.page.templates.ttl}" />
@@ -127,10 +127,10 @@
     <!-- This component should be overridden to provide templates outside of the WAR or CLASSPATH   -->    
     <bean id="blWebCustomTemplateResolver" class="org.broadleafcommerce.common.web.NullBroadleafTemplateResolver" />
     
-    <bean id="blWebTemplateResolver" class="org.thymeleaf.templateresolver.ServletContextTemplateResolver">
+    <bean id="blWebTemplateResolver" class="org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver">
         <property name="prefix" value="/WEB-INF/templates/" />
         <property name="suffix" value=".html" />
-        <property name="templateMode" value="HTML5" />
+        <property name="templateMode" value="HTML" />
         <property name="characterEncoding" value="UTF-8" />
         <property name="cacheable" value="${cache.page.templates}"/>
         <property name="cacheTTLMs" value="${cache.page.templates.ttl}" />
@@ -140,7 +140,7 @@
     <bean id="blWebClasspathTemplateResolver" class="org.thymeleaf.templateresolver.ClassLoaderTemplateResolver">
         <property name="prefix" value="webTemplates/" />
         <property name="suffix" value=".html" />
-        <property name="templateMode" value="HTML5" />        
+        <property name="templateMode" value="HTML" />        
         <property name="characterEncoding" value="UTF-8" />
         <property name="cacheable" value="${cache.page.templates}"/>
         <property name="cacheTTLMs" value="${cache.page.templates.ttl}" />
@@ -153,7 +153,7 @@
     <bean id="blEmailClasspathTemplateResolver" class="org.thymeleaf.templateresolver.ClassLoaderTemplateResolver">
         <property name="prefix" value="emailTemplates/" />
         <property name="suffix" value=".html" />
-        <property name="templateMode" value="HTML5" />
+        <property name="templateMode" value="HTML" />
         <property name="cacheable" value="${cache.page.templates}"/>
         <property name="cacheTTLMs" value="${cache.page.templates.ttl}" />
         <property name="characterEncoding" value="UTF-8" />
@@ -173,23 +173,19 @@
         </property>
     </bean>
     
-    <bean id="blThymeleafStandardTemplateModeHandlers" 
-        class="org.broadleafcommerce.common.web.BroadleafThymeleafStandardTemplateModeHandlers" />
-        
-    <bean id="thymeleafLayoutDialect" class="nz.net.ultraq.thymeleaf.LayoutDialect" />
+    <bean id="thymeleafLayoutDialect" class="nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect" />
 
     <bean id="blICacheManager" class="org.broadleafcommerce.core.web.cache.BLCICacheManager" />
 
-    <bean id="blWebTemplateEngine" class="org.thymeleaf.spring4.SpringTemplateEngine">
+    <bean id="blWebTemplateEngine" class="org.thymeleaf.spring5.SpringTemplateEngine">
         <property name="messageResolvers">
             <set>
                 <ref bean="blMessageResolver" />
-                <bean class="org.thymeleaf.spring4.messageresolver.SpringMessageResolver" />
+                <bean class="org.thymeleaf.spring5.messageresolver.SpringMessageResolver" />
             </set>
         </property>
         <property name="templateResolvers" ref="blWebTemplateResolvers" />
         <property name="cacheManager" ref="blICacheManager" />
-        <property name="templateModeHandlers" value="#{blThymeleafStandardTemplateModeHandlers.standardTemplateModeHandlers}" />
         <property name="dialects">
             <set>
                 <ref bean="thymeleafSpringStandardDialect" />
@@ -208,7 +204,7 @@
         </property>
     </bean>
     
-    <bean id="blEmailTemplateEngine" class="org.thymeleaf.spring4.SpringTemplateEngine">
+    <bean id="blEmailTemplateEngine" class="org.thymeleaf.spring5.SpringTemplateEngine">
         <property name="templateResolvers" ref="blEmailTemplateResolvers" />
         <property name="dialects">
             <set>
