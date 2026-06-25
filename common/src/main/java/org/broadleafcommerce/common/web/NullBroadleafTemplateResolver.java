@@ -19,14 +19,20 @@
  */
 package org.broadleafcommerce.common.web;
 
-import org.thymeleaf.TemplateProcessingParameters;
+import org.thymeleaf.IEngineConfiguration;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.TemplateResolution;
 
+import java.util.Map;
+
 /**
  * Placeholder component to support a custom TemplateResolver.
- * 
+ *
  * Utilized by the Broadleaf Commerce CustomTemplate extension to introduce themes at the DB level.
+ *
+ * <p>Migrated to the Thymeleaf 3 {@link ITemplateResolver} contract: {@code resolveTemplate} now receives the
+ * {@link IEngineConfiguration}, the owner template, the template name and the resolution attributes, and the
+ * Thymeleaf 2 {@code initialize()} lifecycle hook has been removed.
  *
  * @author bpolster
  */
@@ -43,12 +49,8 @@ public class NullBroadleafTemplateResolver implements ITemplateResolver {
     }
 
     @Override
-    public TemplateResolution resolveTemplate(TemplateProcessingParameters templateProcessingParameters) {
+    public TemplateResolution resolveTemplate(IEngineConfiguration configuration, String ownerTemplate, String template,
+            Map<String, Object> templateResolutionAttributes) {
         return null;
-    }
-
-    @Override
-    public void initialize() {
-
     }
 }

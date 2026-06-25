@@ -146,7 +146,7 @@ public class DynamicDaoHelperImpl implements DynamicDaoHelper {
         boolean eof = false;
         while (!eof) {
             Class<?> superClass = topConcreteClass.getSuperclass();
-            PersistentClass persistentClass = ejb3ConfigurationDao.getConfiguration().getClassMapping(superClass.getName());
+            PersistentClass persistentClass = ejb3ConfigurationDao.getConfiguration().getEntityBinding(superClass.getName());
             if (persistentClass == null) {
                 eof = true;
             } else {

@@ -28,7 +28,6 @@ import javassist.bytecode.annotation.StringMemberValue;
 import org.broadleafcommerce.common.extensibility.jpa.copy.DirectCopyIgnorePattern;
 import org.hibernate.annotations.Type;
 import org.hibernate.type.MaterializedClobType;
-import org.hibernate.type.StringClobType;
 
 import javax.annotation.Resource;
 import javax.persistence.Embeddable;
@@ -46,7 +45,8 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Broadleaf defines the Hibernate type for Clob fields as {@link StringClobType}. This has been deprecated in favor of
+ * Broadleaf historically defined the Hibernate type for Clob fields as {@code org.hibernate.type.StringClobType}. That
+ * type was removed in Hibernate 5 in favor of
  * {@link MaterializedClobType}. However, this is not a panacea, as this can map to the wrong type for Postgres. However,
  * this mapping is correct for Oracle.
  * </p>
@@ -75,6 +75,12 @@ import java.util.Properties;
  * @author Jeff Fischer
  */
 public class MaterializedClobTypeClassTransformer implements BroadleafClassTransformer {
+
+    /**
+     * The fully qualified name of the legacy Hibernate type that was removed in Hibernate 5. It is referenced here only
+     * as a string because the class no longer exists on the classpath, yet legacy entities may still declare it.
+     */
+    protected static final String LEGACY_STRING_CLOB_TYPE = "org.hibernate.type.StringClobType";
 
     @Resource(name = "blDirectCopyIgnorePatterns")
     protected List<DirectCopyIgnorePattern> ignorePatterns = new ArrayList<DirectCopyIgnorePattern>();
@@ -123,7 +129,7 @@ public class MaterializedClobTypeClassTransformer implements BroadleafClassTrans
                                 String typeName = annotation.getTypeName();
                                 if (typeName.equals(Type.class.getName())) {
                                     StringMemberValue annot = (StringMemberValue) annotation.getMemberValue("type");
-                                    if (annot != null && annot.getValue().equals(StringClobType.class.getName())) {
+                                    if (annot != null && annot.getValue().equals(LEGACY_STRING_CLOB_TYPE)) {
                                         Annotation clobType = new Annotation(Type.class.getName(), constantPool);
                                         StringMemberValue type = new StringMemberValue(constantPool);
                                         type.setValue(MaterializedClobType.class.getName());

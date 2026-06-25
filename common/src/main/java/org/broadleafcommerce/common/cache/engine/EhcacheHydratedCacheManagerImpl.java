@@ -27,7 +27,6 @@ import net.sf.ehcache.Element;
 import net.sf.ehcache.config.CacheConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.cache.spi.CacheKey;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -100,11 +99,9 @@ public class EhcacheHydratedCacheManagerImpl extends AbstractHydratedCacheManage
     }
 
     protected void removeCache(String cacheRegion, Serializable key) {
-        String cacheName = cacheRegion;
-        if (key instanceof CacheKey) {
-            cacheName = ((CacheKey) key).getEntityOrRoleName();
-            key = ((CacheKey) key).getKey();
-        }
+        Object[] nameAndId = resolveEntityNameAndId(key, cacheRegion);
+        String cacheName = (String) nameAndId[0];
+        key = (Serializable) nameAndId[1];
         String nameKey = cacheRegion + '_' + cacheName + '_' + key;
         if (cacheMembersByEntity.containsKey(nameKey)) {
             String[] members = new String[cacheMembersByEntity.get(nameKey).size()];

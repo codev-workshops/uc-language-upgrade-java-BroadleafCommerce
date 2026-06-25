@@ -23,9 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.broadleafcommerce.common.i18n.service.TranslationService;
-import org.thymeleaf.Arguments;
+import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.messageresolver.AbstractMessageResolver;
-import org.thymeleaf.messageresolver.MessageResolution;
 import org.thymeleaf.util.Validate;
 
 import java.util.Locale;
@@ -47,34 +46,49 @@ public class BroadleafThymeleafMessageResolver extends AbstractMessageResolver {
     
     /**
      * Resolve a translated value of an object's property.
-     * 
-     * @param args
-     * @param key
-     * @param messageParams
-     * @return the resolved message
+     *
+     * <p>Migrated from the removed Thymeleaf 2 {@code resolveMessage(Arguments, String, Object[])} returning
+     * {@code MessageResolution}. The Thymeleaf 3 {@code IMessageResolver} contract instead receives an
+     * {@link ITemplateContext} (plus the requesting {@code origin}) and returns the resolved message {@code String}.
+     *
+     * @param context the template context
+     * @param origin the class that originated the message request (may be {@code null})
+     * @param key the message key
+     * @param messageParameters the message parameters
+     * @return the resolved message, or {@code null} to delegate to other message resolvers
      */
-    public MessageResolution resolveMessage(final Arguments args, final String key, final Object[] messageParams) {
-        Validate.notNull(args, "args cannot be null");
-        Validate.notNull(args.getContext().getLocale(), "Locale in context cannot be null");
+    @Override
+    public String resolveMessage(final ITemplateContext context, final Class<?> origin, final String key, final Object[] messageParameters) {
+        Validate.notNull(context, "context cannot be null");
+        Validate.notNull(context.getLocale(), "Locale in context cannot be null");
         Validate.notNull(key, "Message key cannot be null");
-        
+
         if (I18N_VALUE_KEY.equals(key)) {
-            Object entity = messageParams[0];
-            String property = (String) messageParams[1];
-            Locale locale = args.getContext().getLocale();
-            
+            Object entity = messageParameters[0];
+            String property = (String) messageParameters[1];
+            Locale locale = context.getLocale();
+
             if (LOG.isTraceEnabled()) {
                 LOG.trace(String.format("Attempting to resolve translated value for object %s, property %s, locale %s",
                         entity, property, locale));
             }
-            
+
             String resolvedMessage = translationService.getTranslatedValue(entity, property, locale);
-            
+
             if (StringUtils.isNotBlank(resolvedMessage)) {
-                return new MessageResolution(resolvedMessage);
+                return resolvedMessage;
             }
         }
-        
+
+        return null;
+    }
+
+    /**
+     * Returning {@code null} signals Thymeleaf that this resolver cannot represent an absent message, allowing the
+     * remaining resolvers in the chain to provide the standard representation.
+     */
+    @Override
+    public String createAbsentMessageRepresentation(final ITemplateContext context, final Class<?> origin, final String key, final Object[] messageParameters) {
         return null;
     }
 
