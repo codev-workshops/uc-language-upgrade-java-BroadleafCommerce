@@ -157,7 +157,7 @@ public class OfferDaoImpl implements OfferDao {
         CriteriaBuilder builder = em.getCriteriaBuilder();
         CriteriaQuery<Offer> criteria = builder.createQuery(Offer.class);
         Root<OfferImpl> offer = criteria.from(OfferImpl.class);
-        criteria.select(offer.as(Offer.class));
+        criteria.select(offer);
 
         Date myDate = getCurrentDateAfterFactoringInDateResolution();
 
