@@ -176,7 +176,7 @@ public class BroadleafAdminRequestProcessor extends AbstractBroadleafWebRequestP
         if (adminUser == null) {
             //clear any profile
             if (BLCRequestUtils.isOKtoUseSession(request)) {
-                request.removeAttribute(PROFILE_REQ_PARAM, WebRequest.SCOPE_GLOBAL_SESSION);
+                request.removeAttribute(PROFILE_REQ_PARAM, WebRequest.SCOPE_SESSION);
                 staleStateProtectionService.invalidateState();
             }
         } else {
@@ -196,7 +196,7 @@ public class BroadleafAdminRequestProcessor extends AbstractBroadleafWebRequestP
                 Long previouslySetProfileId = null;
                 if (BLCRequestUtils.isOKtoUseSession(request)) {
                     previouslySetProfileId = (Long) request.getAttribute(PROFILE_REQ_PARAM,
-                        WebRequest.SCOPE_GLOBAL_SESSION);
+                        WebRequest.SCOPE_SESSION);
                 }
                 if (previouslySetProfileId != null) {
                     profile = siteService.retrievePersistentSiteById(previouslySetProfileId);
@@ -222,7 +222,7 @@ public class BroadleafAdminRequestProcessor extends AbstractBroadleafWebRequestP
 
             if (profile != null) {
                 if (BLCRequestUtils.isOKtoUseSession(request)) {
-                    request.setAttribute(PROFILE_REQ_PARAM, profile.getId(), WebRequest.SCOPE_GLOBAL_SESSION);
+                    request.setAttribute(PROFILE_REQ_PARAM, profile.getId(), WebRequest.SCOPE_SESSION);
                 }
                 brc.setCurrentProfile(profile);
             }
@@ -234,7 +234,7 @@ public class BroadleafAdminRequestProcessor extends AbstractBroadleafWebRequestP
         if (adminUser == null) {
             //clear any catalog
             if (BLCRequestUtils.isOKtoUseSession(request)) {
-                request.removeAttribute(CATALOG_REQ_PARAM, WebRequest.SCOPE_GLOBAL_SESSION);
+                request.removeAttribute(CATALOG_REQ_PARAM, WebRequest.SCOPE_SESSION);
                 staleStateProtectionService.invalidateState();
             }
         } else {
@@ -254,7 +254,7 @@ public class BroadleafAdminRequestProcessor extends AbstractBroadleafWebRequestP
                 Long previouslySetCatalogId = null;
                 if (BLCRequestUtils.isOKtoUseSession(request)) {
                     previouslySetCatalogId = (Long) request.getAttribute(CATALOG_REQ_PARAM,
-                        WebRequest.SCOPE_GLOBAL_SESSION);
+                        WebRequest.SCOPE_SESSION);
                 }
                 if (previouslySetCatalogId != null) {
                     catalog = siteService.findCatalogById(previouslySetCatalogId);
@@ -280,7 +280,7 @@ public class BroadleafAdminRequestProcessor extends AbstractBroadleafWebRequestP
 
             if (catalog != null) {
                 if (BLCRequestUtils.isOKtoUseSession(request)) {
-                    request.setAttribute(CATALOG_REQ_PARAM, catalog.getId(), WebRequest.SCOPE_GLOBAL_SESSION);
+                    request.setAttribute(CATALOG_REQ_PARAM, catalog.getId(), WebRequest.SCOPE_SESSION);
                 }
                 brc.setCurrentCatalog(catalog);
             }
@@ -292,7 +292,7 @@ public class BroadleafAdminRequestProcessor extends AbstractBroadleafWebRequestP
         if (adminUser == null) {
             //clear any sandbox
             if (BLCRequestUtils.isOKtoUseSession(request)) {
-                request.removeAttribute(BroadleafSandBoxResolver.SANDBOX_ID_VAR, WebRequest.SCOPE_GLOBAL_SESSION);
+                request.removeAttribute(BroadleafSandBoxResolver.SANDBOX_ID_VAR, WebRequest.SCOPE_SESSION);
                 staleStateProtectionService.invalidateState();
             }
         } else {
@@ -321,7 +321,7 @@ public class BroadleafAdminRequestProcessor extends AbstractBroadleafWebRequestP
                 Long previouslySetSandBoxId = null;
                 if (BLCRequestUtils.isOKtoUseSession(request)) {
                     previouslySetSandBoxId = (Long) request.getAttribute(BroadleafSandBoxResolver.SANDBOX_ID_VAR,
-                        WebRequest.SCOPE_GLOBAL_SESSION);
+                        WebRequest.SCOPE_SESSION);
                 }
                 if (previouslySetSandBoxId != null) {
                     sandBox = sandBoxService.retrieveSandBoxManagementById(previouslySetSandBoxId);
@@ -350,7 +350,7 @@ public class BroadleafAdminRequestProcessor extends AbstractBroadleafWebRequestP
             // If the user just changed sandboxes, we want to update the database record.
             Long previouslySetSandBoxId = null;
             if (BLCRequestUtils.isOKtoUseSession(request)) {
-                previouslySetSandBoxId = (Long) request.getAttribute(BroadleafSandBoxResolver.SANDBOX_ID_VAR, WebRequest.SCOPE_GLOBAL_SESSION);
+                previouslySetSandBoxId = (Long) request.getAttribute(BroadleafSandBoxResolver.SANDBOX_ID_VAR, WebRequest.SCOPE_SESSION);
             }
             if (previouslySetSandBoxId != null && !sandBox.getId().equals(previouslySetSandBoxId)) {
                 adminUser.setLastUsedSandBoxId(sandBox.getId());
@@ -358,7 +358,7 @@ public class BroadleafAdminRequestProcessor extends AbstractBroadleafWebRequestP
             }
 
             if (BLCRequestUtils.isOKtoUseSession(request)) {
-                request.setAttribute(BroadleafSandBoxResolver.SANDBOX_ID_VAR, sandBox.getId(), WebRequest.SCOPE_GLOBAL_SESSION);
+                request.setAttribute(BroadleafSandBoxResolver.SANDBOX_ID_VAR, sandBox.getId(), WebRequest.SCOPE_SESSION);
             }
             brc.setSandBox(sandBox);
             brc.setDeployBehavior(deployBehaviorUtil.isProductionSandBoxMode() ? DeployBehavior.CLONE_PARENT : DeployBehavior.OVERWRITE_PARENT);

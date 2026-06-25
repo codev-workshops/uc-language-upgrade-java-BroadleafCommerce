@@ -43,12 +43,8 @@ import org.broadleafcommerce.openadmin.server.security.domain.ForgotPasswordSecu
 import org.broadleafcommerce.openadmin.server.security.domain.ForgotPasswordSecurityTokenImpl;
 import org.broadleafcommerce.openadmin.server.security.service.type.PermissionType;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.dao.SaltSource;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -87,21 +83,14 @@ public class AdminSecurityServiceImpl implements AdminSecurityService {
     protected AdminPermissionDao adminPermissionDao;
 
     /**
-     * <p>Set by {@link #setupPasswordEncoder()} if the blPasswordEncoder bean provided is the deprecated version.
-     *
-     * @deprecated Spring Security has deprecated this encoder interface, this will be removed in 4.2
-     */
-    @Deprecated
-    protected org.springframework.security.authentication.encoding.PasswordEncoder passwordEncoder;
-
-    /**
-     * <p>Set by {@link #setupPasswordEncoder()} if the blPasswordEncoder bean provided is the new version.
+     * <p>The {@link PasswordEncoder} used to hash and verify admin passwords. Self-salting algorithms such as
+     * bcrypt are expected; salting is handled internally by the encoder.
      */
     protected PasswordEncoder passwordEncoderNew;
 
     /**
-     * <p>This is simply a placeholder to be used by {@link #setupPasswordEncoder()} to determine if we're using the
-     * new {@link PasswordEncoder} or the deprecated {@link org.springframework.security.authentication.encoding.PasswordEncoder PasswordEncoder}
+     * <p>This is simply a placeholder to be used by {@link #setupPasswordEncoder()} to resolve the configured
+     * {@link PasswordEncoder} bean.
      */
     @Resource(name="blAdminPasswordEncoder")
     protected Object passwordEncoderBean;
@@ -109,20 +98,10 @@ public class AdminSecurityServiceImpl implements AdminSecurityService {
     /**
      * Optional password salt to be used with the passwordEncoder
      *
-     * @deprecated use {@link #saltSource} instead, this will be removed in 4.2
+     * @deprecated the {@link PasswordEncoder} handles salting internally, this will be removed in 4.2
      */
     @Deprecated
     protected String salt;
-    
-    /**
-     * Use a Salt Source ONLY if there's one configured
-     *
-     * @deprecated the new {@link PasswordEncoder} handles salting internally, this will be removed in 4.2
-     */
-    @Deprecated
-    @Autowired(required=false)
-    @Qualifier("blAdminSaltSource")
-    protected SaltSource saltSource;
     
     @Resource(name="blEmailService")
     protected EmailService emailService;
@@ -134,26 +113,33 @@ public class AdminSecurityServiceImpl implements AdminSecurityService {
     protected EmailInfo sendUsernameEmailInfo;
 
     /**
-     * <p>Sets either {@link #passwordEncoder} or {@link #passwordEncoderNew} based on the type of {@link #passwordEncoderBean}
-     * in order to provide bean configuration backwards compatibility with the deprecated {@link org.springframework.security.authentication.encoding.PasswordEncoder PasswordEncoder} bean.
+     * <p>Sets {@link #passwordEncoderNew} from {@link #passwordEncoderBean}.
      *
-     * <p>{@link #passwordEncoderBean} is set by the bean defined as "blPasswordEncoder".
+     * <p>{@link #passwordEncoderBean} is set by the bean defined as "blAdminPasswordEncoder" and can be changed with
+     * {@link #setPasswordEncoder(Object)}.
      *
-     * <p>This class will utilize either the new or deprecated PasswordEncoder type depending on which is not null.
-     *
-     * @throws NoSuchBeanDefinitionException if {@link #passwordEncoderBean} is null or not an instance of either PasswordEncoder
+     * @throws NoSuchBeanDefinitionException if {@link #passwordEncoderBean} is null or not a {@link PasswordEncoder}
      */
     @PostConstruct
     protected void setupPasswordEncoder() {
         passwordEncoderNew = null;
-        passwordEncoder = null;
         if (passwordEncoderBean instanceof PasswordEncoder) {
             passwordEncoderNew = (PasswordEncoder) passwordEncoderBean;
-        } else if (passwordEncoderBean instanceof org.springframework.security.authentication.encoding.PasswordEncoder) {
-            passwordEncoder = (org.springframework.security.authentication.encoding.PasswordEncoder) passwordEncoderBean;
         } else {
             throw new NoSuchBeanDefinitionException("No PasswordEncoder bean is defined");
         }
+    }
+
+    /**
+     * <p>Set the {@link PasswordEncoder} to be used by this class.
+     *
+     * <p>This method sets {@link #passwordEncoderNew} by calling {@link #setupPasswordEncoder()}.
+     *
+     * @param passwordEncoder Spring Security's {@link PasswordEncoder}
+     */
+    public void setPasswordEncoder(Object passwordEncoder) {
+        this.passwordEncoderBean = passwordEncoder;
+        setupPasswordEncoder();
     }
 
     protected int getTokenExpiredMinutes() {
@@ -479,11 +465,7 @@ public class AdminSecurityServiceImpl implements AdminSecurityService {
     @Deprecated
     @Override
     public Object getSalt(AdminUser user, String unencodedPassword) {
-        Object salt = null;
-        if (saltSource != null) {
-            salt = saltSource.getSalt(new AdminUserDetails(user.getId(), user.getLogin(), unencodedPassword, new ArrayList<GrantedAuthority>()));
-        }
-        return salt;
+        return null;
     }
 
     @Deprecated
@@ -496,18 +478,6 @@ public class AdminSecurityServiceImpl implements AdminSecurityService {
     @Override
     public void setSalt(String salt) {
         this.salt = salt;
-    }
-
-    @Deprecated
-    @Override
-    public SaltSource getSaltSource() {
-        return saltSource;
-    }
-
-    @Deprecated
-    @Override
-    public void setSaltSource(SaltSource saltSource) {
-        this.saltSource = saltSource;
     }
 
     @Override
@@ -543,22 +513,18 @@ public class AdminSecurityServiceImpl implements AdminSecurityService {
      * being deprecated, following in Spring Security's footsteps, in order to move towards self salting hashing algorithms such as bcrypt.
      * Bcrypt is a superior hashing algorithm that randomly generates a salt per password in order to protect against rainbow table attacks
      * and is an intentionally expensive algorithm to further guard against brute force attempts to crack hashed passwords.
-     * Additionally, having the encoding algorithm handle the salt internally reduces code complexity and dependencies such as {@link SaltSource}.
+     * Additionally, having the encoding algorithm handle the salt internally reduces code complexity and external salting dependencies.
      *
-     * @deprecated the new {@link PasswordEncoder} handles salting internally, this will be removed in 4.2
+     * @deprecated the {@link PasswordEncoder} handles salting internally, this will be removed in 4.2
      *
      * @param encodedPassword the encoded password
      * @param rawPassword the unencoded password
-     * @param salt the optional salt
+     * @param salt the (ignored) optional salt
      * @return true if rawPassword matches the encodedPassword, false otherwise
      */
     @Deprecated
     protected boolean isPasswordValid(String encodedPassword, String rawPassword, Object salt) {
-        if (usingDeprecatedPasswordEncoder()) {
-            return passwordEncoder.isPasswordValid(encodedPassword, rawPassword, salt);
-        } else {
-            return isPasswordValid(encodedPassword, rawPassword);
-        }
+        return isPasswordValid(encodedPassword, rawPassword);
     }
 
     /**
@@ -582,21 +548,17 @@ public class AdminSecurityServiceImpl implements AdminSecurityService {
      * being deprecated, following in Spring Security's footsteps, in order to move towards self salting hashing algorithms such as bcrypt.
      * Bcrypt is a superior hashing algorithm that randomly generates a salt per password in order to protect against rainbow table attacks
      * and is an intentionally expensive algorithm to further guard against brute force attempts to crack hashed passwords.
-     * Additionally, having the encoding algorithm handle the salt internally reduces code complexity and dependencies such as {@link SaltSource}.
+     * Additionally, having the encoding algorithm handle the salt internally reduces code complexity and external salting dependencies.
      *
-     * @deprecated the new {@link PasswordEncoder} handles salting internally, this will be removed in 4.2
+     * @deprecated the {@link PasswordEncoder} handles salting internally, this will be removed in 4.2
      *
-     * @param rawPassword
-     * @param salt
-     * @return
+     * @param rawPassword the unencoded password
+     * @param salt the (ignored) optional salt
+     * @return the encoded password
      */
     @Deprecated
     protected String encodePassword(String rawPassword, Object salt) {
-        if (usingDeprecatedPasswordEncoder()) {
-            return passwordEncoder.encodePassword(rawPassword, salt);
-        } else {
-            return encodePassword(rawPassword);
-        }
+        return encodePassword(rawPassword);
     }
 
     /**
@@ -616,6 +578,6 @@ public class AdminSecurityServiceImpl implements AdminSecurityService {
 
     @Deprecated
     protected boolean usingDeprecatedPasswordEncoder() {
-        return passwordEncoder != null;
+        return false;
     }
 }

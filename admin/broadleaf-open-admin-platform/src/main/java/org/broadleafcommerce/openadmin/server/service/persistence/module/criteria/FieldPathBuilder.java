@@ -22,16 +22,12 @@ package org.broadleafcommerce.openadmin.server.service.persistence.module.criter
 import org.apache.commons.lang.StringUtils;
 import org.broadleafcommerce.common.util.dao.DynamicDaoHelper;
 import org.broadleafcommerce.common.util.dao.DynamicDaoHelperImpl;
-import org.hibernate.ejb.EntityManagerFactoryImpl;
-import org.hibernate.ejb.criteria.CriteriaBuilderImpl;
-import org.hibernate.ejb.criteria.path.PluralAttributePath;
-import org.hibernate.ejb.criteria.path.SingularAttributePath;
 import org.hibernate.internal.SessionFactoryImpl;
+import org.hibernate.query.criteria.internal.CriteriaBuilderImpl;
+import org.hibernate.query.criteria.internal.path.PluralAttributePath;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.Embeddable;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -97,25 +93,19 @@ public class FieldPathBuilder {
         
         for (int i = 0; i < myFieldPath.getTargetPropertyPieces().size(); i++) {
             String piece = myFieldPath.getTargetPropertyPieces().get(i);
-            
-            if (path.getJavaType().isAnnotationPresent(Embeddable.class)) {
-                String original = ((SingularAttributePath) path).getAttribute().getDeclaringType().getJavaType().getName() + "." + ((SingularAttributePath) path).getAttribute().getName() + "." + piece;
-                String copy = path.getJavaType().getName() + "." + piece;
-                copyCollectionPersister(original, copy, ((CriteriaBuilderImpl) builder).getEntityManagerFactory().getSessionFactory());
-            }
-            
+
             try {
                 path = path.get(piece);
             } catch (IllegalArgumentException e) {
                 // We weren't able to resolve the requested piece, likely because it's in a polymoprhic version
                 // of the path we're currently on. Let's see if there's any polymoprhic version of our class to
                 // use instead.
-        	    EntityManagerFactoryImpl em = ((CriteriaBuilderImpl) builder).getEntityManagerFactory();
+        	    SessionFactoryImpl em = ((CriteriaBuilderImpl) builder).getEntityManagerFactory();
         	    Metamodel mm = em.getMetamodel();
         	    boolean found = false;
         	    
         	    Class<?>[] polyClasses = dynamicDaoHelper.getAllPolymorphicEntitiesFromCeiling(
-        	            path.getJavaType(), em.getSessionFactory(), true, true);
+        	            path.getJavaType(), em, true, true);
         	    
         	    for (Class<?> clazz : polyClasses) {
             		ManagedType mt = mm.managedType(clazz);
@@ -160,27 +150,6 @@ public class FieldPathBuilder {
         return path;
     }
 
-    /**
-     * This is a workaround for HHH-6562 (https://hibernate.atlassian.net/browse/HHH-6562)
-     */
-    @SuppressWarnings("unchecked")
-    private void copyCollectionPersister(String originalKey, String copyKey,
-            SessionFactoryImpl sessionFactory) {
-        try {
-            Field collectionPersistersField = SessionFactoryImpl.class
-                    .getDeclaredField("collectionPersisters");
-            collectionPersistersField.setAccessible(true);
-            Map collectionPersisters = (Map) collectionPersistersField.get(sessionFactory);
-            if (collectionPersisters.containsKey(originalKey)) {
-                Object collectionPersister = collectionPersisters.get(originalKey);
-                collectionPersisters.put(copyKey, collectionPersister);
-            }
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
     public CriteriaQuery getCriteria() {
         return criteria;
     }

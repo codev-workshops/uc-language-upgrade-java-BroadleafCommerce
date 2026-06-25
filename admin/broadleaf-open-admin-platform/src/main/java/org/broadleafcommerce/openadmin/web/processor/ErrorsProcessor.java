@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.broadleafcommerce.common.util.StringUtil;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
+import org.broadleafcommerce.common.web.dialect.BLCAdminDialect;
 import org.broadleafcommerce.openadmin.web.form.entity.DynamicEntityFormInfo;
 import org.broadleafcommerce.openadmin.web.form.entity.EntityForm;
 import org.broadleafcommerce.openadmin.web.form.entity.Field;
@@ -32,12 +33,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.servlet.support.BindStatus;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.ProcessorResult;
-import org.thymeleaf.processor.attr.AbstractAttrProcessor;
-import org.thymeleaf.spring4.util.FieldUtils;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.spring5.context.IThymeleafBindStatus;
+import org.thymeleaf.spring5.util.FieldUtils;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,7 +59,7 @@ import java.util.Map;
  * @author Phillip Verheyden (phillipuniverse)
  */
 @Component("blErrorsProcessor")
-public class ErrorsProcessor extends AbstractAttrProcessor {
+public class ErrorsProcessor extends AbstractAttributeTagProcessor {
 
     protected static final Log LOG = LogFactory.getLog(ErrorsProcessor.class);
 
@@ -64,19 +67,12 @@ public class ErrorsProcessor extends AbstractAttrProcessor {
     public static final String GENERAL_ERROR_FIELD_KEY = "generalError";
 
     public ErrorsProcessor() {
-        super("errors");
+        super(TemplateMode.HTML, BLCAdminDialect.DEFAULT_PREFIX, null, false, "errors", true, 10000, true);
     }
 
     @Override
-    public int getPrecedence() {
-        return 10000;
-    }
-
-    @Override
-    protected ProcessorResult processAttribute(Arguments arguments, Element element, String attributeName) {
-        String attributeValue = element.getAttributeValue(attributeName);
-
-        BindStatus bindStatus = FieldUtils.getBindStatus(arguments.getConfiguration(), arguments, attributeValue);
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue, IElementTagStructureHandler structureHandler) {
+        IThymeleafBindStatus bindStatus = FieldUtils.getBindStatus(context, attributeValue);
 
         if (bindStatus.isError()) {
             EntityForm form = (EntityForm) ((BindingResult) bindStatus.getErrors()).getTarget();
@@ -122,17 +118,16 @@ public class ErrorsProcessor extends AbstractAttrProcessor {
                         //this is the code that is executed when a Translations add action contains errors
                         //this branch of the code just puts a placeholder "tabErrors", to avoid errprProcessor parsing errors, and
                         //avoids checking on tabs, fieldGroups or fields (which for translations are empty), thus skipping any warning
-                        Map<String, Object> localVariables = new HashMap<String, Object>();
-                        localVariables.put("tabErrors", tabErrors);
-                        return ProcessorResult.setLocalVariables(localVariables);
+                        structureHandler.setLocalVariable("tabErrors", tabErrors);
+                        return;
                     }
                 }
             }
 
             String translatedGeneralTab = GENERAL_ERRORS_TAB_KEY;
-            BroadleafRequestContext context = BroadleafRequestContext.getBroadleafRequestContext();
-            if (context != null && context.getMessageSource() != null) {
-                translatedGeneralTab = context.getMessageSource().getMessage(translatedGeneralTab, null, translatedGeneralTab, context.getJavaLocale());
+            BroadleafRequestContext brc = BroadleafRequestContext.getBroadleafRequestContext();
+            if (brc != null && brc.getMessageSource() != null) {
+                translatedGeneralTab = brc.getMessageSource().getMessage(translatedGeneralTab, null, translatedGeneralTab, brc.getJavaLocale());
             }
 
             for (ObjectError err : bindStatus.getErrors().getGlobalErrors()) {
@@ -144,12 +139,8 @@ public class ErrorsProcessor extends AbstractAttrProcessor {
                 addFieldError(GENERAL_ERROR_FIELD_KEY, err.getCode(), tabErrors);
             }
 
-            Map<String, Object> localVariables = new HashMap<String, Object>();
-            localVariables.put("tabErrors", result);
-            return ProcessorResult.setLocalVariables(localVariables);
+            structureHandler.setLocalVariable("tabErrors", result);
         }
-        return ProcessorResult.OK;
-
     }
 
     private String extractFieldName(FieldError err) {
