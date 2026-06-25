@@ -25,8 +25,6 @@ import org.broadleafcommerce.common.service.GenericResponse;
 import org.broadleafcommerce.profile.core.domain.Customer;
 import org.broadleafcommerce.profile.core.service.handler.PasswordUpdatedHandler;
 import org.broadleafcommerce.profile.core.service.listener.PostRegistrationObserver;
-import org.springframework.security.authentication.dao.SaltSource;
-
 import java.util.List;
 
 public interface CustomerService {
@@ -167,26 +165,16 @@ public interface CustomerService {
     public void setSalt(String salt);
 
     /**
-     * Returns the {@link SaltSource} used with the blPasswordEncoder to encrypt the user password. Usually configured in
-     * applicationContext-security.xml. This is not a required property and will return null if not configured
-     *
-     * @deprecated the new {@link org.springframework.security.crypto.password.PasswordEncoder PasswordEncoder} handles salting internally, this will be removed in 4.2
-     *
-     * @return the currently used {@link SaltSource}
+     * @deprecated SaltSource has been removed in Spring Security 5.x, this will be removed in 4.2
      */
     @Deprecated
-    public SaltSource getSaltSource();
+    public Object getSaltSource();
     
     /**
-     * Sets the {@link SaltSource} used with blPasswordEncoder to encrypt the user password. Usually configured within
-     * applicationContext-security.xml
-     *
-     * @deprecated the new {@link org.springframework.security.crypto.password.PasswordEncoder PasswordEncoder} handles salting internally, this will be removed in 4.2
-     *
-     * @param saltSource the new {@link SaltSource} to use
+     * @deprecated SaltSource has been removed in Spring Security 5.x, this will be removed in 4.2
      */
     @Deprecated
-    public void setSaltSource(SaltSource saltSource);
+    public void setSaltSource(Object saltSource);
     
     /**
      * @deprecated use {@link #getSalt(Customer, String)} instead, this will be removed in 4.2
