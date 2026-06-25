@@ -22,44 +22,32 @@ package org.broadleafcommerce.core.web.processor;
 import org.apache.commons.lang3.StringUtils;
 import org.broadleafcommerce.core.catalog.domain.ProductOption;
 import org.broadleafcommerce.core.order.domain.DiscreteOrderItem;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.element.AbstractLocalVariableDefinitionElementProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
 import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Priyesh Patel
  */
-public class ProductOptionDisplayProcessor extends AbstractLocalVariableDefinitionElementProcessor {
+public class ProductOptionDisplayProcessor extends AbstractElementTagProcessor {
 
-    /**
-     * Sets the name of this processor to be used in Thymeleaf template
-     */
-    public ProductOptionDisplayProcessor() {
-        super("product_option_display");
+    public ProductOptionDisplayProcessor(String dialectPrefix) {
+        super(TemplateMode.HTML, dialectPrefix, "product_option_display", true, null, false, 100);
     }
 
     @Override
-    public int getPrecedence() {
-        return 100;
-    }
-
-    protected void initServices(Arguments arguments) {
-
-    }
-
-    @Override
-    protected Map<String, Object> getNewLocalVariables(Arguments arguments, Element element) {
-        initServices(arguments);
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag,
+            IElementTagStructureHandler structureHandler) {
         HashMap<String, String> productOptionDisplayValues = new HashMap<String, String>();
-        Map<String, Object> newVars = new HashMap<String, Object>();
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue("orderItem"));
-        Object item = expression.execute(arguments.getConfiguration(), arguments);
+        IStandardExpression expression = StandardExpressions.getExpressionParser(context.getConfiguration())
+                .parseExpression(context, tag.getAttributeValue("orderItem"));
+        Object item = expression.execute(context);
         if (item instanceof DiscreteOrderItem) {
             DiscreteOrderItem orderItem = (DiscreteOrderItem) item;
 
@@ -71,13 +59,7 @@ public class ProductOptionDisplayProcessor extends AbstractLocalVariableDefiniti
                 }
             }
         }
-        newVars.put("productOptionDisplayValues", productOptionDisplayValues);
-
-        return newVars;
+        structureHandler.setLocalVariable("productOptionDisplayValues", productOptionDisplayValues);
     }
 
-    @Override
-    protected boolean removeHostElement(Arguments arguments, Element element) {
-        return false;
-    }
 }

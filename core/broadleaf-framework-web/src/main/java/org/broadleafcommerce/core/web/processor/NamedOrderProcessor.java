@@ -25,8 +25,9 @@ import org.broadleafcommerce.core.order.domain.Order;
 import org.broadleafcommerce.core.order.service.OrderService;
 import org.broadleafcommerce.profile.core.domain.Customer;
 import org.broadleafcommerce.profile.web.core.CustomerState;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
 
 import javax.annotation.Resource;
 
@@ -53,34 +54,22 @@ public class NamedOrderProcessor extends AbstractModelVariableModifierProcessor 
     @Resource(name = "blOrderService")
     protected OrderService orderService;
 
-    /**
-     * Sets the name of this processor to be used in Thymeleaf template
-     *
-     * NOTE: thymeleaf normalizes the attribute names by converting all to lower-case
-     * we will use the underscore instead of camel case to avoid confusion
-     *
-     */
-    public NamedOrderProcessor() {
-        super("named_order");
+    public NamedOrderProcessor(String dialectPrefix) {
+        super(dialectPrefix, "named_order");
     }
 
     @Override
-    public int getPrecedence() {
-        return 10000;
-    }
-
-    @Override
-    protected void modifyModelAttributes(Arguments arguments, Element element) {
+    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
         Customer customer = CustomerState.getCustomer();
 
-        String orderVar = element.getAttributeValue("orderVar");
-        String orderName = element.getAttributeValue("orderName");
+        String orderVar = tag.getAttributeValue("orderVar");
+        String orderName = tag.getAttributeValue("orderName");
 
         Order order = orderService.findNamedOrderForCustomer(orderName, customer);
         if (order != null) {
-            addToModel(arguments, orderVar, order);
+            addToModel(structureHandler, orderVar, order);
         } else {
-            addToModel(arguments, orderVar, new NullOrderImpl());
+            addToModel(structureHandler, orderVar, new NullOrderImpl());
         }
     }
 }

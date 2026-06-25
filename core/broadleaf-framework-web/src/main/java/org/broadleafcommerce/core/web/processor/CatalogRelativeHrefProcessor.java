@@ -1,6 +1,6 @@
 /*
  * #%L
- * BroadleafCommerce CMS Module
+ * BroadleafCommerce Framework Web
  * %%
  * Copyright (C) 2009 - 2013 Broadleaf Commerce
  * %%
@@ -20,91 +20,34 @@
 package org.broadleafcommerce.core.web.processor;
 
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
-import org.broadleafcommerce.core.catalog.domain.Category;
-import org.broadleafcommerce.core.catalog.domain.Product;
-import org.broadleafcommerce.core.catalog.service.CatalogURLService;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
-import org.thymeleaf.standard.expression.Expression;
-import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.templatemode.TemplateMode;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * For use with category and product entities.   Creates a relative URL using the
- * current URI appended with the url-key (or last fragment of the url).
- * 
- * Takes in a category or product object as a parameter.
- * 
- * Uses the current request for the baseURI.
- * 
- * This implementation will also a categoryId or productId to the end of the URL it generates.
+ * Processor that replaces the "href" attribute on an element to add the context path and the application's
+ * default uri prefix.
  * 
  * @author bpolster
  */
-public class CatalogRelativeHrefProcessor extends AbstractAttributeModifierAttrProcessor {
+public class CatalogRelativeHrefProcessor extends AbstractAttributeTagProcessor {
 
-    private static final String RHREF = "rhref";
-    private static final String HREF = "href";
-
-    @Resource(name = "blCatalogURLService")
-    protected CatalogURLService catalogURLService;
-
-    public CatalogRelativeHrefProcessor() {
-        super(RHREF);
+    public CatalogRelativeHrefProcessor(String dialectPrefix) {
+        super(TemplateMode.HTML, dialectPrefix, null, false, "catalogRelativeHref", true, 10000, true);
     }
 
     @Override
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue(attributeName));
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag,
+            AttributeName attributeName, String attributeValue, IElementTagStructureHandler structureHandler) {
+
         HttpServletRequest request = BroadleafRequestContext.getBroadleafRequestContext().getRequest();
-
-        String relativeHref = buildRelativeHref(expression, arguments, request);
-               
-        Map<String, String> attrs = new HashMap<String, String>();
-        attrs.put(HREF, relativeHref);
-        return attrs;
-    }
-
-    protected String buildRelativeHref(Expression expression, Arguments arguments, HttpServletRequest request) {
-        Object result = expression.execute(arguments.getConfiguration(), arguments);
-        String currentUrl = request.getRequestURI();
-
-        if (request.getQueryString() != null) {
-            currentUrl = currentUrl + "?" + request.getQueryString();
-        }
-
-        if (result instanceof Product) {
-            return catalogURLService.buildRelativeProductURL(currentUrl, (Product) result);
-        } else if (result instanceof Category) {
-            return catalogURLService.buildRelativeCategoryURL(currentUrl, (Category) result);
-        }
-        return "";
-    }
-
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
-    }
-
-    @Override
-    public int getPrecedence() {
-        return 0;
+        String baseUrl = request.getContextPath();
+        
+        structureHandler.setAttribute("href", baseUrl + attributeValue);
     }
 }

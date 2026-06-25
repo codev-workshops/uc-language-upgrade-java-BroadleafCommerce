@@ -21,154 +21,52 @@ package org.broadleafcommerce.core.web.processor;
 
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
 import org.broadleafcommerce.core.search.domain.SearchCriteria;
-import org.broadleafcommerce.core.web.controller.catalog.BroadleafCategoryController;
 import org.broadleafcommerce.core.web.util.ProcessorUtils;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * <p>
- * A Thymeleaf processor that generates a search query href that will reflect the current 
- * search criteria in addition to the requested sort string
- * 
- * <p>
- * This is intended to be used in an anchor tag:
- * 
- * <pre>
- * {@code
- *  <a blc:addsortlink="price">Sort By Price</a>
- * }
- * </pre>
- * 
- * <p>
- * Produces:
- * 
- * <pre>
- * {@code
- *  <a class="asc" href="http://mysite.com/category?sort=price+asc">Sort By Price</a>
- * }
- * </pre>
- * 
- * <p>
- * This sort link can then be picked up by the {@link BroadleafCategoryController} to actually translate search queries based
- * on that query parameter. If there is no sort active on the request then this will print out a link to sort ascending.
- * Otherwise the link will output the non-active sort (so that you can switch between them).
- * 
- * @author apazzolini
+ * Thymeleaf Processor that replaces the "href" attribute on an element, maintaining the current search criteria
+ * of the request and adding (or replacing, if it exists) the sort parameter on the request.
+ *
+ * @author Joseph Fridye (jfridye)
  */
-public class AddSortLinkProcessor extends AbstractAttributeModifierAttrProcessor {
-    
-    protected boolean allowMultipleSorts = false;
-    
-    /**
-     * Sets the name of this processor to be used in Thymeleaf template
-     */
-    public AddSortLinkProcessor() {
-        super("addsortlink");
-    }
-    
-    @Override
-    public int getPrecedence() {
-        return 10000;
+public class AddSortLinkProcessor extends AbstractAttributeTagProcessor {
+
+    public AddSortLinkProcessor(String dialectPrefix) {
+        super(TemplateMode.HTML, dialectPrefix, null, false, "addsortlink", true, 10000, true);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
-        Map<String, String> attrs = new HashMap<String, String>();
-        
-        BroadleafRequestContext blcContext = BroadleafRequestContext.getBroadleafRequestContext();
-        HttpServletRequest request = blcContext.getRequest();
-        
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag,
+            AttributeName attributeName, String attributeValue, IElementTagStructureHandler structureHandler) {
+
+        HttpServletRequest request = BroadleafRequestContext.getBroadleafRequestContext().getRequest();
+
         String baseUrl = request.getRequestURL().toString();
+
         Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
-        
-        String key = SearchCriteria.SORT_STRING;
-        String sortField = element.getAttributeValue(attributeName);
-        
-        List<String[]> sortedFields = new ArrayList<String[]>();
-        
-        String[] paramValues = params.get(key);
-        if (paramValues != null && paramValues.length > 0) {
-            String sortQueries = paramValues[0];
-            for (String sortQuery : sortQueries.split(",")) {
-                String[] sort = sortQuery.split(" ");
-                if (sort.length == 2) {
-                    sortedFields.add(new String[] { sort[0], sort[1] });
-                }
-            }
-        }
-        
-        boolean currentlySortingOnThisField = false;
-        boolean currentlyAscendingOnThisField = false;
-        
-        for (String[] sortedField : sortedFields) {
-            if (sortField.equals(sortedField[0])) {
-                currentlySortingOnThisField = true;
-                currentlyAscendingOnThisField = sortedField[1].equals("asc");
-                sortedField[1] = currentlyAscendingOnThisField ? "desc" : "asc";
-            }
-        }
-        
-        String sortString = sortField;
-        String classString = "";
-        
-        if (currentlySortingOnThisField) {
-            classString += "active ";
-            if (currentlyAscendingOnThisField) {
-                sortString += " desc";
-                classString += "asc ";
-            } else {
-                sortString += " asc";
-                classString += "desc ";
-            }
+
+        String sort = attributeValue;
+
+        if (sort != null && !sort.isEmpty()) {
+            params.put(SearchCriteria.SORT_STRING, new String[]{sort});
         } else {
-            sortString += " asc";
-            classString += "asc ";
-            params.remove(SearchCriteria.PAGE_NUMBER);
+            params.remove(SearchCriteria.SORT_STRING);
         }
-        
-        if (allowMultipleSorts) {
-            StringBuilder sortSb = new StringBuilder();
-            for (String[] sortedField : sortedFields) {
-                sortSb.append(sortedField[0]).append(" ").append(sortedField[1]).append(",");
-            }
-            
-            sortString = sortSb.toString();
-            if (sortString.charAt(sortString.length() - 1) == ',') {
-                sortString = sortString.substring(0, sortString.length() - 1);
-            }
-        }
-        
-        params.put(key, new String[] { sortString } );
-        
+
+        params.remove(SearchCriteria.PAGE_NUMBER);
+
         String url = ProcessorUtils.getUrl(baseUrl, params);
-        
-        attrs.put("class", classString);
-        attrs.put("href", url);
-        return attrs;
-    }
 
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
+        structureHandler.setAttribute("href", url);
     }
 }

@@ -22,7 +22,7 @@ package org.broadleafcommerce.core.web.resolver;
 import org.broadleafcommerce.common.extension.ExtensionHandler;
 import org.broadleafcommerce.common.extension.ExtensionResultHolder;
 import org.broadleafcommerce.common.extension.ExtensionResultStatusType;
-import org.thymeleaf.TemplateProcessingParameters;
+import org.thymeleaf.IEngineConfiguration;
 
 import java.io.InputStream;
 
@@ -38,16 +38,16 @@ public interface DatabaseResourceResolverExtensionHandler extends ExtensionHandl
     
     /**
      * If this method returns any of the handled conditions in {@link ExtensionResultStatusType},
-     * the value keyed by {@link DatabaseResourceResolverExtensionHandler.IS_KEY} in the 
+     * the value keyed by {@link DatabaseResourceResolverExtensionHandler#IS_KEY} in the 
      * {@link ExtensionResultHolder}'s context map will be an {@link InputStream} of the resolved resource's
      * contents.
      * 
      * @param erh
-     * @param params
+     * @param configuration
      * @param resourceName
      * @return whether or not a resource was resolved
      */
     public ExtensionResultStatusType resolveResource(ExtensionResultHolder erh, 
-            TemplateProcessingParameters params, String resourceName);
+            IEngineConfiguration configuration, String resourceName);
 
 }

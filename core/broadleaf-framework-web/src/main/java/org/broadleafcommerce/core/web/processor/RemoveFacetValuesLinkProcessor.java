@@ -24,11 +24,14 @@ import org.broadleafcommerce.core.search.domain.SearchCriteria;
 import org.broadleafcommerce.core.search.domain.SearchFacetDTO;
 import org.broadleafcommerce.core.web.service.SearchFacetDTOService;
 import org.broadleafcommerce.core.web.util.ProcessorUtils;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
 import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,27 +46,19 @@ import javax.servlet.http.HttpServletRequest;
  * 
  * @author apazzolini
  */
-public class RemoveFacetValuesLinkProcessor extends AbstractAttributeModifierAttrProcessor {
+public class RemoveFacetValuesLinkProcessor extends AbstractAttributeTagProcessor {
     
     @Resource(name = "blSearchFacetDTOService")
     protected SearchFacetDTOService searchFacetDTOService;
 
-    /**
-     * Sets the name of this processor to be used in Thymeleaf template
-     */
-    public RemoveFacetValuesLinkProcessor() {
-        super("removefacetvalueslink");
-    }
-    
-    @Override
-    public int getPrecedence() {
-        return 10000;
+    public RemoveFacetValuesLinkProcessor(String dialectPrefix) {
+        super(TemplateMode.HTML, dialectPrefix, null, false, "removefacetvalueslink", true, 10000, true);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
-        Map<String, String> attrs = new HashMap<String, String>();
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag,
+            AttributeName attributeName, String attributeValue, IElementTagStructureHandler structureHandler) {
         
         BroadleafRequestContext blcContext = BroadleafRequestContext.getBroadleafRequestContext();
         HttpServletRequest request = blcContext.getRequest();
@@ -71,9 +66,9 @@ public class RemoveFacetValuesLinkProcessor extends AbstractAttributeModifierAtt
         String baseUrl = request.getRequestURL().toString();
         Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
         
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue(attributeName));
-        SearchFacetDTO facet = (SearchFacetDTO) expression.execute(arguments.getConfiguration(), arguments);
+        IStandardExpression expression = StandardExpressions.getExpressionParser(context.getConfiguration())
+                .parseExpression(context, attributeValue);
+        SearchFacetDTO facet = (SearchFacetDTO) expression.execute(context);
         
         String key = searchFacetDTOService.getUrlKey(facet);
         params.remove(key);
@@ -81,22 +76,6 @@ public class RemoveFacetValuesLinkProcessor extends AbstractAttributeModifierAtt
         
         String url = ProcessorUtils.getUrl(baseUrl, params);
         
-        attrs.put("href", url);
-        return attrs;
-    }
-
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
+        structureHandler.setAttribute("href", url);
     }
 }

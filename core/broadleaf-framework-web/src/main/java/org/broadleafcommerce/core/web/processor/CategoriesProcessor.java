@@ -26,8 +26,9 @@ import org.broadleafcommerce.common.web.dialect.AbstractModelVariableModifierPro
 import org.broadleafcommerce.core.catalog.domain.Category;
 import org.broadleafcommerce.core.catalog.domain.CategoryXref;
 import org.broadleafcommerce.core.catalog.service.CatalogService;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,13 +37,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 /**
- * A Thymeleaf processor that will add the desired categories to the model. It does this by
- * searching for the <b>parentCategory</b> by name> and adding up to <b>maxResults</b> subcategories under
- * the model attribute specified by <b>resultVar</b>
- * 
- * @param parentCategory (required) the name of the parent category to get subcategories from
- * @param resultVar (required) the model variable that the resulting list of categories should be set to
- * @param maxResults (optional) the maximum number of categories to return
+ * A Thymeleaf processor that will add the desired categories to the model.
  * 
  * @author apazzolini
  */
@@ -54,38 +49,27 @@ public class CategoriesProcessor extends AbstractModelVariableModifierProcessor 
     @Resource(name = "blCategoriesProcessorExtensionManager")
     protected CategoriesProcessorExtensionManager extensionManager;
 
-    /**
-     * Sets the name of this processor to be used in Thymeleaf template
-     */
-    public CategoriesProcessor() {
-        super("categories");
-    }
-    
-    @Override
-    public int getPrecedence() {
-        return 10000;
+    public CategoriesProcessor(String dialectPrefix) {
+        super(dialectPrefix, "categories");
     }
 
     @Override
-    protected void modifyModelAttributes(Arguments arguments, Element element) {
-        String resultVar = element.getAttributeValue("resultVar");
-        String parentCategory = element.getAttributeValue("parentCategory");
-        String unparsedMaxResults = element.getAttributeValue("maxResults");
+    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        String resultVar = tag.getAttributeValue("resultVar");
+        String parentCategory = tag.getAttributeValue("parentCategory");
+        String unparsedMaxResults = tag.getAttributeValue("maxResults");
 
         if (extensionManager != null) {
             ExtensionResultHolder holder = new ExtensionResultHolder();
             ExtensionResultStatusType result = extensionManager.getProxy().findAllPossibleChildCategories(parentCategory, unparsedMaxResults, holder);
             if (ExtensionResultStatusType.HANDLED.equals(result)) {
-                addToModel(arguments, resultVar, holder.getResult());
+                addToModel(structureHandler, resultVar, holder.getResult());
                 return;
             }
         }
 
-        // TODO: Potentially write an algorithm that will pick the minimum depth category
-        // instead of the first category in the list
         List<Category> categories = catalogService.findCategoriesByName(parentCategory);
         if (categories != null && categories.size() > 0) {
-            // gets child categories in order ONLY if they are in the xref table and active
             List<CategoryXref> subcategories = categories.get(0).getChildCategoryXrefs();
             List<Category> results = Collections.emptyList();
             if (subcategories != null && !subcategories.isEmpty()) {
@@ -102,7 +86,7 @@ public class CategoriesProcessor extends AbstractModelVariableModifierProcessor 
                 }
             }
             
-            addToModel(arguments, resultVar, results);
+            addToModel(structureHandler, resultVar, results);
         }
     }
 }

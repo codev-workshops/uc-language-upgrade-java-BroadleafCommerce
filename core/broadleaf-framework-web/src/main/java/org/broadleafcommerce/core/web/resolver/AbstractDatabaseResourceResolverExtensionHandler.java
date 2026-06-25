@@ -22,7 +22,7 @@ package org.broadleafcommerce.core.web.resolver;
 import org.broadleafcommerce.common.extension.AbstractExtensionHandler;
 import org.broadleafcommerce.common.extension.ExtensionResultHolder;
 import org.broadleafcommerce.common.extension.ExtensionResultStatusType;
-import org.thymeleaf.TemplateProcessingParameters;
+import org.thymeleaf.IEngineConfiguration;
 
 
 /**
@@ -32,7 +32,7 @@ public abstract class AbstractDatabaseResourceResolverExtensionHandler extends A
         implements DatabaseResourceResolverExtensionHandler {
     
     public ExtensionResultStatusType resolveResource(ExtensionResultHolder erh, 
-            TemplateProcessingParameters params, String resourceName) {
+            IEngineConfiguration configuration, String resourceName) {
         return ExtensionResultStatusType.NOT_HANDLED;
     }
 

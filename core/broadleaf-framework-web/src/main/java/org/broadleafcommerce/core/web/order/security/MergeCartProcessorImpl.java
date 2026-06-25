@@ -86,7 +86,7 @@ public class MergeCartProcessorImpl implements MergeCartProcessor {
         }
 
         if (BLCRequestUtils.isOKtoUseSession(request)) {
-            request.setAttribute(mergeCartResponseKey, mergeCartResponse, WebRequest.SCOPE_GLOBAL_SESSION);
+            request.setAttribute(mergeCartResponseKey, mergeCartResponse, WebRequest.SCOPE_SESSION);
         }
     }
 

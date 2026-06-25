@@ -22,8 +22,9 @@ package org.broadleafcommerce.core.web.resolver;
 import org.broadleafcommerce.common.extension.ExtensionResultHolder;
 import org.broadleafcommerce.common.extension.ExtensionResultStatusType;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.TemplateProcessingParameters;
-import org.thymeleaf.resourceresolver.IResourceResolver;
+import org.thymeleaf.IEngineConfiguration;
+import org.thymeleaf.templateresource.ITemplateResource;
+import org.thymeleaf.templateresource.StringTemplateResource;
 
 import java.io.InputStream;
 
@@ -31,28 +32,34 @@ import javax.annotation.Resource;
 
 
 /**
- * An implementation of {@link IResourceResolver} that provides an extension point for retrieving
+ * An implementation that provides an extension point for retrieving
  * templates from the database.
  * 
  * @author Andre Azzolini (apazzolini)
  */
 @Service("blDatabaseResourceResolver")
-public class DatabaseResourceResolver implements IResourceResolver {
-    
-    @Override
-    public String getName() {
-        return "BL_DATABASE";
-    }
+public class DatabaseResourceResolver {
     
     @Resource(name = "blDatabaseResourceResolverExtensionManager")
     protected DatabaseResourceResolverExtensionManager extensionManager;
 
-    @Override
-    public InputStream getResourceAsStream(TemplateProcessingParameters params, String resourceName) {
+    public String getName() {
+        return "BL_DATABASE";
+    }
+
+    public ITemplateResource resolveResource(IEngineConfiguration configuration, String resourceName) {
         ExtensionResultHolder erh = new ExtensionResultHolder();
-        ExtensionResultStatusType result = extensionManager.getProxy().resolveResource(erh, params, resourceName);
-        if (result ==  ExtensionResultStatusType.HANDLED) {
-            return (InputStream) erh.getContextMap().get(DatabaseResourceResolverExtensionHandler.IS_KEY);
+        ExtensionResultStatusType result = extensionManager.getProxy().resolveResource(erh, configuration, resourceName);
+        if (result == ExtensionResultStatusType.HANDLED) {
+            InputStream is = (InputStream) erh.getContextMap().get(DatabaseResourceResolverExtensionHandler.IS_KEY);
+            if (is != null) {
+                try {
+                    byte[] bytes = is.readAllBytes();
+                    return new StringTemplateResource(new String(bytes));
+                } catch (Exception e) {
+                    return null;
+                }
+            }
         }
         return null;
     }

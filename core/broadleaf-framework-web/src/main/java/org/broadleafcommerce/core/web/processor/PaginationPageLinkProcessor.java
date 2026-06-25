@@ -22,78 +22,49 @@ package org.broadleafcommerce.core.web.processor;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
 import org.broadleafcommerce.core.search.domain.SearchCriteria;
 import org.broadleafcommerce.core.web.util.ProcessorUtils;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
-import org.thymeleaf.standard.expression.Expression;
-import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.templatemode.TemplateMode;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
- * <p>
- * A Thymeleaf processor that processes the value attribute on the element it's tied to
- * with a predetermined value based on the SearchFacetResultDTO object that is passed into this
- * processor.
- * 
- * 
- * @author apazzolini
+ * Thymeleaf Processor that replaces the "href" attribute on an element, maintaining the current search criteria
+ * of the request and adding (or replacing, if it exists) the page number parameter on the request.
+ *
+ * @author Joseph Fridye (jfridye)
  */
-public class PaginationPageLinkProcessor extends AbstractAttributeModifierAttrProcessor {
+public class PaginationPageLinkProcessor extends AbstractAttributeTagProcessor {
 
-    /**
-     * Sets the name of this processor to be used in Thymeleaf template
-     */
-    public PaginationPageLinkProcessor() {
-        super("paginationpagelink");
-    }
-    
-    @Override
-    public int getPrecedence() {
-        return 10000;
+    public PaginationPageLinkProcessor(String dialectPrefix) {
+        super(TemplateMode.HTML, dialectPrefix, null, false, "paginationpagelink", true, 10000, true);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
-        Map<String, String> attrs = new HashMap<String, String>();
-        
-        BroadleafRequestContext blcContext = BroadleafRequestContext.getBroadleafRequestContext();
-        HttpServletRequest request = blcContext.getRequest();
-        
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag,
+            AttributeName attributeName, String attributeValue, IElementTagStructureHandler structureHandler) {
+
+        HttpServletRequest request = BroadleafRequestContext.getBroadleafRequestContext().getRequest();
+
         String baseUrl = request.getRequestURL().toString();
+
         Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
-        
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue(attributeName));
-        Integer page = (Integer) expression.execute(arguments.getConfiguration(), arguments);
+
+        Integer page = Integer.parseInt(attributeValue);
+
         if (page != null && page > 1) {
-            params.put(SearchCriteria.PAGE_NUMBER, new String[] { page.toString() });
+            params.put(SearchCriteria.PAGE_NUMBER, new String[]{page.toString()});
         } else {
             params.remove(SearchCriteria.PAGE_NUMBER);
         }
-        
+
         String url = ProcessorUtils.getUrl(baseUrl, params);
-        
-        attrs.put("href", url);
-        return attrs;
-    }
 
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
+        structureHandler.setAttribute("href", url);
     }
 }

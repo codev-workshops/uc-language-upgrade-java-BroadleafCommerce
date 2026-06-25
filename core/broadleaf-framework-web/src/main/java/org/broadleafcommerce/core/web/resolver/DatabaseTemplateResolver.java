@@ -19,17 +19,16 @@
  */
 package org.broadleafcommerce.core.web.resolver;
 
-import org.thymeleaf.templateresolver.TemplateResolver;
+import org.thymeleaf.templateresolver.StringTemplateResolver;
 
 /**
- * This {@link TemplateResolver} serves as a placeholder class that can be used to inject 
- * a {@link DatabaseResourceResolver}. It doesn't need to actually override any methods from
- * TemplateResolver.
+ * This resolver serves as a placeholder class that can be used to inject 
+ * a {@link DatabaseResourceResolver}. It extends StringTemplateResolver from TL3.
  * 
  * The injection happens in XML configuration.
  * 
  * @author Andre Azzolini (apazzolini)
  */
-public class DatabaseTemplateResolver extends TemplateResolver {
+public class DatabaseTemplateResolver extends StringTemplateResolver {
     
 }

@@ -21,9 +21,7 @@ package org.broadleafcommerce.core.web.processor;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.broadleafcommerce.cms.web.PageHandlerMapping;
 import org.broadleafcommerce.common.exception.ServiceException;
-import org.broadleafcommerce.common.page.dto.PageDTO;
 import org.broadleafcommerce.common.security.service.ExploitProtectionService;
 import org.broadleafcommerce.common.util.StringUtil;
 import org.broadleafcommerce.core.catalog.domain.Product;
@@ -38,12 +36,11 @@ import org.broadleafcommerce.core.web.processor.extension.UncacheableDataProcess
 import org.broadleafcommerce.profile.core.domain.Customer;
 import org.broadleafcommerce.profile.web.core.CustomerState;
 import org.springframework.beans.factory.annotation.Value;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.dom.Macro;
-import org.thymeleaf.dom.Node;
-import org.thymeleaf.processor.ProcessorResult;
-import org.thymeleaf.processor.element.AbstractElementProcessor;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,12 +65,12 @@ import javax.annotation.Resource;
  * Example usage on cached pages with dynamic data.   This would generally go after the footer for the page.
  * <pre>
  *  {@code
- *      <blc:uncacheableData />  
+ *      <blc:uncacheabledata />  
  *  }
  * </pre>
  * @author bpolster
  */
-public class UncacheableDataProcessor extends AbstractElementProcessor {
+public class UncacheableDataProcessor extends AbstractElementTagProcessor {
     
     @Value("${solr.index.use.sku}")
     protected boolean useSku;
@@ -89,44 +86,29 @@ public class UncacheableDataProcessor extends AbstractElementProcessor {
 
     private String defaultCallbackFunction = "updateUncacheableData(params)";
 
-    /**
-     * Sets the name of this processor to be used in Thymeleaf template
-     */
-    public UncacheableDataProcessor() {
-        super("uncacheabledata");
+    public UncacheableDataProcessor(String dialectPrefix) {
+        super(TemplateMode.HTML, dialectPrefix, "uncacheabledata", true, null, false, 100);
     }
 
     @Override
-    public int getPrecedence() {
-        return 100;
-    }
-
-
-    @Override
-    protected ProcessorResult processElement(Arguments arguments, Element element) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag,
+            IElementTagStructureHandler structureHandler) {
         StringBuffer sb = new StringBuffer();
         sb.append("<SCRIPT>\n");
         sb.append("  var params = \n  ");
-        sb.append(buildContentMap(arguments)).append(";\n  ");
-        sb.append(getUncacheableDataFunction(arguments, element)).append(";\n");
+        sb.append(buildContentMap(context)).append(";\n  ");
+        sb.append(getUncacheableDataFunction(context, tag)).append(";\n");
         sb.append("</SCRIPT>");
                 
-        // Add contentNode to the document
-        Node contentNode = new Macro(sb.toString());
-        element.clearChildren();
-        element.getParent().insertAfter(element, contentNode);
-        element.getParent().removeChild(element);
-
-        // Return OK
-        return ProcessorResult.OK;
-
+        structureHandler.replaceWith(sb.toString(), false);
     }
 
-    protected String buildContentMap(Arguments arguments) {
+    @SuppressWarnings("unchecked")
+    protected String buildContentMap(ITemplateContext context) {
         Map<String, Object> attrMap = new HashMap<String, Object>();
         addCartData(attrMap);
         addCustomerData(attrMap);
-        addProductInventoryData(attrMap, arguments);
+        addProductInventoryData(attrMap, context);
 
         try {
             attrMap.put("csrfToken", eps.getCSRFToken());
@@ -137,14 +119,15 @@ public class UncacheableDataProcessor extends AbstractElementProcessor {
         return StringUtil.getMapAsJson(attrMap);
     }
 
-    protected void addProductInventoryData(Map<String, Object> attrMap, Arguments arguments) {
+    @SuppressWarnings("unchecked")
+    protected void addProductInventoryData(Map<String, Object> attrMap, ITemplateContext context) {
         List<Long> outOfStockProducts = new ArrayList<Long>();
         List<Long> outOfStockSkus = new ArrayList<Long>();
 
         Set<Product> allProducts = new HashSet<Product>();
         Set<Sku> allSkus = new HashSet<Sku>();
-        Set<Product> products = (Set<Product>) ((Map<String, Object>) arguments.getExpressionEvaluationRoot()).get("blcAllDisplayedProducts");
-        Set<Sku> skus = (Set<Sku>) ((Map<String, Object>) arguments.getExpressionEvaluationRoot()).get("blcAllDisplayedSkus");
+        Set<Product> products = (Set<Product>) context.getVariable("blcAllDisplayedProducts");
+        Set<Sku> skus = (Set<Sku>) context.getVariable("blcAllDisplayedSkus");
         if (!CollectionUtils.isEmpty(products)) {
             allProducts.addAll(products);
         }
@@ -152,7 +135,7 @@ public class UncacheableDataProcessor extends AbstractElementProcessor {
             allSkus.addAll(skus);
         }
 
-        extensionManager.getProxy().modifyProductListForInventoryCheck(arguments, allProducts, allSkus);
+        extensionManager.getProxy().modifyProductListForInventoryCheck(context, allProducts, allSkus);
 
         if (!allProducts.isEmpty()) {
             for (Product product : allProducts) {
@@ -238,9 +221,9 @@ public class UncacheableDataProcessor extends AbstractElementProcessor {
         attrMap.put("anonymous", anonymous);
     }
     
-    public String getUncacheableDataFunction(Arguments arguments, Element element) {
-        if (element.hasAttribute("callback")) {
-            return element.getAttributeValue("callback");
+    public String getUncacheableDataFunction(ITemplateContext context, IProcessableElementTag tag) {
+        if (tag.hasAttribute("callback")) {
+            return tag.getAttributeValue("callback");
         } else {
             return getDefaultCallbackFunction();
         }
@@ -249,7 +232,7 @@ public class UncacheableDataProcessor extends AbstractElementProcessor {
     public String getDefaultCallbackFunction() {
         return defaultCallbackFunction;
     }
-    
+
     public void setDefaultCallbackFunction(String defaultCallbackFunction) {
         this.defaultCallbackFunction = defaultCallbackFunction;
     }
