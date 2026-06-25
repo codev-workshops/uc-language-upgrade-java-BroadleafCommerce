@@ -46,15 +46,15 @@
     </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.version>4.1.9.RELEASE</spring.version>
-        <spring.security.version>3.2.9.RELEASE</spring.security.version>
-        <maven.source.plugin.version>2.2.1</maven.source.plugin.version>
-        <thymeleaf.version>2.1.4.RELEASE</thymeleaf.version>
+        <spring.version>5.3.31</spring.version>
+        <spring.security.version>5.8.9</spring.security.version>
+        <maven.source.plugin.version>3.3.1</maven.source.plugin.version>
+        <thymeleaf.version>3.1.2.RELEASE</thymeleaf.version>
         <geb.version>0.10.0</geb.version>
-        <spock.core.version>1.0-groovy-2.3</spock.core.version>
-        <spock.spring.version>1.0-groovy-2.3</spock.spring.version>
+        <spock.core.version>2.3-groovy-3.0</spock.core.version>
+        <spock.spring.version>2.3-groovy-3.0</spock.spring.version>
         <selenium.version>2.43.1</selenium.version>
-        <groovy.version>2.3.10</groovy.version>
+        <groovy.version>3.0.21</groovy.version>
         <gpg.plugin.version>1.6</gpg.plugin.version>
         <project.uri>${project.baseUri}</project.uri>
     </properties>
@@ -70,10 +70,9 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.1</version>
+                    <version>3.11.0</version>
                     <configuration>
-                        <source>1.7</source>
-                        <target>1.7</target>
+                        <release>17</release>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -97,22 +96,22 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.10</version>
+                    <version>3.2.5</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-war-plugin</artifactId>
-                    <version>2.1.1</version>
+                    <version>3.4.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.3.2</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
+                    <version>3.1.2</version>
                     <configuration>
                         <deployAtEnd>true</deployAtEnd>
                     </configuration>
@@ -120,10 +119,7 @@
                 <plugin>
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
-                    <version>1.5</version>
-                    <configuration>
-                        <targetBytecode>1.7</targetBytecode>
-                    </configuration>
+                    <version>3.0.2</version>
                     <executions>
                         <execution>
                             <goals>
@@ -224,27 +220,6 @@
         </pluginManagement>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>animal-sniffer-maven-plugin</artifactId>
-                <version>1.15</version>
-                <executions>
-                    <execution>
-                        <id>sniff</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <signature>
-                        <groupId>org.codehaus.mojo.signature</groupId>
-                        <artifactId>java17</artifactId>
-                        <version>1.0</version>
-                    </signature>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.3</version>
@@ -302,7 +277,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.9</version>
+                <version>0.8.11</version>
                 <executions>
                     <!-- Unit test coverage prep; generates jacoco.exec -->
                     <execution>
@@ -453,7 +428,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9.1</version>
+                        <version>3.6.3</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -582,28 +557,28 @@
 
             <!-- Hibernate Libraries -->
             <dependency>
-                <groupId>org.hibernate.javax.persistence</groupId>
-                <artifactId>hibernate-jpa-2.0-api</artifactId>
-                <version>1.0.0.Final</version>
+                <groupId>javax.persistence</groupId>
+                <artifactId>javax.persistence-api</artifactId>
+                <version>2.2</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-envers</artifactId>
-                <version>4.1.11.Final</version>
+                <version>5.6.15.Final</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
-                <version>4.1.11.Final</version>
+                <version>5.6.15.Final</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-entitymanager</artifactId>
-                <version>4.1.11.Final</version>
+                <version>5.6.15.Final</version>
                 <type>jar</type>
                 <scope>compile</scope>
                 <exclusions>
@@ -619,15 +594,9 @@
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-ehcache</artifactId>
-                <version>4.1.11.Final</version>
+                <artifactId>hibernate-jcache</artifactId>
+                <version>5.6.15.Final</version>
                 <scope>compile</scope>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>ehcache-core</artifactId>
-                        <groupId>net.sf.ehcache</groupId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <!-- Commons Libraries -->
@@ -733,32 +702,42 @@
                 <scope>compile</scope>
             </dependency>
 
-            <!-- Logging -->
+            <!-- Logging (Log4j 1.x bridge over Log4j2 via SLF4J) -->
             <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>1.2.12</version>
-                <type>jar</type>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-1.2-api</artifactId>
+                <version>2.22.1</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>1.6.1</version>
-                <type>jar</type>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>2.22.1</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>2.22.1</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>2.22.1</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>jcl-over-slf4j</artifactId>
-                <version>1.6.1</version>
+                <version>1.7.36</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.6.1</version>
+                <version>1.7.36</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -785,9 +764,9 @@
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>mail</artifactId>
-                <version>1.4.1</version>
+                <groupId>com.sun.mail</groupId>
+                <artifactId>javax.mail</artifactId>
+                <version>1.6.2</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -843,8 +822,20 @@
             <dependency>
                 <groupId>javax.xml.bind</groupId>
                 <artifactId>jaxb-api</artifactId>
-                <version>2.1</version>
-                <scope>provided</scope>
+                <version>2.3.1</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>2.3.9</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>1.3.2</version>
+                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.jaxrs</groupId>
@@ -865,8 +856,8 @@
             <!-- Servlet API -->
             <dependency>
                 <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>2.5</version>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>4.0.1</version>
                 <type>jar</type>
                 <scope>provided</scope>
             </dependency>
@@ -902,7 +893,7 @@
             </dependency>
             <dependency>
                 <groupId>org.thymeleaf</groupId>
-                <artifactId>thymeleaf-spring4</artifactId>
+                <artifactId>thymeleaf-spring5</artifactId>
                 <version>${thymeleaf.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
@@ -910,7 +901,7 @@
             <dependency>
                 <groupId>nz.net.ultraq.thymeleaf</groupId>
                 <artifactId>thymeleaf-layout-dialect</artifactId>
-                <version>1.2.5</version>
+                <version>3.3.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -946,9 +937,8 @@
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
-                <version>5.9</version>
+                <version>7.9.0</version>
                 <type>jar</type>
-                <classifier>jdk15</classifier>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -998,95 +988,16 @@
             <dependency>
                 <artifactId>solr-solrj</artifactId>
                 <groupId>org.apache.solr</groupId>
-                <version>4.10.3</version>
+                <version>8.11.3</version>
                 <type>jar</type>
                 <scope>compile</scope>
-                <exclusions>
-                    <!-- This brings in a very old version of Woodstox, we are manually including this above, next to the
-                        Jackson dependencies -->
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>wstx-asl</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <artifactId>solr-core</artifactId>
-                <groupId>org.apache.solr</groupId>
-                <version>4.10.3</version>
-                <type>jar</type>
-                <scope>compile</scope>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>slf4j-jdk14</artifactId>
-                        <groupId>org.slf4j</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.servlet.jsp</groupId>
-                        <artifactId>jsp-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty.orbit</groupId>
-                        <artifactId>javax.servlet</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <!-- This brings in a very old version of Woodstox, we are manually including this above, next to the
-                        Jackson dependencies -->
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>wstx-asl</artifactId>
-                    </exclusion>
-                    <!-- The jdk.tools transitive dependency uses system scope -->
-                        <!-- which has to be resolved in a platform agnostic way -->
-                        <!-- in order to have a clean compile in Eclipse. That -->
-                        <!-- turned out to be surprisingly difficult to achieve. -->
-        
-                        <!-- From the dependency tree below we can see that -->
-                        <!-- jdk.tools is pulled in by hadoop-annotations -->
-                        <!-- and since this is a normal JDK system jar we can avoid the -->
-                        <!-- problem by excluding the jdk.tools dependency. -->
-        
-                        <!-- Relevant output from mvn dependency:tree follows -->
-                        <!-- +- org.broadleafcommerce:broadleaf-framework:jar:{version}:compile -->
-                        <!--    +- org.apache.solr:solr-core:jar:4.4.0:compile -->
-                        <!--        +- org.apache.hadoop:hadoop-annotations:jar:2.0.5-alpha:compile -->
-                        <!--            \- jdk.tools:jdk.tools:jar:1.6:system -->
-                    <exclusion>
-                        <groupId>jdk.tools</groupId>
-                        <artifactId>jdk.tools</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <!-- Byte Code Manipulation Libraries -->
             <dependency>
-                <groupId>cglib</groupId>
-                <artifactId>cglib-nodep</artifactId>
-                <version>2.1_3</version>
-                <type>jar</type>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>asm</groupId>
-                <artifactId>asm</artifactId>
-                <version>3.3</version>
-                <type>jar</type>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>asm</groupId>
-                <artifactId>asm-commons</artifactId>
-                <version>3.3</version>
-                <type>jar</type>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
-                <version>3.17.1-GA</version>
+                <version>3.29.2-GA</version>
                 <scope>compile</scope>
             </dependency>
 
@@ -1126,18 +1037,16 @@
 
             <!--Cache Libraries -->
             <dependency>
-                <groupId>net.sf.jsr107cache</groupId>
-                <artifactId>jsr107cache</artifactId>
-                <version>1.0</version>
-                <type>jar</type>
-                <scope>runtime</scope>
+                <groupId>javax.cache</groupId>
+                <artifactId>cache-api</artifactId>
+                <version>1.1.1</version>
+                <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>net.sf.ehcache</groupId>
+                <groupId>org.ehcache</groupId>
                 <artifactId>ehcache</artifactId>
-                <version>2.7.2</version>
+                <version>3.10.8</version>
                 <scope>compile</scope>
-                <type>jar</type>
             </dependency>
 
             <!--Spring Libraries -->
@@ -1429,7 +1338,7 @@
             <dependency>
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjweaver</artifactId>
-                <version>1.6.5</version>
+                <version>1.9.21</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -1492,7 +1401,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>24.1.1-jre</version>
+                <version>33.0.0-jre</version>
             </dependency>
             <dependency>
                 <groupId>de.jkeylockmanager</groupId>

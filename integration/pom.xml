@@ -72,7 +72,7 @@
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.2</version>
+                <version>3.0.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -82,7 +82,7 @@
                         <id>default-test</id>
                         <configuration>
                             <skipTests>true</skipTests>
-                            <argLine>-Xmx1024m -XX:MaxPermSize=512m
+                            <argLine>-Xmx1024m
                                 -Dlegacy=true ${surefire.argLine}</argLine>
                         </configuration>
                     </execution>
@@ -96,7 +96,7 @@
                             <excludes>
                                 <exclude>**/Legacy**Test.java</exclude>
                             </excludes>
-                            <argLine>-Xmx1024m -XX:MaxPermSize=512m ${surefire.argLine}</argLine>
+                            <argLine>-Xmx1024m ${surefire.argLine}</argLine>
                         </configuration>
                     </execution>
                 </executions>
@@ -202,7 +202,7 @@
                                     <argLine>
                                         -Dlegacy=true
                                         -Xmx1024m
-                                        -XX:MaxPermSize=512m -Xdebug
+                                        -Xdebug
                                         -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8083
                                         -agentpath:${jrebel.path}
                                         -Drebel.log.stdout=true
@@ -215,7 +215,7 @@
                                 <configuration>
                                     <argLine>
                                         -Xmx1024m
-                                        -XX:MaxPermSize=512m -Xdebug
+                                        -Xdebug
                                         -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8083
                                         -agentpath:${jrebel.path}
                                         -Drebel.log.stdout=true
@@ -272,7 +272,6 @@
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <type>jar</type>
-            <classifier>jdk15</classifier>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
