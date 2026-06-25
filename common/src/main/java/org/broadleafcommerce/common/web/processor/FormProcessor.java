@@ -24,12 +24,20 @@ import org.broadleafcommerce.common.security.handler.CsrfFilter;
 import org.broadleafcommerce.common.security.service.ExploitProtectionService;
 import org.broadleafcommerce.common.security.service.StaleStateProtectionService;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.ProcessorResult;
-import org.thymeleaf.processor.element.AbstractElementProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IAttribute;
+import org.thymeleaf.model.IModel;
+import org.thymeleaf.model.IModelFactory;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
+import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.templatemode.TemplateMode;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -41,7 +49,7 @@ import javax.annotation.Resource;
  * @see {@link CsrfFilter}
  */
 @Component("blFormProcessor")
-public class FormProcessor extends AbstractElementProcessor {
+public class FormProcessor extends AbstractElementTagProcessor {
     
     @Resource(name = "blExploitProtectionService")
     protected ExploitProtectionService eps;
@@ -49,27 +57,29 @@ public class FormProcessor extends AbstractElementProcessor {
     @Resource(name = "blStaleStateProtectionService")
     protected StaleStateProtectionService spps;
     
-    /**
-     * Sets the name of this processor to be used in Thymeleaf template
-     */
     public FormProcessor() {
-        super("form");
-    }
-    
-    /**
-     * We need this replacement to execute as early as possible to allow subsequent processors to act
-     * on this element as if it were a normal form instead of a blc:form
-     */
-    @Override
-    public int getPrecedence() {
-        return 1;
+        super(TemplateMode.HTML, "blc", "form", true, null, false, 1);
     }
 
     @Override
-    protected ProcessorResult processElement(Arguments arguments, Element element) {
-        // If the form will be not be submitted with a GET, we must add the CSRF token
-        // We do this instead of checking for a POST because post is default if nothing is specified
-        if (!"GET".equalsIgnoreCase(element.getAttributeValueFromNormalizedName("method"))) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        String method = tag.getAttributeValue("method");
+        IModelFactory modelFactory = context.getModelFactory();
+        IModel model = modelFactory.createModel();
+
+        // Build a map of attributes for the output <form> tag, preserving original attributes
+        Map<String, String> attrs = new HashMap<>();
+        for (IAttribute attr : tag.getAllAttributes()) {
+            String completeName = attr.getAttributeCompleteName();
+            // Skip the matched element name attributes (handled by TL3)
+            if (!completeName.startsWith("blc:")) {
+                attrs.put(completeName, attr.getValue());
+            }
+        }
+
+        model.add(modelFactory.createOpenElementTag("form", attrs, null, false));
+
+        if (!"GET".equalsIgnoreCase(method)) {
             try {
                 String csrfToken = eps.getCSRFToken();
                 String stateVersionToken = null;
@@ -77,44 +87,45 @@ public class FormProcessor extends AbstractElementProcessor {
                     stateVersionToken = spps.getStateVersionToken();
                 }
 
-                //detect multipart form
-                if ("multipart/form-data".equalsIgnoreCase(element.getAttributeValueFromNormalizedName("enctype"))) {
-                    Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                            .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValueFromNormalizedName("th:action"));
-                    String action = (String) expression.execute(arguments.getConfiguration(), arguments);
+                String enctype = tag.getAttributeValue("enctype");
+                if ("multipart/form-data".equalsIgnoreCase(enctype)) {
+                    String thAction = tag.getAttributeValue("th:action");
+                    IStandardExpressionParser parser = StandardExpressions.getExpressionParser(context.getConfiguration());
+                    IStandardExpression expression = parser.parseExpression(context, thAction);
+                    String action = (String) expression.execute(context);
                     String csrfQueryParameter = "?" + eps.getCsrfTokenParameter() + "=" + csrfToken;
                     if (stateVersionToken != null) {
                         csrfQueryParameter += "&" + spps.getStateVersionTokenParameter() + "=" + stateVersionToken;
                     }
-                    element.removeAttribute("th:action");
-                    element.setAttribute("action", action + csrfQueryParameter);
+                    // The action attribute will be set in the output form tag
+                    attrs.put("action", action + csrfQueryParameter);
+                    attrs.remove("th:action");
+                    // Rebuild the open tag with updated attributes
+                    model = modelFactory.createModel();
+                    model.add(modelFactory.createOpenElementTag("form", attrs, null, false));
                 } else {
-                    Element csrfNode = new Element("input");
-                    csrfNode.setAttribute("type", "hidden");
-                    csrfNode.setAttribute("name", eps.getCsrfTokenParameter());
-                    csrfNode.setAttribute("value", csrfToken);
-                    element.addChild(csrfNode);
+                    // Add hidden CSRF fields
+                    StringBuilder csrfHidden = new StringBuilder();
+                    csrfHidden.append("<input type=\"hidden\" name=\"")
+                              .append(eps.getCsrfTokenParameter())
+                              .append("\" value=\"")
+                              .append(csrfToken)
+                              .append("\" />");
                     if (stateVersionToken != null) {
-                        Element versionNode = new Element("input");
-                        versionNode.setAttribute("type", "hidden");
-                        versionNode.setAttribute("name", spps.getStateVersionTokenParameter());
-                        versionNode.setAttribute("value", stateVersionToken);
-                        element.addChild(versionNode);
+                        csrfHidden.append("<input type=\"hidden\" name=\"")
+                                  .append(spps.getStateVersionTokenParameter())
+                                  .append("\" value=\"")
+                                  .append(stateVersionToken)
+                                  .append("\" />");
                     }
+                    model.add(modelFactory.createText(csrfHidden.toString()));
                 }
-
             } catch (ServiceException e) {
                 throw new RuntimeException("Could not get a CSRF token for this session", e);
             }
         }
-        
-        // Convert the <blc:form> node to a normal <form> node
-        Element newElement = element.cloneElementNodeWithNewName(element.getParent(), "form", false);
-        newElement.setRecomputeProcessorsImmediately(true);
-        element.getParent().insertAfter(element, newElement);
-        element.getParent().removeChild(element);
-        
-        return ProcessorResult.OK;
+
+        model.add(modelFactory.createCloseElementTag("form"));
+        structureHandler.replaceWith(model, true);
     }
-    
 }

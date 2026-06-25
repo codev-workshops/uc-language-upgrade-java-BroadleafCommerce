@@ -19,7 +19,7 @@
  */
 package org.broadleafcommerce.common.util.dao;
 
-import org.hibernate.ejb.Ejb3Configuration;
+import org.hibernate.boot.Metadata;
 
 /**
  * 
@@ -28,6 +28,6 @@ import org.hibernate.ejb.Ejb3Configuration;
  */
 public interface EJB3ConfigurationDao {
 
-    public abstract Ejb3Configuration getConfiguration();
+    Metadata getMetadata();
 
 }

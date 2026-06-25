@@ -25,7 +25,7 @@ import org.broadleafcommerce.common.site.domain.Catalog;
 import org.broadleafcommerce.common.site.domain.Site;
 import org.broadleafcommerce.common.util.TransactionUtils;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.jpa.HibernateEntityManager;
 import org.springframework.orm.jpa.EntityManagerHolder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;

@@ -19,9 +19,11 @@
  */
 package org.broadleafcommerce.common.web;
 
-import org.thymeleaf.TemplateProcessingParameters;
+import org.thymeleaf.IEngineConfiguration;
 import org.thymeleaf.templateresolver.ITemplateResolver;
-import org.thymeleaf.templateresolver.TemplateResolution;
+import org.thymeleaf.templateresource.ITemplateResource;
+
+import java.util.Map;
 
 /**
  * Placeholder component to support a custom TemplateResolver.
@@ -43,12 +45,11 @@ public class NullBroadleafTemplateResolver implements ITemplateResolver {
     }
 
     @Override
-    public TemplateResolution resolveTemplate(TemplateProcessingParameters templateProcessingParameters) {
+    public org.thymeleaf.templateresolver.TemplateResolution resolveTemplate(
+            IEngineConfiguration configuration,
+            String ownerTemplate,
+            String template,
+            Map<String, Object> templateResolutionAttributes) {
         return null;
-    }
-
-    @Override
-    public void initialize() {
-
     }
 }

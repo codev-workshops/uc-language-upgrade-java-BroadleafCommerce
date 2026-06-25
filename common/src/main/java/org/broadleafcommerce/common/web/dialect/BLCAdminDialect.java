@@ -19,33 +19,27 @@
  */
 package org.broadleafcommerce.common.web.dialect;
 
-import org.thymeleaf.dialect.AbstractDialect;
+import org.thymeleaf.dialect.AbstractProcessorDialect;
 import org.thymeleaf.processor.IProcessor;
+import org.thymeleaf.standard.StandardDialect;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class BLCAdminDialect extends AbstractDialect {
+public class BLCAdminDialect extends AbstractProcessorDialect {
 
-    private Set<IProcessor> processors = new HashSet<IProcessor>();
+    private Set<IProcessor> processors = new HashSet<>();
 
-    @Override
-    public String getPrefix() {
-        return "blc_admin";
+    public BLCAdminDialect() {
+        super("BLC Admin Dialect", "blc_admin", StandardDialect.PROCESSOR_PRECEDENCE);
     }
 
     @Override
-    public boolean isLenient() {
-        return true;
-    }
-
-    @Override
-    public Set<IProcessor> getProcessors() {
+    public Set<IProcessor> getProcessors(String dialectPrefix) {
         return processors;
     }
 
     public void setProcessors(Set<IProcessor> processors) {
         this.processors = processors;
     }
-
 }

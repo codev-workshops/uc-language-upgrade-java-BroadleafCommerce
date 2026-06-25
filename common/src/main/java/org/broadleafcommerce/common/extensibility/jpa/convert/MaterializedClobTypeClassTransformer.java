@@ -28,7 +28,6 @@ import javassist.bytecode.annotation.StringMemberValue;
 import org.broadleafcommerce.common.extensibility.jpa.copy.DirectCopyIgnorePattern;
 import org.hibernate.annotations.Type;
 import org.hibernate.type.MaterializedClobType;
-import org.hibernate.type.StringClobType;
 
 import javax.annotation.Resource;
 import javax.persistence.Embeddable;
@@ -123,7 +122,7 @@ public class MaterializedClobTypeClassTransformer implements BroadleafClassTrans
                                 String typeName = annotation.getTypeName();
                                 if (typeName.equals(Type.class.getName())) {
                                     StringMemberValue annot = (StringMemberValue) annotation.getMemberValue("type");
-                                    if (annot != null && annot.getValue().equals(StringClobType.class.getName())) {
+                                    if (annot != null && annot.getValue().equals("org.hibernate.type.StringClobType")) {
                                         Annotation clobType = new Annotation(Type.class.getName(), constantPool);
                                         StringMemberValue type = new StringMemberValue(constantPool);
                                         type.setValue(MaterializedClobType.class.getName());

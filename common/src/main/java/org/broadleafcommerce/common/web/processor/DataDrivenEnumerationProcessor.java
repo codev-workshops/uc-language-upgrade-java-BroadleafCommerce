@@ -24,8 +24,9 @@ import org.broadleafcommerce.common.enumeration.domain.DataDrivenEnumeration;
 import org.broadleafcommerce.common.enumeration.domain.DataDrivenEnumerationValue;
 import org.broadleafcommerce.common.enumeration.service.DataDrivenEnumerationService;
 import org.broadleafcommerce.common.web.dialect.AbstractModelVariableModifierProcessor;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,14 +37,7 @@ import javax.annotation.Resource;
 
 
 /**
- * Processor that adds a list of {@link DataDriveEnumerationValue}s onto the model for a particular key.
- *  This will add a new variable on the model called 'enumValues'
- *
- * @param key (required) key for the {@link DataDrivenEnumeration} that the {@link DataDrivenEnumerationValue}s should be
- * apart of. This corresponds to {@link DataDrivenEnumeration#getKey()}.
- * 
- * @param sort (optional) <i>ASCENDING</i> or <i>DESCENDING</i> if the resulting values should be sorted by not. The sort will be on
- *          {@link DataDrivenEnumerationValue#getDisplay()}
+ * Processor that adds a list of {@link DataDrivenEnumerationValue}s onto the model for a particular key.
  *
  * @author Phillip Verheyden (phillipuniverse)
  */
@@ -51,17 +45,14 @@ public class DataDrivenEnumerationProcessor extends AbstractModelVariableModifie
 
     @Resource(name = "blDataDrivenEnumerationService")
     protected DataDrivenEnumerationService enumService;
-    
-    /**
-     * @param elementName
-     */
-    public DataDrivenEnumerationProcessor() {
-        super("enumeration");
+
+    public DataDrivenEnumerationProcessor(String dialectPrefix) {
+        super(dialectPrefix, "enumeration");
     }
 
     @Override
-    protected void modifyModelAttributes(Arguments arguments, Element element) {
-        String key = element.getAttributeValue("key");
+    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        String key = tag.getAttributeValue("key");
         if (StringUtils.isEmpty(key)) {
             throw new IllegalArgumentException("No 'key' parameter was passed to find enumeration values");
         }
@@ -70,9 +61,9 @@ public class DataDrivenEnumerationProcessor extends AbstractModelVariableModifie
         if (ddEnum == null) {
             throw new IllegalArgumentException("Could not find a data driven enumeration keyed by " + key);
         }
-        List<DataDrivenEnumerationValue> enumValues = new ArrayList<DataDrivenEnumerationValue>(ddEnum.getEnumValues());
+        List<DataDrivenEnumerationValue> enumValues = new ArrayList<>(ddEnum.getEnumValues());
         
-        final String sort = element.getAttributeValue("sort");
+        final String sort = tag.getAttributeValue("sort");
         if (StringUtils.isNotEmpty(sort)) {
             Collections.sort(enumValues, new Comparator<DataDrivenEnumerationValue>() {
 
@@ -87,12 +78,6 @@ public class DataDrivenEnumerationProcessor extends AbstractModelVariableModifie
             });
         }
         
-        addToModel(arguments, "enumValues", enumValues);
+        addToModel(structureHandler, "enumValues", enumValues);
     }
-
-    @Override
-    public int getPrecedence() {
-        return 1;
-    }
-
 }

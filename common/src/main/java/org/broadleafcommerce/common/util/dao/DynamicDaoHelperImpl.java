@@ -28,7 +28,7 @@ import org.broadleafcommerce.common.exception.ProxyDetectionException;
 import org.broadleafcommerce.common.presentation.AdminPresentationClass;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.jpa.HibernateEntityManager;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.Type;
@@ -146,7 +146,7 @@ public class DynamicDaoHelperImpl implements DynamicDaoHelper {
         boolean eof = false;
         while (!eof) {
             Class<?> superClass = topConcreteClass.getSuperclass();
-            PersistentClass persistentClass = ejb3ConfigurationDao.getConfiguration().getClassMapping(superClass.getName());
+            PersistentClass persistentClass = ejb3ConfigurationDao.getMetadata().getEntityBinding(superClass.getName());
             if (persistentClass == null) {
                 eof = true;
             } else {

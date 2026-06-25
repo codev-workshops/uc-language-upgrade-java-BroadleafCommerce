@@ -28,8 +28,7 @@ import org.broadleafcommerce.common.extensibility.jpa.convert.BroadleafClassTran
 import org.broadleafcommerce.common.extensibility.jpa.convert.BroadleafPersistenceUnitDeclaringClassTransformer;
 import org.broadleafcommerce.common.extensibility.jpa.convert.EntityMarkerClassTransformer;
 import org.broadleafcommerce.common.extensibility.jpa.copy.NullClassTransformer;
-import org.hibernate.ejb.AvailableSettings;
-import org.hibernate.ejb.instrument.InterceptFieldClassFileTransformer;
+import org.hibernate.jpa.AvailableSettings;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.jmx.export.MBeanExporter;
@@ -223,9 +222,8 @@ public class MergePersistenceUnitManager extends DefaultPersistenceUnitManager {
             
             boolean weaverRegistered = true;
             for (PersistenceUnitInfo pui : mergedPus.values()) {
-                if (pui.getProperties().containsKey(AvailableSettings.USE_CLASS_ENHANCER) && "true".equalsIgnoreCase(pui.getProperties().getProperty(AvailableSettings.USE_CLASS_ENHANCER))) {
-                    pui.addTransformer(new InterceptFieldClassFileTransformer(pui.getManagedClassNames()));
-                }
+                // In Hibernate 5.6+, bytecode enhancement is handled via hibernate.enhancer.enableDirtyTracking
+                // and related properties. InterceptFieldClassFileTransformer has been removed.
                 for (BroadleafClassTransformer transformer : classTransformers) {
                     try {
                         boolean isTransformerQualified = !(transformer instanceof NullClassTransformer) &&

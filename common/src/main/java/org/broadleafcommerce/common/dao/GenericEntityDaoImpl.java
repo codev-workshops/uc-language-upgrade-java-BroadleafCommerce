@@ -29,7 +29,7 @@ import org.broadleafcommerce.common.util.dao.DynamicDaoHelperImpl;
 import org.broadleafcommerce.common.util.dao.TypedQueryBuilder;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.jpa.HibernateEntityManager;
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.LongType;

@@ -25,8 +25,6 @@ import net.sf.ehcache.Element;
 import net.sf.ehcache.event.CacheEventListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.cache.spi.CacheKey;
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Hashtable;
@@ -135,10 +133,6 @@ public class HydratedCacheManagerImpl implements CacheEventListener, HydratedCac
 
     private void removeCache(String cacheRegion, Serializable key) {
         String cacheName = cacheRegion;
-        if (key instanceof CacheKey) {
-            cacheName = ((CacheKey) key).getEntityOrRoleName();
-            key = ((CacheKey) key).getKey();
-        }
         if (containsCache(cacheRegion, cacheName)) {
             HydratedCache cache = hydratedCacheContainer.get(cacheRegion + "_" + cacheName);
             String myKey = cacheRegion + "_" + cacheName + "_" + key;

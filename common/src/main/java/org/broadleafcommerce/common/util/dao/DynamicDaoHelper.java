@@ -22,7 +22,7 @@ package org.broadleafcommerce.common.util.dao;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.jpa.HibernateEntityManager;
 import org.hibernate.type.Type;
 
 import java.io.Serializable;

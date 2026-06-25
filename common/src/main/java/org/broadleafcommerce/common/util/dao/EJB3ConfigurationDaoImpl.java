@@ -19,9 +19,13 @@
  */
 package org.broadleafcommerce.common.util.dao;
 
-import org.hibernate.ejb.Ejb3Configuration;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.spi.PersistenceUnitInfo;
 
@@ -32,24 +36,42 @@ import javax.persistence.spi.PersistenceUnitInfo;
  */
 public class EJB3ConfigurationDaoImpl implements EJB3ConfigurationDao {
 
-    private Ejb3Configuration configuration = null;
+    private Metadata metadata = null;
 
     protected PersistenceUnitInfo persistenceUnitInfo;
 
-    public Ejb3Configuration getConfiguration() {
+    @Override
+    public Metadata getMetadata() {
         synchronized(this) {
-            if (configuration == null) {
-                Ejb3Configuration temp = new Ejb3Configuration();
+            if (metadata == null) {
                 String previousValue = persistenceUnitInfo.getProperties().getProperty("hibernate.hbm2ddl.auto");
                 persistenceUnitInfo.getProperties().setProperty("hibernate.hbm2ddl.auto", "none");
-                configuration = temp.configure(persistenceUnitInfo, new HashMap());
-                configuration.getHibernateConfiguration().buildSessionFactory();
+
+                Map<String, Object> settings = new HashMap<>();
+                persistenceUnitInfo.getProperties().forEach((k, v) -> settings.put((String) k, v));
+
+                StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                        .applySettings(settings)
+                        .build();
+
+                MetadataSources metadataSources = new MetadataSources(serviceRegistry);
+                for (String className : persistenceUnitInfo.getManagedClassNames()) {
+                    try {
+                        metadataSources.addAnnotatedClass(Class.forName(className));
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException("Could not load managed class: " + className, e);
+                    }
+                }
+
+                metadata = metadataSources.buildMetadata();
+                metadata.buildSessionFactory();
+
                 if (previousValue != null) {
                     persistenceUnitInfo.getProperties().setProperty("hibernate.hbm2ddl.auto", previousValue);
                 }
             }
         }
-        return configuration;
+        return metadata;
     }
 
     public PersistenceUnitInfo getPersistenceUnitInfo() {
@@ -59,5 +81,4 @@ public class EJB3ConfigurationDaoImpl implements EJB3ConfigurationDao {
     public void setPersistenceUnitInfo(PersistenceUnitInfo persistenceUnitInfo) {
         this.persistenceUnitInfo = persistenceUnitInfo;
     }
-    
 }

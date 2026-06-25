@@ -19,28 +19,29 @@
  */
 package org.broadleafcommerce.common.web;
 
-import org.thymeleaf.templatemode.ITemplateModeHandler;
-import org.thymeleaf.templatemode.StandardTemplateModeHandlers;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import java.util.HashSet;
 import java.util.Set;
 
-
+/**
+ * In Thymeleaf 3, template mode handlers are no longer a separate concept.
+ * Template modes are built-in enum values. This class is retained for backward
+ * compatibility and provides the set of standard template modes.
+ */
 public class BroadleafThymeleafStandardTemplateModeHandlers {
 
-    public static final Set<ITemplateModeHandler> ALL_BLC_TEMPLATE_MODE_HANDLERS = new HashSet<ITemplateModeHandler>();
+    public static final Set<TemplateMode> ALL_BLC_TEMPLATE_MODES = new HashSet<>();
     
     static {
-        for (ITemplateModeHandler handler : StandardTemplateModeHandlers.ALL_TEMPLATE_MODE_HANDLERS) {
-            ALL_BLC_TEMPLATE_MODE_HANDLERS.add(wrapHandler(handler));
-        }
-    }
-    
-    protected static ITemplateModeHandler wrapHandler(ITemplateModeHandler handler) {
-        return new BroadleafThymeleafTemplateModeHandler(handler);        
+        ALL_BLC_TEMPLATE_MODES.add(TemplateMode.HTML);
+        ALL_BLC_TEMPLATE_MODES.add(TemplateMode.XML);
+        ALL_BLC_TEMPLATE_MODES.add(TemplateMode.TEXT);
+        ALL_BLC_TEMPLATE_MODES.add(TemplateMode.JAVASCRIPT);
+        ALL_BLC_TEMPLATE_MODES.add(TemplateMode.CSS);
     }
 
-    public Set<ITemplateModeHandler> getStandardTemplateModeHandlers() {
-        return ALL_BLC_TEMPLATE_MODE_HANDLERS;
+    public Set<TemplateMode> getStandardTemplateModes() {
+        return ALL_BLC_TEMPLATE_MODES;
     }
 }

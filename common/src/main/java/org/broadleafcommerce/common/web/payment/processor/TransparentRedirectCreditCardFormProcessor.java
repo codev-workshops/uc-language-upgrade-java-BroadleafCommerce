@@ -23,13 +23,17 @@ package org.broadleafcommerce.common.web.payment.processor;
 import org.broadleafcommerce.common.payment.dto.PaymentRequestDTO;
 import org.broadleafcommerce.common.vendor.service.exception.PaymentException;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Attribute;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.ProcessorResult;
-import org.thymeleaf.processor.element.AbstractElementProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IAttribute;
+import org.thymeleaf.model.IModel;
+import org.thymeleaf.model.IModelFactory;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
+import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,78 +43,41 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 /**
- * <p>The following processor will modify the declared Credit Card Form
- * and call the Transparent Redirect Service of the configured payment gateway. </p>
- *
- * <p>This processor will change the form's action URL and append any hidden input fields
- * that are necessary to make the call. Certain gateway implementations accept configuration
- * settings in order to generate the form. These configuration parameters can be passed into
- * the module, by prefixing any configuration settings name with "config-" + attribute name = attribute value
- * </p>
- * <p>Here is an example:</p>
- *
- * <pre><code>
- *     <blc:transparent_credit_card_form action="#" method="POST"
- *         paymentRequestDTO="${requestDTO}"
- *         config-specificGatewayParam="value1"
- *         config-specificGatewayParam2="value2"
- *         config-specificGatewayParam3="value3">
- *
- *         <input type="text" name="credit_card_num"/>
- *         ...
- *
- *     </blc:transparent_credit_form>
- * </code></pre>
- *
- * <p>NOTE: please see {@link org.broadleafcommerce.common.web.payment.expression.PaymentGatewayFieldVariableExpression}
- * to modify the input "name" fields for a particular gateway</p>
- *
- * @see {@link org.broadleafcommerce.common.web.payment.expression.PaymentGatewayFieldVariableExpression}
- * @see {@link TRCreditCardExtensionHandler}
- * @see {@link AbstractTRCreditCardExtensionHandler}
+ * The following processor will modify the declared Credit Card Form
+ * and call the Transparent Redirect Service of the configured payment gateway.
  *
  * @author Elbert Bautista (elbertbautista)
  */
 @Component("blTransparentRedirectCreditCardFormProcessor")
-public class TransparentRedirectCreditCardFormProcessor extends AbstractElementProcessor {
+public class TransparentRedirectCreditCardFormProcessor extends AbstractElementTagProcessor {
 
     @Resource(name = "blTRCreditCardExtensionManager")
     protected TRCreditCardExtensionManager extensionManager;
 
     public TransparentRedirectCreditCardFormProcessor() {
-        super("transparent_credit_card_form");
+        super(TemplateMode.HTML, "blc", "transparent_credit_card_form", true, null, false, 1);
     }
 
     @Override
-    public int getPrecedence() {
-        return 1;
-    }
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        IStandardExpressionParser parser = StandardExpressions.getExpressionParser(context.getConfiguration());
+        IStandardExpression expression = parser.parseExpression(context, tag.getAttributeValue("paymentRequestDTO"));
+        PaymentRequestDTO requestDTO = (PaymentRequestDTO) expression.execute(context);
 
-    @Override
-    protected ProcessorResult processElement(Arguments arguments, Element element) {
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue("paymentRequestDTO"));
-        PaymentRequestDTO requestDTO = (PaymentRequestDTO) expression.execute(arguments.getConfiguration(), arguments);
+        Map<String, Map<String,String>> formParameters = new HashMap<>();
+        Map<String, String> configurationSettings = new HashMap<>();
 
-        element.removeAttribute("paymentRequestDTO");
-
-        Map<String, Map<String,String>> formParameters = new HashMap<String, Map<String,String>>();
-        Map<String, String> configurationSettings = new HashMap<String, String>();
-
-        //Create the configuration settings map to pass into the payment module
-        Map<String, Attribute> attributeMap  = element.getAttributeMap();
-        List<String> keysToRemove = new ArrayList<String>();
-        for (String key : attributeMap.keySet()) {
-            if (key.startsWith("config-")){
-                final int trimLength = "config-".length();
-                String configParam = key.substring(trimLength);
-                configurationSettings.put(configParam, attributeMap.get(key).getValue());
-                keysToRemove.add(key);
+        // Collect attributes to pass through to form and config settings
+        Map<String, String> formAttrs = new HashMap<>();
+        IAttribute[] allAttributes = tag.getAllAttributes();
+        for (IAttribute attr : allAttributes) {
+            String attrName = attr.getAttributeCompleteName();
+            if (attrName.startsWith("config-")) {
+                String configParam = attrName.substring("config-".length());
+                configurationSettings.put(configParam, attr.getValue());
+            } else if (!"paymentRequestDTO".equals(attrName) && !attrName.startsWith("blc:")) {
+                formAttrs.put(attrName, attr.getValue());
             }
-        }
-
-        for (String keyToRemove : keysToRemove) {
-            element.removeAttribute(keyToRemove);
         }
 
         try {
@@ -125,34 +92,33 @@ public class TransparentRedirectCreditCardFormProcessor extends AbstractElementP
         extensionManager.getProxy().setFormActionKey(formActionKey);
         extensionManager.getProxy().setFormHiddenParamsKey(formHiddenParamsKey);
 
-        //Change the action attribute on the form to the Payment Gateways Endpoint
         String actionUrl = "";
         Map<String,String> actionValue = formParameters.get(formActionKey.toString());
-        if (actionValue != null && actionValue.size()>0) {
-            String key = (String)actionValue.keySet().toArray()[0];
+        if (actionValue != null && !actionValue.isEmpty()) {
+            String key = (String) actionValue.keySet().toArray()[0];
             actionUrl = actionValue.get(key);
         }
-        element.setAttribute("action", actionUrl);
+        formAttrs.put("action", actionUrl);
 
-        //Append any hidden fields necessary for the Transparent Redirect
+        IModelFactory modelFactory = context.getModelFactory();
+        IModel model = modelFactory.createModel();
+        model.add(modelFactory.createOpenElementTag("form", formAttrs, null, false));
+
         Map<String, String> hiddenFields = formParameters.get(formHiddenParamsKey.toString());
         if (hiddenFields != null && !hiddenFields.isEmpty()) {
+            StringBuilder hiddenFieldsHtml = new StringBuilder();
             for (String key : hiddenFields.keySet()) {
-                Element hiddenNode = new Element("input");
-                hiddenNode.setAttribute("type", "hidden");
-                hiddenNode.setAttribute("name", key);
-                hiddenNode.setAttribute("value", hiddenFields.get(key));
-                element.addChild(hiddenNode);
+                hiddenFieldsHtml.append("<input type=\"hidden\" name=\"")
+                                .append(key)
+                                .append("\" value=\"")
+                                .append(hiddenFields.get(key))
+                                .append("\" />");
             }
+            model.add(modelFactory.createText(hiddenFieldsHtml.toString()));
         }
 
-        // Convert the <blc:transparent_credit_card_form> node to a normal <form> node
-        Element newElement = element.cloneElementNodeWithNewName(element.getParent(), "form", false);
-        newElement.setRecomputeProcessorsImmediately(true);
-        element.getParent().insertAfter(element, newElement);
-        element.getParent().removeChild(element);
-
-        return ProcessorResult.OK;
+        model.add(modelFactory.createCloseElementTag("form"));
+        structureHandler.replaceWith(model, true);
     }
 
     public TRCreditCardExtensionManager getExtensionManager() {

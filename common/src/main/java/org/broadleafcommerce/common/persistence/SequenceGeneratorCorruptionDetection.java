@@ -28,7 +28,7 @@ import org.broadleafcommerce.common.web.BroadleafRequestContext;
 import org.hibernate.SessionFactory;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.jpa.HibernateEntityManager;
 import org.hibernate.metadata.ClassMetadata;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;

@@ -51,7 +51,9 @@ public class EnhancedTokenBasedRememberMeServices extends TokenBasedRememberMeSe
     protected CookieUtils cookieUtils;
 
     @Deprecated
-    public EnhancedTokenBasedRememberMeServices() {}
+    public EnhancedTokenBasedRememberMeServices() {
+        super("_deprecated_key_", new org.springframework.security.provisioning.InMemoryUserDetailsManager());
+    }
     
     public EnhancedTokenBasedRememberMeServices(String key, UserDetailsService userDetailsService) {
         super(key, userDetailsService);

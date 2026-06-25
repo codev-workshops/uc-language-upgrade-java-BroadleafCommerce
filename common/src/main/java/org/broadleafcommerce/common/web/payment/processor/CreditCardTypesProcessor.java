@@ -23,39 +23,24 @@ package org.broadleafcommerce.common.web.payment.processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.element.AbstractLocalVariableDefinitionElementProcessor;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.templatemode.TemplateMode;
 
-import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 /**
- * <p>The following processor will add any Payment Gateway specific Card Type 'codes' to the model if
- * the gateway requires that a 'Card Type' (e.g. Visa, MasterCard, etc...) be sent along with
- * the credit card number and expiry date.
- * </p>
- *
- * <p>This processor will put the key 'paymentGatewayCardTypes' on the model if there are any types available</p>
- *
- * <p>Here is an example:</p>
- *
- * <pre><code>
- *  <blc:credit_card_types >
- *      <div th:if="${paymentGatewayCardTypes != null}" class="form-group">
- *          <label for="cardNumber">Card Type</label>
- *          <select th:name="${#paymentGatewayField.mapName('creditCard.creditCardType')}">
- *              <option th:each="entry : ${paymentGatewayCardTypes}" th:value="${entry.key}" th:text="${entry.value}"></option>
- *          </select>
- *      </div>
- *  </blc:credit_card_types>
- * </code></pre>
+ * The following processor will add any Payment Gateway specific Card Type 'codes' to the model.
  *
  * @author Elbert Bautista (elbertbautista)
  */
 @Component("blCreditCardTypesProcessor")
-public class CreditCardTypesProcessor extends AbstractLocalVariableDefinitionElementProcessor {
+public class CreditCardTypesProcessor extends AbstractElementTagProcessor {
 
     protected static final Log LOG = LogFactory.getLog(CreditCardTypesProcessor.class);
 
@@ -63,24 +48,12 @@ public class CreditCardTypesProcessor extends AbstractLocalVariableDefinitionEle
     protected CreditCardTypesExtensionManager extensionManager;
 
     public CreditCardTypesProcessor() {
-        super("credit_card_types");
+        super(TemplateMode.HTML, "blc", "credit_card_types", true, null, false, 100);
     }
 
     @Override
-    public int getPrecedence() {
-        return 100;
-    }
-
-    @Override
-    protected boolean removeHostElement(Arguments arguments, Element element) {
-        return false;
-    }
-
-    @Override
-    protected Map<String, Object> getNewLocalVariables(Arguments arguments, Element element) {
-        Map<String, Object> localVars = new HashMap<String, Object>();
-
-        Map<String, String> creditCardTypes = new HashMap<String, String>();
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        Map<String, String> creditCardTypes = new HashMap<>();
 
         try {
             extensionManager.getProxy().populateCreditCardMap(creditCardTypes);
@@ -89,12 +62,7 @@ public class CreditCardTypesProcessor extends AbstractLocalVariableDefinitionEle
         }
 
         if (!creditCardTypes.isEmpty()) {
-            localVars.put("paymentGatewayCardTypes", creditCardTypes);
+            structureHandler.setLocalVariable("paymentGatewayCardTypes", creditCardTypes);
         }
-
-        return localVars;
     }
-
-
-
 }
