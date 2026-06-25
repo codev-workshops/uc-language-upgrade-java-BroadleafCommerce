@@ -72,12 +72,12 @@ public class FeaturedProductImpl implements FeaturedProduct {
     
     @ManyToOne(targetEntity = CategoryImpl.class, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "CATEGORY_ID")
-    @Index(name="PRODFEATURED_CATEGORY_INDEX", columnNames={"CATEGORY_ID"})
+    @org.hibernate.annotations.Index(name="PRODFEATURED_CATEGORY_INDEX", columnNames={"CATEGORY_ID"})
     protected Category category = new CategoryImpl();
 
     @ManyToOne(targetEntity = ProductImpl.class)
     @JoinColumn(name = "PRODUCT_ID")
-    @Index(name="PRODFEATURED_PRODUCT_INDEX", columnNames={"PRODUCT_ID"})
+    @org.hibernate.annotations.Index(name="PRODFEATURED_PRODUCT_INDEX", columnNames={"PRODUCT_ID"})
     protected Product product = new ProductImpl();
 
     @Override

@@ -72,17 +72,17 @@ public class CrossSaleProductImpl implements RelatedProduct, MultiTenantCloneabl
     
     @ManyToOne(targetEntity = ProductImpl.class, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "PRODUCT_ID")
-    @Index(name="CROSSSALE_INDEX", columnNames={"PRODUCT_ID"})
+    @org.hibernate.annotations.Index(name="CROSSSALE_INDEX", columnNames={"PRODUCT_ID"})
     protected Product product;
     
     @ManyToOne(targetEntity = CategoryImpl.class, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "CATEGORY_ID")
-    @Index(name="CROSSSALE_CATEGORY_INDEX", columnNames={"CATEGORY_ID"})
+    @org.hibernate.annotations.Index(name="CROSSSALE_CATEGORY_INDEX", columnNames={"CATEGORY_ID"})
     protected Category category;
 
     @ManyToOne(targetEntity = ProductImpl.class, optional=false)
     @JoinColumn(name = "RELATED_SALE_PRODUCT_ID", referencedColumnName = "PRODUCT_ID")
-    @Index(name="CROSSSALE_RELATED_INDEX", columnNames={"RELATED_SALE_PRODUCT_ID"})
+    @org.hibernate.annotations.Index(name="CROSSSALE_RELATED_INDEX", columnNames={"RELATED_SALE_PRODUCT_ID"})
     protected Product relatedSaleProduct = new ProductImpl();
 
     @Override

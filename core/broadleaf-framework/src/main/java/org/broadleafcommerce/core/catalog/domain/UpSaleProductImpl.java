@@ -72,17 +72,17 @@ public class UpSaleProductImpl implements RelatedProduct, MultiTenantCloneable<U
     
     @ManyToOne(targetEntity = ProductImpl.class, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "PRODUCT_ID")
-    @Index(name="UPSALE_PRODUCT_INDEX", columnNames={"PRODUCT_ID"})
+    @org.hibernate.annotations.Index(name="UPSALE_PRODUCT_INDEX", columnNames={"PRODUCT_ID"})
     private Product product;
     
     @ManyToOne(targetEntity = CategoryImpl.class, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "CATEGORY_ID")
-    @Index(name="UPSALE_CATEGORY_INDEX", columnNames={"CATEGORY_ID"})
+    @org.hibernate.annotations.Index(name="UPSALE_CATEGORY_INDEX", columnNames={"CATEGORY_ID"})
     protected Category category;
 
     @ManyToOne(targetEntity = ProductImpl.class)
     @JoinColumn(name = "RELATED_SALE_PRODUCT_ID", referencedColumnName = "PRODUCT_ID")
-    @Index(name="UPSALE_RELATED_INDEX", columnNames={"RELATED_SALE_PRODUCT_ID"})
+    @org.hibernate.annotations.Index(name="UPSALE_RELATED_INDEX", columnNames={"RELATED_SALE_PRODUCT_ID"})
     private Product relatedSaleProduct = new ProductImpl();
 
     @Override
