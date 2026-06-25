@@ -48,9 +48,22 @@ public class CustomerPhoneControllerTest extends BaseTest {
     @Resource
     private CustomerService customerService;
     private final List<Long> createdCustomerPhoneIds = new ArrayList<Long>();
-    private final Long userId = 1L;
+    private Long userId;
     private MockHttpServletRequest request;
     private static final String SUCCESS = "customerPhones";
+
+    private Long getUserId() {
+        if (userId == null) {
+            // Create a customer on-demand for this test class
+            // (IDs are auto-generated and may not start at 1 with pooled-lo optimizer in Hibernate 5.6)
+            Customer customer = customerService.createCustomerFromId(null);
+            customer.setUsername("phoneControllerTestUser");
+            customer.setPassword("password");
+            customer = customerService.saveCustomer(customer);
+            userId = customer.getId();
+        }
+        return userId;
+    }
 
     @Test(groups = "createCustomerPhoneFromController", dataProvider = "setupCustomerPhoneControllerData", dataProviderClass = CustomerPhoneControllerTestDataProvider.class, dependsOnGroups = "readCustomer")
     @Transactional
@@ -58,14 +71,16 @@ public class CustomerPhoneControllerTest extends BaseTest {
     public void createCustomerPhoneFromController(PhoneNameForm phoneNameForm) {
         BindingResult errors = new BeanPropertyBindingResult(phoneNameForm, "phoneNameForm");
 
-        Customer customer = customerService.readCustomerById(userId);
+        Long resolvedUserId = getUserId();
+        Customer customer = customerService.readCustomerById(resolvedUserId);
+        System.out.println("[DEBUG-TEST2] getUserId()=" + resolvedUserId + ", readCustomerById=" + customer);
         request = this.getNewServletInstance();
         request.setAttribute(CustomerStateRequestProcessor.getCustomerRequestAttributeName(), customer);
 
         String view = customerPhoneController.savePhone(phoneNameForm, errors, request, null, null);
         assert (view.indexOf(SUCCESS) >= 0);
 
-        List<CustomerPhone> phones = customerPhoneService.readAllCustomerPhonesByCustomerId(1L);
+        List<CustomerPhone> phones = customerPhoneService.readAllCustomerPhonesByCustomerId(getUserId());
 
         boolean inPhoneList = false;
 
@@ -86,7 +101,7 @@ public class CustomerPhoneControllerTest extends BaseTest {
     @Transactional
     public void makePhoneDefaultOnCustomerPhoneController() {
         Long nonDefaultPhoneId = null;
-        List<CustomerPhone> phones_1 = customerPhoneService.readAllCustomerPhonesByCustomerId(1L);
+        List<CustomerPhone> phones_1 = customerPhoneService.readAllCustomerPhonesByCustomerId(getUserId());
 
         for (CustomerPhone p : phones_1) {
             if (!p.getPhone().isDefault()) {
@@ -100,7 +115,7 @@ public class CustomerPhoneControllerTest extends BaseTest {
         String view = customerPhoneController.makePhoneDefault(nonDefaultPhoneId, request);
         assert (view.indexOf("viewPhone") >= 0);
 
-        List<CustomerPhone> phones = customerPhoneService.readAllCustomerPhonesByCustomerId(1L);
+        List<CustomerPhone> phones = customerPhoneService.readAllCustomerPhonesByCustomerId(getUserId());
 
         for (CustomerPhone p : phones) {
             if (p.getId() == nonDefaultPhoneId) {
@@ -114,7 +129,7 @@ public class CustomerPhoneControllerTest extends BaseTest {
     @Test(groups = "readCustomerPhoneFromController", dependsOnGroups = "createCustomerPhoneFromController")
     @Transactional
     public void readCustomerPhoneFromController() {
-        List<CustomerPhone> phones_1 = customerPhoneService.readAllCustomerPhonesByCustomerId(1L);
+        List<CustomerPhone> phones_1 = customerPhoneService.readAllCustomerPhonesByCustomerId(getUserId());
         int phones_1_size = phones_1.size();
 
         request = this.getNewServletInstance();
@@ -122,7 +137,7 @@ public class CustomerPhoneControllerTest extends BaseTest {
         String view = customerPhoneController.deletePhone(createdCustomerPhoneIds.get(0), request);
         assert (view.indexOf("viewPhone") >= 0);
 
-        List<CustomerPhone> phones_2 = customerPhoneService.readAllCustomerPhonesByCustomerId(1L);
+        List<CustomerPhone> phones_2 = customerPhoneService.readAllCustomerPhonesByCustomerId(getUserId());
         assert ((phones_1_size - phones_2.size()) == 1);
     }
 
@@ -142,12 +157,12 @@ public class CustomerPhoneControllerTest extends BaseTest {
     @Test(groups = "viewExistingCustomerPhoneFromController", dependsOnGroups = "createCustomerPhoneFromController")
     @Transactional
     public void viewExistingCustomerPhoneFromController() {
-        List<CustomerPhone> phones_1 = customerPhoneService.readAllCustomerPhonesByCustomerId(1L);
+        List<CustomerPhone> phones_1 = customerPhoneService.readAllCustomerPhonesByCustomerId(getUserId());
         PhoneNameForm pnf = new PhoneNameForm();
 
         BindingResult errors = new BeanPropertyBindingResult(pnf, "phoneNameForm");
 
-        Customer customer = customerService.readCustomerById(userId);
+        Customer customer = customerService.readCustomerById(getUserId());
         request = this.getNewServletInstance();
         request.setAttribute(CustomerStateRequestProcessor.getCustomerRequestAttributeName(), customer);
 
@@ -158,7 +173,7 @@ public class CustomerPhoneControllerTest extends BaseTest {
 
     private MockHttpServletRequest getNewServletInstance() {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.getSession().setAttribute("customer_session", userId); //set customer on session
+        request.getSession().setAttribute("customer_session", getUserId()); //set customer on session
 
         return request;
     }

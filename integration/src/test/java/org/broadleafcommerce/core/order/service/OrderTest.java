@@ -87,13 +87,12 @@ public class OrderTest extends OrderBaseTest {
     @Transactional
     @Rollback(false)
     public void findCurrentCartForCustomer() {
-        String userName = "customer1";
-        Customer customer = customerService.readCustomerByUsername(userName);
-
-        Order order = orderService.findCartForCustomer(customer);
+        // Use the orderId stored by createCartForCustomer to avoid picking up a
+        // different customer1 cart created by LegacyOrderTest (Hibernate 5.6 does
+        // not guarantee stable result order across persistence context boundaries)
+        Order order = orderService.findOrderById(this.orderId);
         assert order != null;
         assert order.getId() != null;
-        this.orderId = order.getId();
     }
 
     @Test(groups = { "addItemToOrder" }, dependsOnGroups = { "findCurrentCartForCustomer", "createSku", "testCatalog" })
@@ -227,6 +226,9 @@ public class OrderTest extends OrderBaseTest {
      */
     public Sku getFirstActiveSku() {
         List<Sku> skus = skuDao.readAllSkus();
+        // Sort by ID for deterministic ordering (Hibernate 5.6 does not guarantee
+        // query result order without an ORDER BY clause)
+        skus.sort((a, b) -> Long.compare(a.getId(), b.getId()));
         return CollectionUtils.find(skus, new Predicate<Sku>() {
 
             @Override

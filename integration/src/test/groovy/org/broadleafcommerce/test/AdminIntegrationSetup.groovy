@@ -21,7 +21,7 @@ package org.broadleafcommerce.test
 
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.ContextHierarchy
-import org.springframework.test.context.transaction.TransactionConfiguration
+import org.broadleafcommerce.test.TransactionConfiguration
 import org.springframework.test.context.web.WebAppConfiguration
 
 import spock.lang.Specification
