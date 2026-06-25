@@ -66,20 +66,10 @@ resolving — do not rely on it for a module you are migrating, and **do not edi
 | `org.codehaus.groovy:groovy-all` | `org.apache.groovy:groovy` |
 | `cglib:cglib` | *(removed)* |
 
-### Compiler plugin gotcha
-The root pom pins `maven-compiler-plugin:3.1`, which **predates the `<release>` option (needs 3.6+)**. Override the
-plugin **locally in the module pom** to a modern version so `--release 17` is honoured (root pom stays untouched):
-
-```xml
-<plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-compiler-plugin</artifactId>
-  <version>3.11.0</version>
-  <configuration>
-    <release>${java.version}</release>
-  </configuration>
-</plugin>
-```
+### Compiler plugin (already fixed in root)
+The root pom originally pinned `maven-compiler-plugin:3.1`, which predates the `<release>` option (needs 3.6+). This was
+fixed in a Phase 0 hotfix — the root now pins `maven-compiler-plugin:3.13.0` with `<release>${java.version}</release>`.
+**Module poms no longer need a local compiler-plugin override.** (Phase 1's temporary local override has been removed.)
 
 ### Checkpoint
 ```bash
