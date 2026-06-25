@@ -25,10 +25,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.apache.solr.client.solrj.impl.CloudSolrServer;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -69,6 +69,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -175,7 +176,7 @@ public class SolrSearchServiceImpl implements SearchService, InitializingBean, D
             LOG.trace("Done printing solr.xml");
         }
 
-        CoreContainer coreContainer = CoreContainer.createAndLoad(solrServer, solrXml);
+        CoreContainer coreContainer = CoreContainer.createAndLoad(Paths.get(solrServer), solrXml.toPath());
         EmbeddedSolrServer primaryServer = new EmbeddedSolrServer(coreContainer, SolrContext.PRIMARY);
         EmbeddedSolrServer reindexServer = new EmbeddedSolrServer(coreContainer, SolrContext.REINDEX);
 
@@ -280,12 +281,12 @@ public class SolrSearchServiceImpl implements SearchService, InitializingBean, D
         }
     }
 
-    public SolrSearchServiceImpl(SolrServer solrServer) {
+    public SolrSearchServiceImpl(SolrClient solrServer) {
         SolrContext.setPrimaryServer(solrServer);
     }
 
     /**
-     * This constructor serves to mimic the one which takes in one {@link SolrServer} argument.
+     * This constructor serves to mimic the one which takes in one {@link SolrClient} argument.
      * By having this and then simply disregarding the second parameter, we can more easily support 2-core
      * Solr configurations that use embedded/standalone per environment.
      * 
@@ -301,7 +302,7 @@ public class SolrSearchServiceImpl implements SearchService, InitializingBean, D
     }
 
     /**
-     * This constructor serves to mimic the one which takes in one {@link SolrServer} argument.
+     * This constructor serves to mimic the one which takes in one {@link SolrClient} argument.
      * By having this and then simply disregarding the second and third parameters, we can more easily support 2-core
      * Solr configurations that use embedded/standalone per environment, along with an admin server.
      * 
@@ -316,12 +317,12 @@ public class SolrSearchServiceImpl implements SearchService, InitializingBean, D
         this(solrServer);
     }
 
-    public SolrSearchServiceImpl(SolrServer solrServer, SolrServer reindexServer) {
+    public SolrSearchServiceImpl(SolrClient solrServer, SolrClient reindexServer) {
         SolrContext.setPrimaryServer(solrServer);
         SolrContext.setReindexServer(reindexServer);
     }
 
-    public SolrSearchServiceImpl(SolrServer solrServer, SolrServer reindexServer, SolrServer adminServer) {
+    public SolrSearchServiceImpl(SolrClient solrServer, SolrClient reindexServer, SolrClient adminServer) {
         SolrContext.setPrimaryServer(solrServer);
         SolrContext.setReindexServer(reindexServer);
         SolrContext.setAdminServer(adminServer);
@@ -337,8 +338,8 @@ public class SolrSearchServiceImpl implements SearchService, InitializingBean, D
         if (SolrContext.isSolrCloudMode()) {
             //We want to use the Solr APIs to make sure the correct collections are set up.
 
-            CloudSolrServer primary = (CloudSolrServer) SolrContext.getServer();
-            CloudSolrServer reindex = (CloudSolrServer) SolrContext.getReindexServer();
+            CloudSolrClient primary = (CloudSolrClient) SolrContext.getServer();
+            CloudSolrClient reindex = (CloudSolrClient) SolrContext.getReindexServer();
             if (primary == null || reindex == null) {
                 throw new IllegalStateException("The primary and reindex CloudSolrServers must not be null. Check "
                         + "your configuration and ensure that you are passing a different instance for each to the "
@@ -376,7 +377,7 @@ public class SolrSearchServiceImpl implements SearchService, InitializingBean, D
             primary.connect(); //This is required to ensure no NPE!
 
             //Get a list of existing collections so we don't overwrite one
-            Set<String> collectionNames = primary.getZkStateReader().getClusterState().getCollections();
+            Set<String> collectionNames = primary.getZkStateReader().getClusterState().getCollectionStates().keySet();
             if (collectionNames == null) {
                 collectionNames = new HashSet<String>();
             }
@@ -396,19 +397,19 @@ public class SolrSearchServiceImpl implements SearchService, InitializingBean, D
                     }
                 }
 
-                CollectionAdminRequest.createCollection(collectionName, solrCloudNumShards, solrCloudConfigName, primary);
-                CollectionAdminRequest.createAlias(primary.getDefaultCollection(), collectionName, primary);
+                CollectionAdminRequest.createCollection(collectionName, solrCloudConfigName, solrCloudNumShards, 1).process(primary);
+                CollectionAdminRequest.createAlias(primary.getDefaultCollection(), collectionName).process(primary);
             } else {
                 //Aliases can be mapped to collections that don't exist.... Make sure the collection exists
                 String collectionName = aliasCollectionMap.get(primary.getDefaultCollection());
                 collectionName = collectionName.split(",")[0];
                 if (!collectionNames.contains(collectionName)) {
-                    CollectionAdminRequest.createCollection(collectionName, solrCloudNumShards, solrCloudConfigName, primary);
+                    CollectionAdminRequest.createCollection(collectionName, solrCloudConfigName, solrCloudNumShards, 1).process(primary);
                 }
             }
 
             //Reload the collection names
-            collectionNames = primary.getZkStateReader().getClusterState().getCollections();
+            collectionNames = primary.getZkStateReader().getClusterState().getCollectionStates().keySet();
             if (collectionNames == null) {
                 collectionNames = new HashSet<String>();
             }
@@ -429,14 +430,14 @@ public class SolrSearchServiceImpl implements SearchService, InitializingBean, D
                     }
                 }
 
-                CollectionAdminRequest.createCollection(collectionName, solrCloudNumShards, solrCloudConfigName, primary);
-                CollectionAdminRequest.createAlias(reindex.getDefaultCollection(), collectionName, primary);
+                CollectionAdminRequest.createCollection(collectionName, solrCloudConfigName, solrCloudNumShards, 1).process(primary);
+                CollectionAdminRequest.createAlias(reindex.getDefaultCollection(), collectionName).process(primary);
             } else {
                 //Aliases can be mapped to collections that don't exist.... Make sure the collection exists
                 String collectionName = aliasCollectionMap.get(reindex.getDefaultCollection());
                 collectionName = collectionName.split(",")[0];
                 if (!collectionNames.contains(collectionName)) {
-                    CollectionAdminRequest.createCollection(collectionName, solrCloudNumShards, solrCloudConfigName, primary);
+                    CollectionAdminRequest.createCollection(collectionName, solrCloudConfigName, solrCloudNumShards, 1).process(primary);
                 }
             }
         }
@@ -444,32 +445,32 @@ public class SolrSearchServiceImpl implements SearchService, InitializingBean, D
 
     @Override
     public void destroy() throws Exception {
-        //Make sure we shut down each of the SolrServer references (these is really the Solr clients despite the name)
+        //Make sure we shut down each of the SolrClient references (these is really the Solr clients despite the name)
         try {
             if (SolrContext.getServer() != null) {
-                SolrContext.getServer().shutdown();
+                SolrContext.getServer().close();
             }
         } catch (Exception e) {
-            LOG.error("Error shutting down primary SolrServer (client).", e);
+            LOG.error("Error shutting down primary SolrClient (client).", e);
         }
 
         try {
             if (SolrContext.getReindexServer() != null
                     && SolrContext.getReindexServer() != SolrContext.getServer()) {
-                SolrContext.getReindexServer().shutdown();
+                SolrContext.getReindexServer().close();
             }
         } catch (Exception e) {
-            LOG.error("Error shutting down reindex SolrServer (client).", e);
+            LOG.error("Error shutting down reindex SolrClient (client).", e);
         }
 
         try {
             if (SolrContext.getAdminServer() != null
                     && SolrContext.getAdminServer() != SolrContext.getServer()
                     && SolrContext.getAdminServer() != SolrContext.getReindexServer()) {
-                SolrContext.getAdminServer().shutdown();
+                SolrContext.getAdminServer().close();
             }
         } catch (Exception e) {
-            LOG.error("Error shutting down admin SolrServer (client).", e);
+            LOG.error("Error shutting down admin SolrClient (client).", e);
         }
     }
 
@@ -618,6 +619,8 @@ public class SolrSearchServiceImpl implements SearchService, InitializingBean, D
                 }
             }
         } catch (SolrServerException e) {
+            throw new ServiceException("Could not perform search", e);
+        } catch (IOException e) {
             throw new ServiceException("Could not perform search", e);
         }
 

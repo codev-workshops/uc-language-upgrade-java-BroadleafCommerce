@@ -23,7 +23,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 import org.broadleafcommerce.common.exception.ExceptionHelper;
@@ -317,7 +317,7 @@ public class SolrIndexServiceImpl implements SolrIndexService {
             logDocuments(documents);
 
             if (!CollectionUtils.isEmpty(documents)) {
-                SolrServer server = useReindexServer ? SolrContext.getReindexServer() : SolrContext.getServer();
+                SolrClient server = useReindexServer ? SolrContext.getReindexServer() : SolrContext.getServer();
                 server.add(documents);
                 commit(server);
             }
@@ -387,7 +387,7 @@ public class SolrIndexServiceImpl implements SolrIndexService {
             logDocuments(documents);
 
             if (!CollectionUtils.isEmpty(documents)) {
-                SolrServer server = useReindexServer ? SolrContext.getReindexServer() : SolrContext.getServer();
+                SolrClient server = useReindexServer ? SolrContext.getReindexServer() : SolrContext.getServer();
                 server.add(documents);
                 commit(server);
             }
@@ -916,12 +916,12 @@ public class SolrIndexServiceImpl implements SolrIndexService {
      }
      
     @Override
-    public void optimizeIndex(SolrServer server) throws ServiceException, IOException {
+    public void optimizeIndex(SolrClient server) throws ServiceException, IOException {
         shs.optimizeIndex(server);
     }
 
     @Override
-    public void commit(SolrServer server) throws ServiceException, IOException {
+    public void commit(SolrClient server) throws ServiceException, IOException {
         if (this.commit) {
             commit(server, this.softCommit, this.waitSearcher, this.waitFlush);
         } else if (LOG.isDebugEnabled()) {
@@ -930,7 +930,7 @@ public class SolrIndexServiceImpl implements SolrIndexService {
     }
 
     @Override
-    public void commit(SolrServer server, boolean softCommit, boolean waitSearcher, boolean waitFlush) throws ServiceException, IOException {
+    public void commit(SolrClient server, boolean softCommit, boolean waitSearcher, boolean waitFlush) throws ServiceException, IOException {
         try {
             if (!this.commit) {
                 LOG.warn("The flag / property \"solr.index.commit\" is set to false but a commit is being forced via the API.");
