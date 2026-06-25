@@ -19,32 +19,22 @@
  */
 package org.broadleafcommerce.common.persistence.transaction;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.Metadata;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.integrator.spi.ServiceContributingIntegrator;
-import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.service.ServiceRegistryBuilder;
+import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
 /**
- * Support introduction of customized or additional services to the Hibernate service registry.
+ * Hibernate {@link Integrator} hook. As of Hibernate 5 the service-registry contribution that used to live here
+ * (via the removed {@code ServiceContributingIntegrator#prepareServices}) is performed by
+ * {@link CommonServiceContributor}; this integrator is retained as a no-op extension point.
  *
  * @author Jeff Fischer
  */
-public class CommonServiceIntegrator implements ServiceContributingIntegrator {
+public class CommonServiceIntegrator implements Integrator {
 
     @Override
-    public void prepareServices(ServiceRegistryBuilder serviceRegistryBuilder) {
-        serviceRegistryBuilder.addInitiator(LifecycleAwareJDBCServicesInitiator.INSTANCE);
-    }
-
-    @Override
-    public void integrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
-        //do nothing
-    }
-
-    @Override
-    public void integrate(MetadataImplementor metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+    public void integrate(Metadata metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
         //do nothing
     }
 

@@ -19,49 +19,50 @@
  */
 package org.broadleafcommerce.common.web.dialect;
 
-import org.thymeleaf.dialect.AbstractDialect;
+import org.thymeleaf.dialect.AbstractProcessorDialect;
+import org.thymeleaf.dialect.IExpressionObjectDialect;
+import org.thymeleaf.expression.IExpressionObjectFactory;
 import org.thymeleaf.processor.IProcessor;
-import org.thymeleaf.standard.expression.IStandardVariableExpressionEvaluator;
-import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.standard.StandardDialect;
 
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Resource;
 
-public class BLCDialect extends AbstractDialect {
-    
+/**
+ * Broadleaf's main Thymeleaf dialect.
+ *
+ * <p>Migrated from the removed Thymeleaf 2 {@code AbstractDialect}. In Thymeleaf 3 a processor dialect extends
+ * {@link AbstractProcessorDialect} and exposes its processors through {@link #getProcessors(String)}. The custom
+ * expression objects that were previously contributed through {@code getExecutionAttributes()} are now contributed
+ * through {@link IExpressionObjectDialect} backed by {@code blVariableExpressionEvaluator}.
+ */
+public class BLCDialect extends AbstractProcessorDialect implements IExpressionObjectDialect {
+
+    public static final String DEFAULT_PREFIX = "blc";
+
     private Set<IProcessor> processors = new HashSet<IProcessor>();
-    
+
     @Resource(name = "blVariableExpressionEvaluator")
-    private IStandardVariableExpressionEvaluator expressionEvaluator;
+    private IExpressionObjectFactory expressionObjectFactory;
 
-    @Override
-    public String getPrefix() {
-        return "blc";
+    public BLCDialect() {
+        super("Broadleaf Commerce Dialect", DEFAULT_PREFIX, StandardDialect.PROCESSOR_PRECEDENCE);
     }
 
     @Override
-    public boolean isLenient() {
-        return true;
+    public Set<IProcessor> getProcessors(String dialectPrefix) {
+        return processors;
     }
-    
-    @Override 
-    public Set<IProcessor> getProcessors() {        
-        return processors; 
-    } 
-    
+
     public void setProcessors(Set<IProcessor> processors) {
         this.processors = processors;
     }
-    
+
     @Override
-    public Map<String, Object> getExecutionAttributes() {
-        final Map<String,Object> executionAttributes = new LinkedHashMap<String, Object>();
-        executionAttributes.put(StandardExpressions.STANDARD_VARIABLE_EXPRESSION_EVALUATOR_ATTRIBUTE_NAME, expressionEvaluator);
-        return executionAttributes;
+    public IExpressionObjectFactory getExpressionObjectFactory() {
+        return expressionObjectFactory;
     }
 
 }

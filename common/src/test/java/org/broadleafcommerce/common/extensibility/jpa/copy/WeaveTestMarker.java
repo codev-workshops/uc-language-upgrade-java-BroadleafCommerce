@@ -1,6 +1,6 @@
 /*
  * #%L
- * BroadleafCommerce Open Admin Platform
+ * BroadleafCommerce Common Libraries
  * %%
  * Copyright (C) 2009 - 2013 Broadleaf Commerce
  * %%
@@ -17,21 +17,14 @@
  * limitations under the License.
  * #L%
  */
-package org.broadleafcommerce.common.util.dao;
-
-import org.hibernate.boot.Metadata;
+package org.broadleafcommerce.common.extensibility.jpa.copy;
 
 /**
- * Exposes the Hibernate mapping metadata for the persistence unit.
- *
- * <p>Through Hibernate 4 this returned the (now removed) {@code org.hibernate.ejb.Ejb3Configuration}. As of
- * Hibernate 5 the equivalent mapping metadata is represented by {@link Metadata}, which exposes
- * {@link Metadata#getEntityBinding(String)} in place of the old {@code Configuration#getClassMapping(String)}.
- *
- * @author jfischer
+ * Test fixture: an interface implemented by the weaving template so that the {@link DirectCopyClassTransformer} test
+ * can verify interface copying.
  */
-public interface EJB3ConfigurationDao {
+public interface WeaveTestMarker {
 
-    public abstract Metadata getConfiguration();
+    String weavedMethod();
 
 }

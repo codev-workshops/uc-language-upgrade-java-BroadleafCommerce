@@ -19,31 +19,38 @@
  */
 package org.broadleafcommerce.common.util.dao;
 
-import org.hibernate.ejb.Ejb3Configuration;
+import org.hibernate.boot.Metadata;
+import org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl;
+import org.hibernate.jpa.boot.spi.Bootstrap;
 
 import java.util.HashMap;
 
 import javax.persistence.spi.PersistenceUnitInfo;
 
 /**
- * 
- * @author jfischer
+ * Builds the Hibernate {@link Metadata} for the persistence unit.
  *
+ * <p>As of Hibernate 5 the removed {@code org.hibernate.ejb.Ejb3Configuration} is replaced by the JPA bootstrap
+ * pipeline ({@link Bootstrap}/{@link EntityManagerFactoryBuilderImpl}), which assembles the same mapping metadata
+ * exposed here as {@link Metadata}.
+ *
+ * @author jfischer
  */
 public class EJB3ConfigurationDaoImpl implements EJB3ConfigurationDao {
 
-    private Ejb3Configuration configuration = null;
+    private Metadata configuration = null;
 
     protected PersistenceUnitInfo persistenceUnitInfo;
 
-    public Ejb3Configuration getConfiguration() {
+    public Metadata getConfiguration() {
         synchronized(this) {
             if (configuration == null) {
-                Ejb3Configuration temp = new Ejb3Configuration();
                 String previousValue = persistenceUnitInfo.getProperties().getProperty("hibernate.hbm2ddl.auto");
                 persistenceUnitInfo.getProperties().setProperty("hibernate.hbm2ddl.auto", "none");
-                configuration = temp.configure(persistenceUnitInfo, new HashMap());
-                configuration.getHibernateConfiguration().buildSessionFactory();
+                EntityManagerFactoryBuilderImpl builder = (EntityManagerFactoryBuilderImpl) Bootstrap
+                        .getEntityManagerFactoryBuilder(persistenceUnitInfo, new HashMap());
+                builder.build();
+                configuration = builder.getMetadata();
                 if (previousValue != null) {
                     persistenceUnitInfo.getProperties().setProperty("hibernate.hbm2ddl.auto", previousValue);
                 }

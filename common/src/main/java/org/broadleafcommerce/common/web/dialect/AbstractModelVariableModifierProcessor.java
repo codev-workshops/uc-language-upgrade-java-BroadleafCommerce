@@ -19,85 +19,75 @@
  */
 package org.broadleafcommerce.common.web.dialect;
 
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.dom.NestableNode;
-import org.thymeleaf.processor.ProcessorResult;
-import org.thymeleaf.processor.element.AbstractElementProcessor;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * @author apazzolini
- * 
- * Wrapper class around Thymeleaf's AbstractElementProcessor that facilitates adding Objects
+ *
+ * Wrapper class around Thymeleaf's {@link AbstractElementTagProcessor} that facilitates adding Objects
  * to the current evaluation context (model) for processing in the remainder of the page.
  *
+ * <p>Migrated from the removed Thymeleaf 2 DOM-based {@code AbstractElementProcessor}. As of Thymeleaf 3 model
+ * variables are contributed through the {@link IElementTagStructureHandler} (local variables) rather than by mutating
+ * the expression-evaluation root map, and the host element is removed through the structure handler.
  */
-public abstract class AbstractModelVariableModifierProcessor extends AbstractElementProcessor {
-    
-    public AbstractModelVariableModifierProcessor(String elementName) {
-        super(elementName);
-    }
+public abstract class AbstractModelVariableModifierProcessor extends AbstractElementTagProcessor {
 
-    @Override
-    public int getPrecedence() {
-        return 1000;
+    public AbstractModelVariableModifierProcessor(String dialectPrefix, String elementName, int precedence) {
+        super(TemplateMode.HTML, dialectPrefix, elementName, true, null, false, precedence);
     }
 
     /**
-     * This method will handle calling the modifyModelAttributes abstract method and return
-     * an "OK" processor result
+     * This method will handle calling the modifyModelAttributes abstract method and then remove the host element.
      */
     @Override
-    protected ProcessorResult processElement(final Arguments arguments, final Element element) {
-        modifyModelAttributes(arguments, element);
-        
-        // Remove the tag from the DOM
-        final NestableNode parent = element.getParent();
-        parent.removeChild(element);
-        
-        return ProcessorResult.OK;
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        modifyModelAttributes(context, tag, structureHandler);
+
+        // Remove the custom tag, mirroring the Thymeleaf 2 behavior of removing the element from the DOM.
+        structureHandler.removeElement();
     }
-    
+
     /**
-     * Helper method to add a value to the expression evaluation root (model) Map
+     * Helper method to add a value to the model
      * @param key the key to add to the model
      * @param value the value represented by the key
      */
-    @SuppressWarnings("unchecked")
-    protected void addToModel(Arguments arguments, String key, Object value) {
-        ((Map<String, Object>) arguments.getExpressionEvaluationRoot()).put(key, value);
-    }
-    
-    @SuppressWarnings("unchecked")
-    protected <T> void addCollectionToExistingSet(Arguments arguments, String key, Collection<T> value) {
-        Set<T> items = (Set<T>) ((Map<String, Object>) arguments.getExpressionEvaluationRoot()).get(key);
-        if (items == null) {
-            items = new HashSet<T>();
-            ((Map<String, Object>) arguments.getExpressionEvaluationRoot()).put(key, items);
-        }
-        items.addAll(value);
+    protected void addToModel(IElementTagStructureHandler structureHandler, String key, Object value) {
+        structureHandler.setLocalVariable(key, value);
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> void addItemToExistingSet(Arguments arguments, String key, Object value) {
-        Set<T> items = (Set<T>) ((Map<String, Object>) arguments.getExpressionEvaluationRoot()).get(key);
+    protected <T> void addCollectionToExistingSet(ITemplateContext context, IElementTagStructureHandler structureHandler, String key, Collection<T> value) {
+        Set<T> items = (Set<T>) context.getVariable(key);
         if (items == null) {
-            items = new HashSet<T>();                         
-            ((Map<String, Object>) arguments.getExpressionEvaluationRoot()).put(key, items);
+            items = new HashSet<T>();
+        }
+        items.addAll(value);
+        structureHandler.setLocalVariable(key, items);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> void addItemToExistingSet(ITemplateContext context, IElementTagStructureHandler structureHandler, String key, Object value) {
+        Set<T> items = (Set<T>) context.getVariable(key);
+        if (items == null) {
+            items = new HashSet<T>();
         }
         items.add((T) value);
+        structureHandler.setLocalVariable(key, items);
     }
-    
+
     /**
-     * This method must be overriding by a processor that wishes to modify the model. It will
-     * be called by this abstract processor in the correct precendence in the evaluation chain.
-     * @param arguments
-     * @param element
+     * This method must be overridden by a processor that wishes to modify the model. It will
+     * be called by this abstract processor in the correct precedence in the evaluation chain.
      */
-    protected abstract void modifyModelAttributes(Arguments arguments, Element element);
+    protected abstract void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler);
 }

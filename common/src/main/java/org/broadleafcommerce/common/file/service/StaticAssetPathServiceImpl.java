@@ -20,7 +20,6 @@
 package org.broadleafcommerce.common.file.service;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.velocity.tools.view.ImportSupport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -160,7 +159,7 @@ public class StaticAssetPathServiceImpl implements StaticAssetPathService {
                 returnValue = envPrefix + returnValue;
             }
         } else {
-            if (returnValue != null && ! ImportSupport.isAbsoluteUrl(returnValue)) {
+            if (returnValue != null && ! isAbsoluteUrl(returnValue)) {
                 if (! returnValue.startsWith("/")) {
                     returnValue = "/" + returnValue;
                 }
@@ -242,6 +241,28 @@ public class StaticAssetPathServiceImpl implements StaticAssetPathService {
             urlPrefix = urlPrefix + "/";
         }
         return urlPrefix;
+    }
+
+    /**
+     * Determines whether the supplied URL is an absolute URL (i.e. begins with a scheme such as
+     * {@code http://}). This mirrors the JSTL/Velocity-tools {@code ImportSupport.isAbsoluteUrl}
+     * contract that this class previously relied on.
+     */
+    protected static boolean isAbsoluteUrl(String url) {
+        if (url == null) {
+            return false;
+        }
+        int colonPos = url.indexOf(":");
+        if (colonPos <= 0) {
+            return false;
+        }
+        for (int i = 0; i < colonPos; i++) {
+            char c = url.charAt(i);
+            if (!Character.isLetterOrDigit(c) && c != '+' && c != '-' && c != '.') {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
