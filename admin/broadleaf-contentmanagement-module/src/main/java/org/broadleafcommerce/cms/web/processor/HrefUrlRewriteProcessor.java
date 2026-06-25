@@ -20,13 +20,17 @@
 package org.broadleafcommerce.cms.web.processor;
 
 import org.broadleafcommerce.common.file.service.StaticAssetPathService;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.broadleafcommerce.common.web.BroadleafRequestContext;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
+import org.thymeleaf.standard.expression.IStandardExpressionParser;
+import org.thymeleaf.standard.expression.StandardExpressions;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Similar to {@link UrlRewriteProcessor} but handles href tags.   
@@ -46,38 +50,37 @@ public class HrefUrlRewriteProcessor extends UrlRewriteProcessor {
      * Sets the name of this processor to be used in Thymeleaf template
      */
     public HrefUrlRewriteProcessor() {
-        super(HREF);
+        super("blc", HREF);
     }
 
     @Override
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
-        Map<String, String> attrs = new HashMap<String, String>();
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName,
+            String attributeValue, IElementTagStructureHandler structureHandler) {
         
-        String elementName = element.getNormalizedName();
-        String useCDN = element.getAttributeValue("useCDN");
+        String elementName = tag.getElementDefinition().getElementName().getElementName();
+        String useCDN = tag.getAttributeValue("useCDN");
 
         if (LINK.equals(elementName) || (useCDN != null && "true".equals(useCDN))) {
-            attrs = super.getModifiedAttributeValues(arguments, element, attributeName);
-            String srcAttr = attrs.remove("src");
-            attrs.put(HREF, srcAttr);
+            HttpServletRequest request = BroadleafRequestContext.getBroadleafRequestContext().getRequest();
+            
+            boolean secureRequest = true;
+            if (request != null) {
+                secureRequest = isRequestSecure(request);
+            }
+            
+            String elementValue = attributeValue;
+            if (elementValue.startsWith("/")) {
+                elementValue = "@{ " + elementValue + " }";
+            }
+            
+            IStandardExpressionParser expressionParser = StandardExpressions.getExpressionParser(context.getConfiguration());
+            IStandardExpression expression = expressionParser.parseExpression(context, elementValue);
+            String assetPath = (String) expression.execute(context);
+            
+            assetPath = staticAssetPathService.convertAssetPath(assetPath, null, secureRequest);
+            structureHandler.setAttribute(HREF, assetPath);
         } else {
-            attrs.put(HREF, element.getAttributeValue(attributeName));
+            structureHandler.setAttribute(HREF, attributeValue);
         }
-        return attrs;
-    }
-
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
     }
 }

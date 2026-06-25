@@ -22,14 +22,15 @@ package org.broadleafcommerce.cms.web.processor;
 import org.broadleafcommerce.cms.file.service.StaticAssetService;
 import org.broadleafcommerce.common.file.service.StaticAssetPathService;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
+import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -41,27 +42,19 @@ import javax.servlet.http.HttpServletRequest;
  * 
  * @author apazzolini
  */
-public class UrlRewriteProcessor extends AbstractAttributeModifierAttrProcessor {
+public class UrlRewriteProcessor extends AbstractAttributeTagProcessor {
     
     @Resource(name = "blStaticAssetPathService")
     protected StaticAssetPathService staticAssetPathService;
 
-    /**
-     * Sets the name of this processor to be used in Thymeleaf template
-     */
     public UrlRewriteProcessor() {
-        this("src");
+        this("blc", "src");
     }
     
-    protected UrlRewriteProcessor(final String attributeName) {
-        super(attributeName);
+    protected UrlRewriteProcessor(String dialectPrefix, String attributeName) {
+        super(TemplateMode.HTML, dialectPrefix, null, false, attributeName, true, 1000, true);
     }
 
-    @Override
-    public int getPrecedence() {
-        return 1000;
-    }
-    
     /**
      * @return true if the current request.scheme = HTTPS or if the request.isSecure value is true.
      */
@@ -69,10 +62,10 @@ public class UrlRewriteProcessor extends AbstractAttributeModifierAttrProcessor 
         return ("HTTPS".equalsIgnoreCase(request.getScheme()) || request.isSecure());
     } 
 
-    
     @Override
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
-        Map<String, String> attrs = new HashMap<String, String>();
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName,
+            String attributeValue, IElementTagStructureHandler structureHandler) {
+        
         HttpServletRequest request = BroadleafRequestContext.getBroadleafRequestContext().getRequest();
         
         boolean secureRequest = true;
@@ -80,36 +73,18 @@ public class UrlRewriteProcessor extends AbstractAttributeModifierAttrProcessor 
             secureRequest = isRequestSecure(request);
         }
         
-        String elementValue = element.getAttributeValue(attributeName);
+        String elementValue = attributeValue;
 
         if (elementValue.startsWith("/")) {
             elementValue = "@{ " + elementValue + " }";
         }
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, elementValue);
-        String assetPath = (String) expression.execute(arguments.getConfiguration(), arguments);
         
-        // We are forcing an evaluation of @{} from Thymeleaf above which will automatically add a contextPath, no need to
-        // add it twice
+        IStandardExpressionParser expressionParser = StandardExpressions.getExpressionParser(context.getConfiguration());
+        IStandardExpression expression = expressionParser.parseExpression(context, elementValue);
+        String assetPath = (String) expression.execute(context);
+        
         assetPath = staticAssetPathService.convertAssetPath(assetPath, null, secureRequest);
         
-        attrs.put("src", assetPath);
-        
-        return attrs;
-    }
-
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
+        structureHandler.setAttribute("src", assetPath);
     }
 }

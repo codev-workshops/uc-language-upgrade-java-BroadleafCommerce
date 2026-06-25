@@ -22,8 +22,8 @@ package org.broadleafcommerce.cms.web.processor;
 import org.broadleafcommerce.common.extension.AbstractExtensionHandler;
 import org.broadleafcommerce.common.extension.ExtensionResultStatusType;
 import org.broadleafcommerce.common.web.deeplink.DeepLink;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
 
 import java.util.List;
 
@@ -36,12 +36,12 @@ public abstract class AbstractContentProcessorExtensionHandler extends AbstractE
         implements ContentProcessorExtensionHandler {
 
     @Override
-    public ExtensionResultStatusType addAdditionalFieldsToModel(Arguments arguments, Element element) {
+    public ExtensionResultStatusType addAdditionalFieldsToModel(ITemplateContext context, IProcessableElementTag tag) {
         return ExtensionResultStatusType.NOT_HANDLED;
     }
 
     @Override
-    public ExtensionResultStatusType addExtensionFieldDeepLink(List<DeepLink> links, Arguments arguments, Element element) {
+    public ExtensionResultStatusType addExtensionFieldDeepLink(List<DeepLink> links, ITemplateContext context, IProcessableElementTag tag) {
         return ExtensionResultStatusType.NOT_HANDLED;
     }
     
