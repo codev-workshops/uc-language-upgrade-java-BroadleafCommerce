@@ -25,11 +25,16 @@ import org.broadleafcommerce.core.search.domain.SearchCriteria;
 import org.broadleafcommerce.core.search.domain.SearchFacetResultDTO;
 import org.broadleafcommerce.core.web.service.SearchFacetDTOService;
 import org.broadleafcommerce.core.web.util.ProcessorUtils;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.broadleafcommerce.common.web.dialect.BLCDialect;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
+import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +49,9 @@ import javax.servlet.http.HttpServletRequest;
  * 
  * @author apazzolini
  */
-public class ToggleFacetLinkProcessor extends AbstractAttributeModifierAttrProcessor {
+public class ToggleFacetLinkProcessor extends AbstractAttributeTagProcessor {
+    
+    protected static final int PRECEDENCE = 10000;
     
     @Resource(name = "blSearchFacetDTOService")
     protected SearchFacetDTOService facetService;
@@ -53,17 +60,12 @@ public class ToggleFacetLinkProcessor extends AbstractAttributeModifierAttrProce
      * Sets the name of this processor to be used in Thymeleaf template
      */
     public ToggleFacetLinkProcessor() {
-        super("togglefacetlink");
-    }
-    
-    @Override
-    public int getPrecedence() {
-        return 10000;
+        super(TemplateMode.HTML, BLCDialect.DEFAULT_PREFIX, null, false, "togglefacetlink", true, PRECEDENCE, true);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue, IElementTagStructureHandler structureHandler) {
         Map<String, String> attrs = new HashMap<String, String>();
         
         BroadleafRequestContext blcContext = BroadleafRequestContext.getBroadleafRequestContext();
@@ -72,9 +74,9 @@ public class ToggleFacetLinkProcessor extends AbstractAttributeModifierAttrProce
         String baseUrl = request.getRequestURL().toString();
         Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
         
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue(attributeName));
-        SearchFacetResultDTO result = (SearchFacetResultDTO) expression.execute(arguments.getConfiguration(), arguments);
+        IStandardExpressionParser expressionParser = StandardExpressions.getExpressionParser(context.getConfiguration());
+        IStandardExpression expression = expressionParser.parseExpression(context, attributeValue);
+        SearchFacetResultDTO result = (SearchFacetResultDTO) expression.execute(context);
         
         String key = facetService.getUrlKey(result);
         String value = facetService.getValue(result);
@@ -92,21 +94,8 @@ public class ToggleFacetLinkProcessor extends AbstractAttributeModifierAttrProce
         String url = ProcessorUtils.getUrl(baseUrl, params);
         
         attrs.put("href", url);
-        return attrs;
-    }
-
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
+        for (Map.Entry<String, String> entry : attrs.entrySet()) {
+            structureHandler.setAttribute(entry.getKey(), entry.getValue());
+        }
     }
 }

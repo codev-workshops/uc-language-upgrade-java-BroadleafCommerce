@@ -21,15 +21,18 @@ package org.broadleafcommerce.core.web.processor;
 
 import org.apache.commons.lang.StringUtils;
 import org.broadleafcommerce.common.web.dialect.AbstractModelVariableModifierProcessor;
+import org.broadleafcommerce.common.web.dialect.BLCDialect;
 import org.broadleafcommerce.core.rating.domain.RatingSummary;
 import org.broadleafcommerce.core.rating.domain.ReviewDetail;
 import org.broadleafcommerce.core.rating.service.RatingService;
 import org.broadleafcommerce.core.rating.service.type.RatingType;
 import org.broadleafcommerce.profile.core.domain.Customer;
 import org.broadleafcommerce.profile.web.core.CustomerState;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
+import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
 
 import javax.annotation.Resource;
@@ -52,22 +55,17 @@ public class RatingsProcessor extends AbstractModelVariableModifierProcessor {
      *
      */
     public RatingsProcessor() {
-        super("ratings");
+        super(BLCDialect.DEFAULT_PREFIX, "ratings", 10000);
     }
 
     @Override
-    public int getPrecedence() {
-        return 10000;
-    }
-
-    @Override
-    protected void modifyModelAttributes(Arguments arguments, Element element) {
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue("itemId"));
-        String itemId = String.valueOf(expression.execute(arguments.getConfiguration(), arguments));
+    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        IStandardExpressionParser expressionParser = StandardExpressions.getExpressionParser(context.getConfiguration());
+        IStandardExpression expression = expressionParser.parseExpression(context, tag.getAttributeValue("itemId"));
+        String itemId = String.valueOf(expression.execute(context));
         RatingSummary ratingSummary = ratingService.readRatingSummary(itemId, RatingType.PRODUCT);
         if (ratingSummary != null) {
-            addToModel(arguments, getRatingsVar(element), ratingSummary);
+            addToModel(structureHandler, getRatingsVar(tag), ratingSummary);
         }
         
         Customer customer = CustomerState.getCustomer();
@@ -76,13 +74,13 @@ public class RatingsProcessor extends AbstractModelVariableModifierProcessor {
             reviewDetail = ratingService.readReviewByCustomerAndItem(customer, itemId);
         }
         if (reviewDetail != null) {
-            addToModel(arguments, "currentCustomerReview", reviewDetail);
+            addToModel(structureHandler, "currentCustomerReview", reviewDetail);
         }
         
     }
     
-    private String getRatingsVar(Element element) {
-        String ratingsVar = element.getAttributeValue("ratingsVar");
+    private String getRatingsVar(IProcessableElementTag tag) {
+        String ratingsVar = tag.getAttributeValue("ratingsVar");
         if (StringUtils.isNotEmpty(ratingsVar)) {
             return ratingsVar;
         } 

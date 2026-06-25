@@ -19,19 +19,17 @@
  */
 package org.broadleafcommerce.core.web.processor;
 
+import org.broadleafcommerce.common.web.dialect.BLCDialect;
 import org.broadleafcommerce.core.web.processor.extension.HeadProcessorExtensionListener;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.dom.Node;
+import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.exceptions.TemplateProcessingException;
-import org.thymeleaf.processor.element.AbstractFragmentHandlingElementProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
+import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
-import org.thymeleaf.standard.processor.attr.StandardFragmentAttrProcessor;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import javax.annotation.Resource;
 
@@ -63,59 +61,47 @@ import javax.annotation.Resource;
  *
  */
 @Deprecated
-public class HeadProcessor extends AbstractFragmentHandlingElementProcessor {
+public class HeadProcessor extends AbstractElementTagProcessor {
+
+    protected static final int PRECEDENCE = 10000;
 
     @Resource(name = "blHeadProcessorExtensionManager")
     protected HeadProcessorExtensionListener extensionManager;
 
-    public static final String FRAGMENT_ATTR_NAME = StandardFragmentAttrProcessor.ATTR_NAME;
     protected String HEAD_PARTIAL_PATH = "layout/partials/head";
     
     /**
      * Sets the name of this processor to be used in Thymeleaf template
      */
     public HeadProcessor() {
-        super("head");
+        super(TemplateMode.HTML, BLCDialect.DEFAULT_PREFIX, "head", true, null, false, PRECEDENCE);
     }
 
     @Override
-    public int getPrecedence() {
-        return 10000;
-    }
-
-    @Override
-    protected boolean getRemoveHostNode(final Arguments arguments, final Element element) {
-        return true;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    protected List<Node> computeFragment(final Arguments arguments, final Element element) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
         // The pageTitle attribute could be an expression that needs to be evaluated. Try to evaluate, but fall back
         // to its text value if the expression wasn't able to be processed. This will allow things like
         // pageTitle="Hello this is a string"
         // as well as expressions like
         // pageTitle="${'Hello this is a ' + product.name}"
         
-        String pageTitle = element.getAttributeValue("pageTitle");
+        String pageTitle = tag.getAttributeValue("pageTitle");
         try {
-            Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                    .parseExpression(arguments.getConfiguration(), arguments, pageTitle);
-            pageTitle = (String) expression.execute(arguments.getConfiguration(), arguments);
+            IStandardExpressionParser expressionParser = StandardExpressions.getExpressionParser(context.getConfiguration());
+            IStandardExpression expression = expressionParser.parseExpression(context, pageTitle);
+            pageTitle = (String) expression.execute(context);
         } catch (TemplateProcessingException e) {
             // Do nothing.
         }
-        ((Map<String, Object>) arguments.getExpressionEvaluationRoot()).put("pageTitle", pageTitle);
-        ((Map<String, Object>) arguments.getExpressionEvaluationRoot()).put("additionalCss", element.getAttributeValue("additionalCss"));
+        structureHandler.setLocalVariable("pageTitle", pageTitle);
+        structureHandler.setLocalVariable("additionalCss", tag.getAttributeValue("additionalCss"));
 
-        extensionManager.processAttributeValues(arguments, element);
+        extensionManager.processAttributeValues(context, tag);
         
         //the commit at https://github.com/thymeleaf/thymeleaf/commit/b214d9b5660369c41538e023d4b8d7223ebcbc22 along with
         //the referenced issue at https://github.com/thymeleaf/thymeleaf/issues/205
         
-        
-//        return new FragmentAndTarget(HEAD_PARTIAL_PATH, WholeFragmentSpec.INSTANCE);
-        return new ArrayList<Node>();
+        structureHandler.removeElement();
     }
 
 }

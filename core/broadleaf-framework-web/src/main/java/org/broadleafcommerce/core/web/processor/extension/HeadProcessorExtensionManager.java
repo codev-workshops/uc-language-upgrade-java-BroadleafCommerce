@@ -19,8 +19,8 @@
  */
 package org.broadleafcommerce.core.web.processor.extension;
 
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,12 +33,12 @@ public class HeadProcessorExtensionManager implements HeadProcessorExtensionList
     protected List<HeadProcessorExtensionListener> listeners;
 
     @Override
-    public void processAttributeValues(Arguments arguments, Element element) {
+    public void processAttributeValues(ITemplateContext context, IProcessableElementTag element) {
         if(listeners == null) {
             listeners = new ArrayList<HeadProcessorExtensionListener>();
         }
         for(HeadProcessorExtensionListener listener : listeners){
-            listener.processAttributeValues(arguments, element);
+            listener.processAttributeValues(context, element);
         }
     }
 

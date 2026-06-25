@@ -19,14 +19,14 @@
  */
 package org.broadleafcommerce.core.web.processor.extension;
 
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
 
 /**
  * @author Jerry Ocanas (jocanas)
  */
 public interface HeadProcessorExtensionListener {
 
-    public void processAttributeValues(Arguments arguments, Element element);
+    public void processAttributeValues(ITemplateContext context, IProcessableElementTag element);
 
 }

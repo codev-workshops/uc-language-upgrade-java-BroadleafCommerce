@@ -22,10 +22,14 @@ package org.broadleafcommerce.core.web.processor;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
 import org.broadleafcommerce.core.search.domain.SearchCriteria;
 import org.broadleafcommerce.core.web.controller.catalog.BroadleafCategoryController;
+import org.broadleafcommerce.common.web.dialect.BLCDialect;
 import org.broadleafcommerce.core.web.util.ProcessorUtils;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,7 +68,9 @@ import javax.servlet.http.HttpServletRequest;
  * 
  * @author apazzolini
  */
-public class AddSortLinkProcessor extends AbstractAttributeModifierAttrProcessor {
+public class AddSortLinkProcessor extends AbstractAttributeTagProcessor {
+    
+    protected static final int PRECEDENCE = 10000;
     
     protected boolean allowMultipleSorts = false;
     
@@ -72,17 +78,12 @@ public class AddSortLinkProcessor extends AbstractAttributeModifierAttrProcessor
      * Sets the name of this processor to be used in Thymeleaf template
      */
     public AddSortLinkProcessor() {
-        super("addsortlink");
-    }
-    
-    @Override
-    public int getPrecedence() {
-        return 10000;
+        super(TemplateMode.HTML, BLCDialect.DEFAULT_PREFIX, null, false, "addsortlink", true, PRECEDENCE, true);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue, IElementTagStructureHandler structureHandler) {
         Map<String, String> attrs = new HashMap<String, String>();
         
         BroadleafRequestContext blcContext = BroadleafRequestContext.getBroadleafRequestContext();
@@ -92,7 +93,7 @@ public class AddSortLinkProcessor extends AbstractAttributeModifierAttrProcessor
         Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
         
         String key = SearchCriteria.SORT_STRING;
-        String sortField = element.getAttributeValue(attributeName);
+        String sortField = attributeValue;
         
         List<String[]> sortedFields = new ArrayList<String[]>();
         
@@ -154,21 +155,9 @@ public class AddSortLinkProcessor extends AbstractAttributeModifierAttrProcessor
         
         attrs.put("class", classString);
         attrs.put("href", url);
-        return attrs;
-    }
 
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
+        for (Map.Entry<String, String> entry : attrs.entrySet()) {
+            structureHandler.setAttribute(entry.getKey(), entry.getValue());
+        }
     }
 }

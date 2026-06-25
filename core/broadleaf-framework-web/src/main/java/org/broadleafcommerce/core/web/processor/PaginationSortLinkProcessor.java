@@ -23,9 +23,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
 import org.broadleafcommerce.core.search.domain.SearchCriteria;
 import org.broadleafcommerce.core.web.util.ProcessorUtils;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
+import org.broadleafcommerce.common.web.dialect.BLCDialect;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -37,19 +41,16 @@ import java.util.Map;
  *
  * @author Joseph Fridye (jfridye)
  */
-public class PaginationSortLinkProcessor extends AbstractAttributeModifierAttrProcessor {
+public class PaginationSortLinkProcessor extends AbstractAttributeTagProcessor {
+
+    protected static final int PRECEDENCE = 10000;
 
     public PaginationSortLinkProcessor() {
-        super("pagination-sort-link");
+        super(TemplateMode.HTML, BLCDialect.DEFAULT_PREFIX, null, false, "pagination-sort-link", true, PRECEDENCE, true);
     }
 
     @Override
-    public int getPrecedence() {
-        return 10000;
-    }
-
-    @Override
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue, IElementTagStructureHandler structureHandler) {
 
         Map<String, String> attributes = new HashMap<String, String>();
 
@@ -59,7 +60,7 @@ public class PaginationSortLinkProcessor extends AbstractAttributeModifierAttrPr
 
         Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
 
-        String sort = element.getAttributeValue(attributeName);
+        String sort = attributeValue;
 
         if (StringUtils.isNotBlank(sort)) {
             params.put(SearchCriteria.SORT_STRING, new String[]{sort});
@@ -75,23 +76,10 @@ public class PaginationSortLinkProcessor extends AbstractAttributeModifierAttrPr
 
         attributes.put("href", url);
 
-        return attributes;
+        for (Map.Entry<String, String> entry : attributes.entrySet()) {
+            structureHandler.setAttribute(entry.getKey(), entry.getValue());
+        }
 
-    }
-
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
     }
 
 }

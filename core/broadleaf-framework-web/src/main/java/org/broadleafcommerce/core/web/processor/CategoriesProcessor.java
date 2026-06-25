@@ -23,11 +23,13 @@ import org.apache.commons.lang.StringUtils;
 import org.broadleafcommerce.common.extension.ExtensionResultHolder;
 import org.broadleafcommerce.common.extension.ExtensionResultStatusType;
 import org.broadleafcommerce.common.web.dialect.AbstractModelVariableModifierProcessor;
+import org.broadleafcommerce.common.web.dialect.BLCDialect;
 import org.broadleafcommerce.core.catalog.domain.Category;
 import org.broadleafcommerce.core.catalog.domain.CategoryXref;
 import org.broadleafcommerce.core.catalog.service.CatalogService;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,25 +60,20 @@ public class CategoriesProcessor extends AbstractModelVariableModifierProcessor 
      * Sets the name of this processor to be used in Thymeleaf template
      */
     public CategoriesProcessor() {
-        super("categories");
-    }
-    
-    @Override
-    public int getPrecedence() {
-        return 10000;
+        super(BLCDialect.DEFAULT_PREFIX, "categories", 10000);
     }
 
     @Override
-    protected void modifyModelAttributes(Arguments arguments, Element element) {
-        String resultVar = element.getAttributeValue("resultVar");
-        String parentCategory = element.getAttributeValue("parentCategory");
-        String unparsedMaxResults = element.getAttributeValue("maxResults");
+    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+        String resultVar = tag.getAttributeValue("resultVar");
+        String parentCategory = tag.getAttributeValue("parentCategory");
+        String unparsedMaxResults = tag.getAttributeValue("maxResults");
 
         if (extensionManager != null) {
             ExtensionResultHolder holder = new ExtensionResultHolder();
             ExtensionResultStatusType result = extensionManager.getProxy().findAllPossibleChildCategories(parentCategory, unparsedMaxResults, holder);
             if (ExtensionResultStatusType.HANDLED.equals(result)) {
-                addToModel(arguments, resultVar, holder.getResult());
+                addToModel(structureHandler, resultVar, holder.getResult());
                 return;
             }
         }
@@ -102,7 +99,7 @@ public class CategoriesProcessor extends AbstractModelVariableModifierProcessor 
                 }
             }
             
-            addToModel(arguments, resultVar, results);
+            addToModel(structureHandler, resultVar, results);
         }
     }
 }

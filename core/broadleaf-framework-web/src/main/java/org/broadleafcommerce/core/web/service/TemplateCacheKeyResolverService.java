@@ -19,8 +19,8 @@
  */
 package org.broadleafcommerce.core.web.service;
 
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
 
 /**
  * Used to build a cacheKey for caching templates.
@@ -38,5 +38,5 @@ public interface TemplateCacheKeyResolverService {
      * @param element
      * @return
      */
-    public String resolveCacheKey(Arguments arguments, Element element);
+    public String resolveCacheKey(ITemplateContext context, IProcessableElementTag element);
 }
