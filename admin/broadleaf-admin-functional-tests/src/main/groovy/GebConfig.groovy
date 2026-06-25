@@ -17,17 +17,17 @@
  * limitations under the License.
  * #L%
  */
-import org.apache.commons.lang3.SystemUtils
 import org.openqa.selenium.chrome.ChromeDriver
-import org.openqa.selenium.chrome.ChromeDriverService
+import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.firefox.FirefoxDriver
+import org.openqa.selenium.firefox.FirefoxOptions
 
 import geb.buildadapter.SystemPropertiesBuildAdapter
 
 
 println 'Loading default Broadleaf GebConfig'
 // Use the FirefoxDriver by default
-driver = { new FirefoxDriver() }
+driver = { new FirefoxDriver(new FirefoxOptions()) }
 if (!System.getProperty(SystemPropertiesBuildAdapter.BASE_URL_PROPERTY_NAME)) {
     baseUrl = 'http://demo75ip2w.blcqa.com/admin/'
 }
@@ -41,37 +41,17 @@ waiting {
 environments {
 
     // See: http://code.google.com/p/selenium/wiki/ChromeDriver
+    // Selenium 4.18+ includes Selenium Manager for automatic driver management
     chrome {
-        def chromeDriver = new File(System.getProperty('java.io.tmpdir') + '/chromedriver')
-        def system = ''
-        if (SystemUtils.IS_OS_MAC) {
-            system = 'mac32'
-        } else if (SystemUtils.IS_OS_WINDOWS) {
-            system = 'win32'
-        } else if (SystemUtils.IS_OS_LINUX) {
-            system = 'linux64'
+        driver = {
+            def options = new ChromeOptions()
+            new ChromeDriver(options)
         }
-        
-        downloadDriver(chromeDriver, "http://chromedriver.storage.googleapis.com/2.10/chromedriver_${system}.zip")
-        System.setProperty(ChromeDriverService.CHROME_DRIVER_EXE_PROPERTY, chromeDriver.absolutePath)
-        
-        driver = { new ChromeDriver() }
     }
 
     // See: http://code.google.com/p/selenium/wiki/FirefoxDriver
     firefox {
-        driver = { new FirefoxDriver() }
+        driver = { new FirefoxDriver(new FirefoxOptions()) }
     }
     
-}
-
-private void downloadDriver(File file, String path) {
-    if (!file.exists()) {
-        println 'Downloading Chrome driver to ' + file.absolutePath + ' from ' + path
-        def ant = new AntBuilder()
-        ant.get(src: path, dest: 'driver.zip')
-        ant.unzip(src: 'driver.zip', dest: file.parent)
-        ant.delete(file: 'driver.zip')
-        ant.chmod(file: file, perm: '700')
-    }
 }
