@@ -209,8 +209,9 @@
             <artifactId>spring-webmvc</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hibernate.javax.persistence</groupId>
-            <artifactId>hibernate-jpa-2.0-api</artifactId>
+            <groupId>javax.persistence</groupId>
+            <artifactId>javax.persistence-api</artifactId>
+            <version>2.2</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -225,8 +226,9 @@
             <artifactId>antlr-runtime</artifactId>
         </dependency>
         <dependency>
-            <groupId>asm</groupId>
+            <groupId>org.ow2.asm</groupId>
             <artifactId>asm-commons</artifactId>
+            <version>9.6</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -294,7 +296,7 @@
         </dependency>
         <dependency>
             <groupId>org.thymeleaf</groupId>
-            <artifactId>thymeleaf-spring4</artifactId>
+            <artifactId>thymeleaf-spring5</artifactId>
         </dependency>
         <dependency>
             <groupId>org.owasp.antisamy</groupId>
@@ -383,8 +385,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
+            <groupId>org.apache.groovy</groupId>
             <artifactId>groovy-all</artifactId>
+            <type>pom</type>
             <scope>test</scope>
         </dependency>
         <dependency>

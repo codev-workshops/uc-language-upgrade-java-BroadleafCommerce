@@ -82,7 +82,7 @@
                         <id>default-test</id>
                         <configuration>
                             <skipTests>true</skipTests>
-                            <argLine>-Xmx1024m -XX:MaxPermSize=512m
+                            <argLine>-Xmx1024m
                                 -Dlegacy=true ${surefire.argLine}</argLine>
                         </configuration>
                     </execution>
@@ -96,7 +96,7 @@
                             <excludes>
                                 <exclude>**/Legacy**Test.java</exclude>
                             </excludes>
-                            <argLine>-Xmx1024m -XX:MaxPermSize=512m ${surefire.argLine}</argLine>
+                            <argLine>-Xmx1024m ${surefire.argLine}</argLine>
                         </configuration>
                     </execution>
                 </executions>
@@ -202,7 +202,7 @@
                                     <argLine>
                                         -Dlegacy=true
                                         -Xmx1024m
-                                        -XX:MaxPermSize=512m -Xdebug
+                                        -Xdebug
                                         -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8083
                                         -agentpath:${jrebel.path}
                                         -Drebel.log.stdout=true
@@ -215,7 +215,7 @@
                                 <configuration>
                                     <argLine>
                                         -Xmx1024m
-                                        -XX:MaxPermSize=512m -Xdebug
+                                        -Xdebug
                                         -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8083
                                         -agentpath:${jrebel.path}
                                         -Drebel.log.stdout=true
@@ -310,8 +310,9 @@
 
         <!-- Spock/Groovy Test Dependencies -->
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
+            <groupId>org.apache.groovy</groupId>
             <artifactId>groovy-all</artifactId>
+            <type>pom</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -320,7 +321,7 @@
             <version>${spock.spring.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
+                    <groupId>org.apache.groovy</groupId>
                     <artifactId>groovy-all</artifactId>
                 </exclusion>
             </exclusions>

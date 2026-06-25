@@ -46,15 +46,15 @@
     </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.version>4.1.9.RELEASE</spring.version>
-        <spring.security.version>3.2.9.RELEASE</spring.security.version>
+        <spring.version>5.3.39</spring.version>
+        <spring.security.version>5.8.14</spring.security.version>
         <maven.source.plugin.version>2.2.1</maven.source.plugin.version>
-        <thymeleaf.version>2.1.4.RELEASE</thymeleaf.version>
-        <geb.version>0.10.0</geb.version>
-        <spock.core.version>1.0-groovy-2.3</spock.core.version>
-        <spock.spring.version>1.0-groovy-2.3</spock.spring.version>
-        <selenium.version>2.43.1</selenium.version>
-        <groovy.version>2.3.10</groovy.version>
+        <thymeleaf.version>3.1.2.RELEASE</thymeleaf.version>
+        <geb.version>5.1</geb.version>
+        <spock.core.version>2.3-groovy-4.0</spock.core.version>
+        <spock.spring.version>2.3-groovy-4.0</spock.spring.version>
+        <selenium.version>4.18.1</selenium.version>
+        <groovy.version>4.0.21</groovy.version>
         <gpg.plugin.version>1.6</gpg.plugin.version>
         <project.uri>${project.baseUri}</project.uri>
     </properties>
@@ -70,10 +70,9 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.1</version>
+                    <version>3.11.0</version>
                     <configuration>
-                        <source>1.7</source>
-                        <target>1.7</target>
+                        <release>17</release>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -97,7 +96,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.10</version>
+                    <version>3.2.5</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -120,10 +119,7 @@
                 <plugin>
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
-                    <version>1.5</version>
-                    <configuration>
-                        <targetBytecode>1.7</targetBytecode>
-                    </configuration>
+                    <version>3.0.2</version>
                     <executions>
                         <execution>
                             <goals>
@@ -131,8 +127,8 @@
                                 <goal>addTestSources</goal>
                                 <goal>generateStubs</goal>
                                 <goal>compile</goal>
-                                <goal>testGenerateStubs</goal>
-                                <goal>testCompile</goal>
+                                <goal>generateTestStubs</goal>
+                                <goal>compileTests</goal>
                                 <goal>removeStubs</goal>
                                 <goal>removeTestStubs</goal>
                             </goals>
@@ -160,9 +156,9 @@
                                         </versionRange>
                                         <goals>
                                             <goal>addTestSources</goal>
-                                            <goal>testCompile</goal>
+                                            <goal>compileTests</goal>
                                             <goal>
-                                                testGenerateStubs
+                                                generateTestStubs
                                             </goal>
                                             <goal>removeTestStubs</goal>
                                             <goal>compile</goal>
@@ -223,27 +219,6 @@
             </plugins>
         </pluginManagement>
         <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>animal-sniffer-maven-plugin</artifactId>
-                <version>1.15</version>
-                <executions>
-                    <execution>
-                        <id>sniff</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <signature>
-                        <groupId>org.codehaus.mojo.signature</groupId>
-                        <artifactId>java17</artifactId>
-                        <version>1.0</version>
-                    </signature>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
@@ -582,28 +557,22 @@
 
             <!-- Hibernate Libraries -->
             <dependency>
-                <groupId>org.hibernate.javax.persistence</groupId>
-                <artifactId>hibernate-jpa-2.0-api</artifactId>
-                <version>1.0.0.Final</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-envers</artifactId>
-                <version>4.1.11.Final</version>
+                <version>5.6.15.Final</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
-                <version>4.1.11.Final</version>
+                <version>5.6.15.Final</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-entitymanager</artifactId>
-                <version>4.1.11.Final</version>
+                <version>5.6.15.Final</version>
                 <type>jar</type>
                 <scope>compile</scope>
                 <exclusions>
@@ -620,7 +589,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-ehcache</artifactId>
-                <version>4.1.11.Final</version>
+                <version>5.6.15.Final</version>
                 <scope>compile</scope>
                 <exclusions>
                     <exclusion>
@@ -737,7 +706,7 @@
             <dependency>
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
-                <version>1.2.12</version>
+                <version>1.2.17</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -902,7 +871,7 @@
             </dependency>
             <dependency>
                 <groupId>org.thymeleaf</groupId>
-                <artifactId>thymeleaf-spring4</artifactId>
+                <artifactId>thymeleaf-spring5</artifactId>
                 <version>${thymeleaf.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
@@ -910,7 +879,7 @@
             <dependency>
                 <groupId>nz.net.ultraq.thymeleaf</groupId>
                 <artifactId>thymeleaf-layout-dialect</artifactId>
-                <version>1.2.5</version>
+                <version>3.3.0</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -952,9 +921,10 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.codehaus.groovy</groupId>
+                <groupId>org.apache.groovy</groupId>
                 <artifactId>groovy-all</artifactId>
                 <version>${groovy.version}</version>
+                <type>pom</type>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -998,7 +968,7 @@
             <dependency>
                 <artifactId>solr-solrj</artifactId>
                 <groupId>org.apache.solr</groupId>
-                <version>4.10.3</version>
+                <version>8.11.3</version>
                 <type>jar</type>
                 <scope>compile</scope>
                 <exclusions>
@@ -1013,7 +983,7 @@
             <dependency>
                 <artifactId>solr-core</artifactId>
                 <groupId>org.apache.solr</groupId>
-                <version>4.10.3</version>
+                <version>8.11.3</version>
                 <type>jar</type>
                 <scope>compile</scope>
                 <exclusions>
@@ -1063,30 +1033,9 @@
 
             <!-- Byte Code Manipulation Libraries -->
             <dependency>
-                <groupId>cglib</groupId>
-                <artifactId>cglib-nodep</artifactId>
-                <version>2.1_3</version>
-                <type>jar</type>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>asm</groupId>
-                <artifactId>asm</artifactId>
-                <version>3.3</version>
-                <type>jar</type>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>asm</groupId>
-                <artifactId>asm-commons</artifactId>
-                <version>3.3</version>
-                <type>jar</type>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
-                <version>3.17.1-GA</version>
+                <version>3.29.2-GA</version>
                 <scope>compile</scope>
             </dependency>
 
@@ -1094,7 +1043,7 @@
             <dependency>
                 <groupId>org.quartz-scheduler</groupId>
                 <artifactId>quartz</artifactId>
-                <version>2.2.0</version>
+                <version>2.3.2</version>
                 <type>jar</type>
                 <scope>compile</scope>
             </dependency>
@@ -1135,7 +1084,7 @@
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
                 <artifactId>ehcache</artifactId>
-                <version>2.7.2</version>
+                <version>2.10.9.2</version>
                 <scope>compile</scope>
                 <type>jar</type>
             </dependency>
