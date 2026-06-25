@@ -20,7 +20,6 @@
 package org.broadleafcommerce.openadmin.web.processor;
 
 
-import org.broadleafcommerce.common.web.dialect.AbstractModelVariableModifierProcessor;
 import org.broadleafcommerce.openadmin.server.security.domain.AdminUser;
 import org.broadleafcommerce.openadmin.server.security.service.AdminSecurityService;
 import org.springframework.security.core.Authentication;
@@ -30,7 +29,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
 import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import javax.annotation.Resource;
 
@@ -40,7 +41,7 @@ import javax.annotation.Resource;
  * @author elbertbautista
  */
 @Component("blAdminUserProcessor")
-public class AdminUserProcessor extends AbstractModelVariableModifierProcessor {
+public class AdminUserProcessor extends AbstractElementTagProcessor {
 
     private static final String ANONYMOUS_USER_NAME = "anonymousUser";
     
@@ -48,17 +49,19 @@ public class AdminUserProcessor extends AbstractModelVariableModifierProcessor {
     protected AdminSecurityService securityService;
 
     public AdminUserProcessor() {
-        super("blc", "admin_user", 10000);
+        super(TemplateMode.HTML, "blc_admin", "admin_user", true, null, false, 10000);
     }
 
     @Override
-    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
         String resultVar = tag.getAttributeValue("resultVar");
 
         AdminUser user = getPersistentAdminUser();
         if (user != null) {
-            addToModel(structureHandler, resultVar, user);
+            structureHandler.setLocalVariable(resultVar, user);
         }
+
+        structureHandler.removeElement();
     }
 
     protected AdminUser getPersistentAdminUser() {

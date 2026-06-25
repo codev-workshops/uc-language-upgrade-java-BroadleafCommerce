@@ -28,7 +28,6 @@ import org.thymeleaf.model.IProcessableElementTag;
 import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
 import org.thymeleaf.processor.element.IElementTagStructureHandler;
 import org.thymeleaf.standard.expression.IStandardExpression;
-import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
 import org.thymeleaf.templatemode.TemplateMode;
 
@@ -41,19 +40,20 @@ import org.thymeleaf.templatemode.TemplateMode;
 @Component("blAdminSectionHrefProcessor")
 public class AdminSectionHrefProcessor extends AbstractAttributeTagProcessor {
 
+    /**
+     * Sets the name of this processor to be used in Thymeleaf template
+     */
     public AdminSectionHrefProcessor() {
-        super(TemplateMode.HTML, "blc", null, false, "admin_section_href", true, 10002, true);
+        super(TemplateMode.HTML, "blc_admin", null, false, "admin_section_href", true, 10002, true);
     }
 
     @Override
-    protected void doProcess(ITemplateContext context, IProcessableElementTag tag,
-            AttributeName attributeName, String attributeValue,
-            IElementTagStructureHandler structureHandler) {
-
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName,
+            String attributeValue, IElementTagStructureHandler structureHandler) {
         String href = "#";
         
-        IStandardExpressionParser parser = StandardExpressions.getExpressionParser(context.getConfiguration());
-        IStandardExpression expression = parser.parseExpression(context, attributeValue);
+        IStandardExpression expression = StandardExpressions.getExpressionParser(context.getConfiguration())
+                .parseExpression(context, attributeValue);
         AdminSection section = (AdminSection) expression.execute(context);
         if (section != null) {
             String contextPath = "";
@@ -63,6 +63,7 @@ public class AdminSectionHrefProcessor extends AbstractAttributeTagProcessor {
                     contextPath = "";
                 }
             }
+
             href = contextPath + section.getUrl();
         }
         

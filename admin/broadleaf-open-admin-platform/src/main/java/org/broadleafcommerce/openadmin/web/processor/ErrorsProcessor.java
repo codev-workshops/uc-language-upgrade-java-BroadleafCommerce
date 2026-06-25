@@ -66,13 +66,12 @@ public class ErrorsProcessor extends AbstractAttributeTagProcessor {
     public static final String GENERAL_ERROR_FIELD_KEY = "generalError";
 
     public ErrorsProcessor() {
-        super(TemplateMode.HTML, "blc", null, false, "errors", true, 10000, true);
+        super(TemplateMode.HTML, "blc_admin", null, false, "errors", true, 10000, true);
     }
 
     @Override
-    protected void doProcess(ITemplateContext context, IProcessableElementTag tag,
-            AttributeName attributeName, String attributeValue,
-            IElementTagStructureHandler structureHandler) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName,
+            String attributeValue, IElementTagStructureHandler structureHandler) {
 
         IThymeleafBindStatus bindStatus = FieldUtils.getBindStatus(context, attributeValue);
 

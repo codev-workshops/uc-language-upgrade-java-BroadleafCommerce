@@ -108,7 +108,7 @@ public interface AdminSecurityService {
     public String getSalt();
     
     /**
-     * @deprecated this will be removed in 4.2
+     * @deprecated use {@link #setSaltSource(SaltSource)} instead, this will be removed in 4.2
      *
      * @param salt the new salt string to use
      */
@@ -116,7 +116,30 @@ public interface AdminSecurityService {
     public void setSalt(String salt);
 
     /**
-     * Gets the salt object for the current admin user.
+     * Returns the {@link SaltSource} used with the blAdminPasswordEncoder to encrypt the user password. Usually configured in
+     * applicationContext-admin-security.xml. This is not a required property and will return null if not configured
+     *
+     * @deprecated the new {@link org.springframework.security.crypto.password.PasswordEncoder PasswordEncoder} handles salting internally, this will be removed in 4.2
+     *
+     * @return the currently used {@link SaltSource}
+     */
+    @Deprecated
+    public Object getSaltSource();
+    
+    /**
+     * Sets the {@link SaltSource} used with blAdminPasswordEncoder to encrypt the user password. Usually configured within
+     * applicationContext-admin-security.xml
+     *
+     * @deprecated the new {@link org.springframework.security.crypto.password.PasswordEncoder PasswordEncoder} handles salting internally, this will be removed in 4.2
+     * 
+     * @param saltSource the new {@link SaltSource} to use
+     */
+    @Deprecated
+    public void setSaltSource(Object saltSource);
+    
+    /**
+     * Gets the salt object for the current admin user. By default this delegates to {@link #getSaltSource()}. If there is
+     * not a {@link SaltSource} configured ({@link #getSaltSource()} returns null) then this also returns null.
      *
      * @deprecated the new {@link org.springframework.security.crypto.password.PasswordEncoder PasswordEncoder} handles salting internally, this will be removed in 4.2
      * 

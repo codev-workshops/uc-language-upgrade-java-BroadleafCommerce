@@ -19,7 +19,6 @@
  */
 package org.broadleafcommerce.openadmin.web.processor;
 
-import org.broadleafcommerce.common.web.dialect.AbstractModelVariableModifierProcessor;
 import org.broadleafcommerce.openadmin.server.security.domain.AdminMenu;
 import org.broadleafcommerce.openadmin.server.security.domain.AdminUser;
 import org.broadleafcommerce.openadmin.server.security.service.AdminSecurityService;
@@ -31,7 +30,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
 import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import javax.annotation.Resource;
 
@@ -45,7 +46,7 @@ import javax.annotation.Resource;
  * @author elbertbautista
  */
 @Component("blAdminModuleProcessor")
-public class AdminModuleProcessor extends AbstractModelVariableModifierProcessor {
+public class AdminModuleProcessor extends AbstractElementTagProcessor {
 
     private static final String ANONYMOUS_USER_NAME = "anonymousUser";
 
@@ -55,20 +56,24 @@ public class AdminModuleProcessor extends AbstractModelVariableModifierProcessor
     @Resource(name = "blAdminSecurityService")
     protected AdminSecurityService securityService;
 
+    /**
+     * Sets the name of this processor to be used in Thymeleaf template
+     */
     public AdminModuleProcessor() {
-        super("blc", "admin_module", 10001);
+        super(TemplateMode.HTML, "blc_admin", "admin_module", true, null, false, 10001);
     }
 
     @Override
-    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
         String resultVar = tag.getAttributeValue("resultVar");
 
         AdminUser user = getPersistentAdminUser();
         if (user != null) {
             AdminMenu menu = adminNavigationService.buildMenu(user);
-            addToModel(structureHandler, resultVar, menu);
+            structureHandler.setLocalVariable(resultVar, menu);
         }
 
+        structureHandler.removeElement();
     }
 
     protected AdminUser getPersistentAdminUser() {

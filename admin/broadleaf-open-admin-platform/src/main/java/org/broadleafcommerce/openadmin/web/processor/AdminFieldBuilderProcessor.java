@@ -28,7 +28,6 @@ import org.thymeleaf.model.IProcessableElementTag;
 import org.thymeleaf.processor.element.AbstractElementTagProcessor;
 import org.thymeleaf.processor.element.IElementTagStructureHandler;
 import org.thymeleaf.standard.expression.IStandardExpression;
-import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
 import org.thymeleaf.templatemode.TemplateMode;
 
@@ -43,18 +42,20 @@ public class AdminFieldBuilderProcessor extends AbstractElementTagProcessor {
     @Resource(name = "blRuleBuilderFieldServiceFactory")
     protected RuleBuilderFieldServiceFactory ruleBuilderFieldServiceFactory;
 
+    /**
+     * Sets the name of this processor to be used in Thymeleaf template
+     */
     public AdminFieldBuilderProcessor() {
-        super(TemplateMode.HTML, "blc", "admin_field_builder", true, null, false, 100);
+        super(TemplateMode.HTML, "blc_admin", "admin_field_builder", true, null, false, 100);
     }
 
     @Override
-    protected void doProcess(ITemplateContext context, IProcessableElementTag tag,
-            IElementTagStructureHandler structureHandler) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, IElementTagStructureHandler structureHandler) {
         FieldWrapper fieldWrapper = new FieldWrapper();
         
         String fieldBuilderValue = tag.getAttributeValue("fieldBuilder");
-        IStandardExpressionParser parser = StandardExpressions.getExpressionParser(context.getConfiguration());
-        IStandardExpression expression = parser.parseExpression(context, fieldBuilderValue);
+        IStandardExpression expression = StandardExpressions.getExpressionParser(context.getConfiguration())
+                .parseExpression(context, fieldBuilderValue);
         String fieldBuilder = (String) expression.execute(context);
 
         if (fieldBuilder != null) {
