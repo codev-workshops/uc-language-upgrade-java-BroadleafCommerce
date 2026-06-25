@@ -64,7 +64,11 @@ public class CatalogURLServiceImpl implements CatalogURLService {
     protected String buildRelativeUrlWithParam(String currentUrl, String fragment, String idParam, String idValue) {
         try {
             URIBuilder builder = new URIBuilder(currentUrl);
-            builder.setPath(builder.getPath() + "/" + fragment);
+            String path = builder.getPath();
+            if (path == null || path.equals("/")) {
+                path = "";
+            }
+            builder.setPath(path + "/" + fragment);
 
             if (appendIdToRelativeURI) {
                 builder.setParameter(idParam, String.valueOf(idValue));
