@@ -1,0 +1,267 @@
+{
+  "name": "projects/support/locations/global/agents/support-agent/flows/order-management",
+  "displayName": "OrderManagementFlow",
+  "description": "Order status lookup and cancellation self-service flow.",
+  "startPage": "WelcomePage",
+  "nluSettings": {
+    "modelType": "MODEL_TYPE_ADVANCED",
+    "classificationThreshold": 0.3
+  },
+  "intents": [
+    {
+      "displayName": "Intent_Cancel_Order",
+      "description": "User wants to cancel an existing order.",
+      "trainingPhrases": [
+        "I want to cancel my order",
+        "cancel order",
+        "please cancel my purchase",
+        "stop my order",
+        "I'd like to cancel"
+      ]
+    },
+    {
+      "displayName": "Intent_Check_Order_Status",
+      "description": "User wants to know the status of an order.",
+      "trainingPhrases": [
+        "where is my order",
+        "what is the status of my order",
+        "track my order",
+        "has my order shipped",
+        "order status"
+      ]
+    },
+    {
+      "displayName": "Intent_Provide_Order_Id",
+      "description": "User provides an order id / number.",
+      "trainingPhrases": [
+        "my order number is 123456",
+        "it is 654321",
+        "order 100000"
+      ]
+    }
+  ],
+  "webhooks": [
+    {
+      "displayName": "ERP_Lookup_Service",
+      "genericWebService": {
+        "uri": "${ORDER_LOOKUP_BASE_URL}${ORDER_LOOKUP_PATH}",
+        "requestHeaders": {},
+        "timeout": "5s"
+      },
+      "tag": "fetchOrderStatus"
+    }
+  ],
+  "pages": [
+    {
+      "displayName": "WelcomePage",
+      "entryFulfillment": {
+        "messages": [
+          { "id": "welcome.entry", "text": { "text": ["welcome.entry"] } }
+        ]
+      },
+      "transitionRoutes": [
+        {
+          "intent": "Intent_Check_Order_Status",
+          "targetPage": "OrderLookupPage",
+          "triggerFulfillment": {
+            "messages": [
+              { "id": "welcome.route.check_status", "text": { "text": ["welcome.route.check_status"] } }
+            ]
+          }
+        },
+        {
+          "intent": "Intent_Cancel_Order",
+          "targetPage": "OrderLookupPage",
+          "triggerFulfillment": {
+            "setParameterActions": [
+              { "parameter": "cancel_requested", "value": true }
+            ],
+            "messages": [
+              { "id": "welcome.route.cancel", "text": { "text": ["welcome.route.cancel"] } }
+            ]
+          }
+        }
+      ],
+      "eventHandlers": [
+        {
+          "event": "sys.no-match-1",
+          "triggerFulfillment": {
+            "messages": [
+              { "id": "event.no_match_1", "text": { "text": ["event.no_match_1"] } }
+            ]
+          }
+        },
+        {
+          "event": "sys.no-match-2",
+          "triggerFulfillment": {
+            "liveAgentHandoff": { "metadata": { "reason": "no_match_limit_reached", "page": "WelcomePage" } },
+            "messages": [
+              { "id": "event.handoff", "text": { "text": ["event.handoff"] } }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "displayName": "OrderLookupPage",
+      "entryFulfillment": {
+        "messages": [
+          { "id": "lookup.entry", "text": { "text": ["lookup.entry"] } }
+        ]
+      },
+      "form": {
+        "parameters": [
+          {
+            "displayName": "order_id",
+            "entityType": "sys.number",
+            "required": true,
+            "fillBehavior": {
+              "initialPromptFulfillment": {
+                "messages": [
+                  { "id": "form.order_id.initial", "text": { "text": ["form.order_id.initial"] } }
+                ]
+              },
+              "repromptEventHandlers": [
+                {
+                  "event": "sys.no-match-1",
+                  "triggerFulfillment": {
+                    "messages": [
+                      { "id": "form.order_id.reprompt_1", "text": { "text": ["form.order_id.reprompt_1"] } }
+                    ]
+                  }
+                },
+                {
+                  "event": "sys.no-match-2",
+                  "triggerFulfillment": {
+                    "liveAgentHandoff": { "metadata": { "reason": "order_id_no_match", "page": "OrderLookupPage" } },
+                    "messages": [
+                      { "id": "event.handoff", "text": { "text": ["event.handoff"] } }
+                    ]
+                  }
+                },
+                {
+                  "event": "sys.invalid-param",
+                  "triggerFulfillment": {
+                    "messages": [
+                      { "id": "form.order_id.invalid", "text": { "text": ["form.order_id.invalid"] } }
+                    ]
+                  }
+                }
+              ]
+            },
+            "validation": {
+              "condition": "$session.params.order_id >= 100000 AND $session.params.order_id <= 999999",
+              "invalidEvent": "sys.invalid-param"
+            }
+          }
+        ]
+      },
+      "transitionRoutes": [
+        {
+          "condition": "$page.params.status = \"FINAL\" AND $session.params.order_status = \"SHIPPED\"",
+          "targetPage": "ModifyOrderPage",
+          "triggerFulfillment": {
+            "webhook": "ERP_Lookup_Service",
+            "tag": "fetchOrderStatus",
+            "messages": [
+              { "id": "lookup.result.shipped", "text": { "text": ["lookup.result.shipped"] } }
+            ]
+          }
+        },
+        {
+          "condition": "$page.params.status = \"FINAL\" AND $session.params.order_status = \"PENDING\"",
+          "targetPage": "ModifyOrderPage",
+          "triggerFulfillment": {
+            "webhook": "ERP_Lookup_Service",
+            "tag": "fetchOrderStatus",
+            "messages": [
+              { "id": "lookup.result.pending", "text": { "text": ["lookup.result.pending"] } }
+            ]
+          }
+        },
+        {
+          "condition": "$page.params.status = \"FINAL\" AND $session.params.order_status = \"NOT_FOUND\"",
+          "targetPage": "WelcomePage",
+          "triggerFulfillment": {
+            "webhook": "ERP_Lookup_Service",
+            "tag": "fetchOrderStatus",
+            "messages": [
+              { "id": "lookup.result.not_found", "text": { "text": ["lookup.result.not_found"] } }
+            ]
+          }
+        }
+      ],
+      "eventHandlers": [
+        {
+          "event": "sys.no-match-1",
+          "triggerFulfillment": {
+            "messages": [
+              { "id": "event.no_match_1", "text": { "text": ["event.no_match_1"] } }
+            ]
+          }
+        },
+        {
+          "event": "sys.no-match-2",
+          "triggerFulfillment": {
+            "liveAgentHandoff": { "metadata": { "reason": "no_match_limit_reached", "page": "OrderLookupPage" } },
+            "messages": [
+              { "id": "event.handoff", "text": { "text": ["event.handoff"] } }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "displayName": "ModifyOrderPage",
+      "entryFulfillment": {
+        "messages": [
+          { "id": "modify.entry", "text": { "text": ["modify.entry"] } }
+        ]
+      },
+      "transitionRoutes": [
+        {
+          "intent": "Intent_Cancel_Order",
+          "condition": "$session.params.order_status = \"PENDING\"",
+          "targetFlow": "OrderManagementFlow",
+          "targetPage": "WelcomePage",
+          "triggerFulfillment": {
+            "setParameterActions": [
+              { "parameter": "cancel_confirmed", "value": true }
+            ],
+            "messages": [
+              { "id": "modify.cancel.success", "text": { "text": ["modify.cancel.success"] } }
+            ]
+          }
+        },
+        {
+          "intent": "Intent_Cancel_Order",
+          "condition": "$session.params.order_status = \"SHIPPED\"",
+          "triggerFulfillment": {
+            "messages": [
+              { "id": "modify.cancel.too_late", "text": { "text": ["modify.cancel.too_late"] } }
+            ]
+          }
+        }
+      ],
+      "eventHandlers": [
+        {
+          "event": "sys.no-match-1",
+          "triggerFulfillment": {
+            "messages": [
+              { "id": "event.no_match_1", "text": { "text": ["event.no_match_1"] } }
+            ]
+          }
+        },
+        {
+          "event": "sys.no-match-2",
+          "triggerFulfillment": {
+            "liveAgentHandoff": { "metadata": { "reason": "no_match_limit_reached", "page": "ModifyOrderPage" } },
+            "messages": [
+              { "id": "event.handoff", "text": { "text": ["event.handoff"] } }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

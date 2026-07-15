@@ -1,0 +1,18 @@
+{
+  "locale": "en",
+  "min_accuracy": 0.8,
+  "cases": [
+    {"text": "I want to cancel my order", "intent": "Intent_Cancel_Order"},
+    {"text": "please cancel my purchase", "intent": "Intent_Cancel_Order"},
+    {"text": "stop my order please", "intent": "Intent_Cancel_Order"},
+    {"text": "I'd like a refund and cancel", "intent": "Intent_Cancel_Order"},
+    {"text": "where is my order", "intent": "Intent_Check_Order_Status"},
+    {"text": "what is the status of my order", "intent": "Intent_Check_Order_Status"},
+    {"text": "has my order shipped yet", "intent": "Intent_Check_Order_Status"},
+    {"text": "track my delivery", "intent": "Intent_Check_Order_Status"},
+    {"text": "my order number is 123456", "intent": "Intent_Provide_Order_Id", "entities": {"order_id": 123456}},
+    {"text": "654321", "intent": "Intent_Provide_Order_Id", "entities": {"order_id": 654321}},
+    {"text": "what is the weather today", "intent": "OUT_OF_SCOPE"},
+    {"text": "tell me a joke", "intent": "OUT_OF_SCOPE"}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "eval_set_id": "welcome_to_shipped",
+  "name": "Welcome -> invalid -> reprompt -> valid -> lookup -> SHIPPED",
+  "description": "Full happy path for a shipped order ending on ModifyOrderPage.",
+  "locale": "en",
+  "order_data": {"123456": "SHIPPED"},
+  "turns": [
+    {"user": null, "expect_page": "WelcomePage", "expect_message_ids": ["welcome.entry"], "expect_handoff": false},
+    {"user": "where is my order", "expect_page": "OrderLookupPage", "expect_message_ids": ["welcome.route.check_status", "lookup.entry", "form.order_id.initial"], "expect_intent": "Intent_Check_Order_Status"},
+    {"user": "99999", "expect_page": "OrderLookupPage", "expect_message_ids": ["form.order_id.invalid"], "expect_handoff": false},
+    {"user": "not a number", "expect_page": "OrderLookupPage", "expect_message_ids": ["form.order_id.reprompt_1"], "expect_handoff": false},
+    {"user": "123456", "expect_page": "ModifyOrderPage", "expect_message_ids": ["lookup.result.shipped", "modify.entry"], "expect_handoff": false, "expect_session_params": {"order_status": "SHIPPED", "order_id": 123456}}
+  ]
+}

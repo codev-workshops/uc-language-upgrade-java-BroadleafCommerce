@@ -1,0 +1,21 @@
+{
+  "locale": "en",
+  "messages": {
+    "welcome.entry": "Hi! I'm the order support assistant. I can check an order's status or help you cancel an order. How can I help?",
+    "welcome.route.check_status": "Sure, let's look up your order.",
+    "welcome.route.cancel": "Okay, I can help cancel an order. First let's find it.",
+    "lookup.entry": "Let's find your order.",
+    "form.order_id.initial": "What is your 6-digit order number?",
+    "form.order_id.reprompt_1": "Sorry, I didn't catch that. Please say or type your 6-digit order number.",
+    "form.order_id.invalid": "That doesn't look like a valid order number. It must be 6 digits (between 100000 and 999999).",
+    "lookup.result.shipped": "Good news \u2014 order {order_id} has SHIPPED and is on its way.",
+    "lookup.result.pending": "Order {order_id} is PENDING and has not shipped yet.",
+    "lookup.result.not_found": "I couldn't find an order with number {order_id}. Let's try again.",
+    "modify.entry": "Would you like to make a change to this order?",
+    "modify.cancel.success": "Your order {order_id} has been cancelled. Is there anything else I can help with?",
+    "modify.cancel.too_late": "Order {order_id} has already shipped, so it can no longer be cancelled. I can help you start a return instead.",
+    "event.no_match_1": "Sorry, I didn't understand that. Could you rephrase?",
+    "event.handoff": "Let me connect you with a live agent who can help further.",
+    "system.error.lookup_failed": "I'm having trouble reaching our order system right now. Let me get a live agent to help."
+  }
+}

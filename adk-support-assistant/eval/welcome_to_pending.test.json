@@ -1,0 +1,13 @@
+{
+  "eval_set_id": "welcome_to_pending",
+  "name": "Welcome -> valid -> lookup -> PENDING -> cancel success",
+  "description": "Pending order can be cancelled at ModifyOrderPage.",
+  "locale": "en",
+  "order_data": {"654321": "SUBMITTED"},
+  "turns": [
+    {"user": null, "expect_page": "WelcomePage", "expect_message_ids": ["welcome.entry"]},
+    {"user": "what is the status of my order", "expect_page": "OrderLookupPage", "expect_message_ids": ["form.order_id.initial"]},
+    {"user": "my order number is 654321", "expect_page": "ModifyOrderPage", "expect_message_ids": ["lookup.result.pending", "modify.entry"], "expect_session_params": {"order_status": "PENDING"}},
+    {"user": "please cancel it", "expect_page": "WelcomePage", "expect_message_ids": ["modify.cancel.success", "welcome.entry"], "expect_intent": "Intent_Cancel_Order"}
+  ]
+}

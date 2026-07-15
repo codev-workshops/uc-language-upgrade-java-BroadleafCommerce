@@ -1,0 +1,151 @@
+"""Pydantic schema representing a Dialogflow-CX-like conversational flow.
+
+The schema is intentionally language-independent: user-facing text is referenced
+by a stable ``fulfillment id`` and resolved at runtime from per-locale i18n
+bundles. Structure (pages, forms, routes, events) never contains literal copy.
+"""
+
+from __future__ import annotations
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class _Base(BaseModel):
+    model_config = ConfigDict(extra="ignore", frozen=True)
+
+
+class SetParameterAction(_Base):
+    parameter: str
+    value: object = None
+
+
+class LiveAgentHandoff(_Base):
+    metadata: dict[str, object] = Field(default_factory=dict)
+
+
+class Message(_Base):
+    """A single fulfillment message.
+
+    ``id`` is the i18n key. The literal text in the flow JSON is only a fallback
+    key placeholder and is never shown to users directly.
+    """
+
+    id: str
+
+
+class Fulfillment(_Base):
+    messages: list[Message] = Field(default_factory=list)
+    set_parameter_actions: list[SetParameterAction] = Field(default_factory=list)
+    webhook: str | None = None
+    tag: str | None = None
+    live_agent_handoff: LiveAgentHandoff | None = None
+
+    @property
+    def message_ids(self) -> list[str]:
+        return [m.id for m in self.messages]
+
+
+class EventHandler(_Base):
+    event: str
+    trigger_fulfillment: Fulfillment = Field(default_factory=Fulfillment)
+
+
+class TransitionRoute(_Base):
+    """A route out of a page.
+
+    Exactly one of ``intent`` / ``condition`` (or both) gates the route.
+    Intent routes require a matched intent; condition routes evaluate against
+    session/page state via the safe evaluator.
+    """
+
+    intent: str | None = None
+    condition: str | None = None
+    target_page: str | None = None
+    target_flow: str | None = None
+    trigger_fulfillment: Fulfillment = Field(default_factory=Fulfillment)
+
+
+class Validation(_Base):
+    condition: str
+    invalid_event: str = "sys.invalid-param"
+
+
+class FillBehavior(_Base):
+    initial_prompt_fulfillment: Fulfillment = Field(default_factory=Fulfillment)
+    reprompt_event_handlers: list[EventHandler] = Field(default_factory=list)
+
+
+class Parameter(_Base):
+    display_name: str
+    entity_type: str
+    required: bool = False
+    fill_behavior: FillBehavior = Field(default_factory=FillBehavior)
+    validation: Validation | None = None
+
+
+class Form(_Base):
+    parameters: list[Parameter] = Field(default_factory=list)
+
+
+class Page(_Base):
+    display_name: str
+    entry_fulfillment: Fulfillment = Field(default_factory=Fulfillment)
+    form: Form = Field(default_factory=Form)
+    transition_routes: list[TransitionRoute] = Field(default_factory=list)
+    event_handlers: list[EventHandler] = Field(default_factory=list)
+
+    def reprompt_handler(self, param_name: str, event: str) -> EventHandler | None:
+        for param in self.form.parameters:
+            if param.display_name == param_name:
+                for handler in param.fill_behavior.reprompt_event_handlers:
+                    if handler.event == event:
+                        return handler
+        return None
+
+    def event_handler(self, event: str) -> EventHandler | None:
+        for handler in self.event_handlers:
+            if handler.event == event:
+                return handler
+        return None
+
+
+class TrainingIntent(_Base):
+    display_name: str
+    description: str = ""
+    training_phrases: list[str] = Field(default_factory=list)
+
+
+class Webhook(_Base):
+    display_name: str
+    tag: str
+    uri: str | None = None
+    timeout_seconds: float | None = None
+
+
+class Flow(_Base):
+    display_name: str
+    description: str = ""
+    start_page: str
+    pages: list[Page] = Field(default_factory=list)
+    intents: list[TrainingIntent] = Field(default_factory=list)
+    webhooks: list[Webhook] = Field(default_factory=list)
+    classification_threshold: float = 0.3
+
+    def page(self, name: str) -> Page:
+        for page in self.pages:
+            if page.display_name == name:
+                return page
+        raise KeyError(f"Page not found: {name}")
+
+    def has_page(self, name: str) -> bool:
+        return any(p.display_name == name for p in self.pages)
+
+    @property
+    def intent_names(self) -> list[str]:
+        return [i.display_name for i in self.intents]
+
+    def webhook_by_tag(self, tag: str) -> Webhook | None:
+        for wh in self.webhooks:
+            if wh.tag == tag:
+                return wh
+        return None

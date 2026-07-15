@@ -1,0 +1,18 @@
+{
+  "locale": "es",
+  "min_accuracy": 0.8,
+  "cases": [
+    {"text": "quiero cancelar mi pedido", "intent": "Intent_Cancel_Order"},
+    {"text": "por favor cancela mi compra", "intent": "Intent_Cancel_Order"},
+    {"text": "necesito anular mi pedido", "intent": "Intent_Cancel_Order"},
+    {"text": "quiero una devolución y cancelar", "intent": "Intent_Cancel_Order"},
+    {"text": "dónde está mi pedido", "intent": "Intent_Check_Order_Status"},
+    {"text": "cuál es el estado de mi pedido", "intent": "Intent_Check_Order_Status"},
+    {"text": "ya se envió mi pedido", "intent": "Intent_Check_Order_Status"},
+    {"text": "quiero seguimiento de mi entrega", "intent": "Intent_Check_Order_Status"},
+    {"text": "mi número de pedido es 123456", "intent": "Intent_Provide_Order_Id", "entities": {"order_id": 123456}},
+    {"text": "654321", "intent": "Intent_Provide_Order_Id", "entities": {"order_id": 654321}},
+    {"text": "qué tiempo hace hoy", "intent": "OUT_OF_SCOPE"},
+    {"text": "cuéntame un chiste", "intent": "OUT_OF_SCOPE"}
+  ]
+}

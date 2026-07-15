@@ -1,0 +1,13 @@
+{
+  "eval_set_id": "es_shipped",
+  "name": "Spanish parity: same scenario reaches same pages with localized text",
+  "description": "Mirror of welcome_to_shipped in Spanish; asserts identical pages + message ids.",
+  "locale": "es",
+  "order_data": {"123456": "SHIPPED"},
+  "turns": [
+    {"user": null, "expect_page": "WelcomePage", "expect_message_ids": ["welcome.entry"]},
+    {"user": "dónde está mi pedido", "expect_page": "OrderLookupPage", "expect_message_ids": ["welcome.route.check_status", "lookup.entry", "form.order_id.initial"], "expect_intent": "Intent_Check_Order_Status"},
+    {"user": "99999", "expect_page": "OrderLookupPage", "expect_message_ids": ["form.order_id.invalid"]},
+    {"user": "123456", "expect_page": "ModifyOrderPage", "expect_message_ids": ["lookup.result.shipped", "modify.entry"], "expect_session_params": {"order_status": "SHIPPED"}}
+  ]
+}
