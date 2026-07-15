@@ -49,14 +49,11 @@ async def test_agent_full_trajectory():
         app_name="support", user_id="u1"
     )
 
-    greeting = await _send(runner, "u1", session.id, "where is my order")
-    assert "order support assistant" in greeting or "order number" in greeting
-
     reply = await _send(runner, "u1", session.id, "123456")
-    assert "SHIPPED" in reply
+    assert "shipped" in reply.lower()
 
     # State persisted on the session across turns.
     refreshed = await runner.session_service.get_session(
         app_name="support", user_id="u1", session_id=session.id
     )
-    assert refreshed.state.get("flow_state", {}).get("current_page") == "ModifyOrderPage"
+    assert refreshed.state.get("flow_state", {}).get("current_page") == "FollowUpFlow"

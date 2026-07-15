@@ -35,19 +35,16 @@ def test_text_conversation(client):
     sid = created["session_id"]
     assert created["current_page"] == "WelcomePage"
 
-    r1 = client.post(f"/session/{sid}/text", json={"text": "where is my order"}).json()
-    assert r1["current_page"] == "OrderLookupPage"
-
-    r2 = client.post(f"/session/{sid}/text", json={"text": "123456"}).json()
-    assert r2["current_page"] == "ModifyOrderPage"
-    assert "SHIPPED" in r2["reply"]
+    r1 = client.post(f"/session/{sid}/text", json={"text": "123456"}).json()
+    assert r1["current_page"] == "FollowUpFlow"
+    assert "shipped" in r1["reply"].lower()
 
 
 def test_audio_turn(client):
     sid = client.post("/session", json={"text": "", "locale": "en"}).json()["session_id"]
-    audio_b64 = base64.b64encode(b"where is my order").decode("ascii")
+    audio_b64 = base64.b64encode(b"123456").decode("ascii")
     resp = client.post(f"/session/{sid}/audio", json={"audio_base64": audio_b64}).json()
-    assert resp["current_page"] == "OrderLookupPage"
+    assert resp["current_page"] == "FollowUpFlow"
     assert resp["audio_base64"] is not None
 
 
@@ -60,6 +57,6 @@ def test_websocket_text(client):
     with client.websocket_connect("/ws/ws-1") as ws:
         greeting = ws.receive_json()
         assert greeting["current_page"] == "WelcomePage"
-        ws.send_json({"text": "where is my order"})
+        ws.send_json({"text": "123456"})
         reply = ws.receive_json()
-        assert reply["current_page"] == "OrderLookupPage"
+        assert reply["current_page"] == "FollowUpFlow"

@@ -1,21 +1,15 @@
 {
   "locale": "es",
   "messages": {
-    "welcome.entry": "\u00a1Hola! Soy el asistente de soporte de pedidos. Puedo consultar el estado de un pedido o ayudarte a cancelarlo. \u00bfEn qu\u00e9 puedo ayudarte?",
-    "welcome.route.check_status": "Claro, vamos a buscar tu pedido.",
-    "welcome.route.cancel": "De acuerdo, puedo ayudarte a cancelar un pedido. Primero vamos a encontrarlo.",
-    "lookup.entry": "Vamos a buscar tu pedido.",
-    "form.order_id.initial": "\u00bfCu\u00e1l es tu n\u00famero de pedido de 6 d\u00edgitos?",
-    "form.order_id.reprompt_1": "Perdona, no entend\u00ed eso. Por favor di o escribe tu n\u00famero de pedido de 6 d\u00edgitos.",
-    "form.order_id.invalid": "Eso no parece un n\u00famero de pedido v\u00e1lido. Debe tener 6 d\u00edgitos (entre 100000 y 999999).",
-    "lookup.result.shipped": "\u00a1Buenas noticias! El pedido {order_id} ha sido ENVIADO y est\u00e1 en camino.",
-    "lookup.result.pending": "El pedido {order_id} est\u00e1 PENDIENTE y a\u00fan no ha sido enviado.",
-    "lookup.result.not_found": "No pude encontrar un pedido con el n\u00famero {order_id}. Intent\u00e9moslo de nuevo.",
-    "modify.entry": "\u00bfTe gustar\u00eda hacer un cambio en este pedido?",
-    "modify.cancel.success": "Tu pedido {order_id} ha sido cancelado. \u00bfHay algo m\u00e1s en lo que pueda ayudarte?",
-    "modify.cancel.too_late": "El pedido {order_id} ya ha sido enviado, por lo que ya no se puede cancelar. Puedo ayudarte a iniciar una devoluci\u00f3n en su lugar.",
-    "event.no_match_1": "Perdona, no entend\u00ed eso. \u00bfPodr\u00edas reformularlo?",
-    "event.handoff": "Voy a conectarte con un agente en vivo que pueda ayudarte mejor.",
-    "system.error.lookup_failed": "Estoy teniendo problemas para acceder a nuestro sistema de pedidos en este momento. Voy a conectarte con un agente en vivo."
+    "WelcomePage.entry.0": "¡Bienvenido a nuestro asistente automatizado! Para comenzar, proporcione su número de pedido de 6 dígitos.",
+    "WelcomePage.order_id.initial.0": "¿Cuál es su número de pedido?",
+    "WelcomePage.order_id.reprompt.0.0": "Por favor, proporcione un número válido de 6 dígitos.",
+    "route-conditional-invalid.0": "Ese formato de número de pedido no es válido. Empecemos de nuevo.",
+    "route-status-shipped.0": "¡Buenas noticias! Su pedido {order_id} ha sido enviado y llegará a través de {carrier}.",
+    "route-status-pending.0": "Su pedido {order_id} se está preparando actualmente. ¿Desea modificarlo?",
+    "route-global-intent-cancel.0": "Cancelando el proceso. Volvamos al menú principal.",
+    "event.sys.no-match-1.0": "No entendí bien. ¿Podría reformular su solicitud?",
+    "event.sys.no-match-2.0": "Sigo teniendo problemas para entenderle. Le pondré en contacto con un agente de soporte.",
+    "system.error.lookup_failed": "Tengo problemas para acceder a nuestro sistema de pedidos en este momento. Le pondré en contacto con un agente."
   }
 }

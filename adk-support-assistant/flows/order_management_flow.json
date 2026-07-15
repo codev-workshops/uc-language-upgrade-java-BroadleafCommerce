@@ -1,267 +1,187 @@
 {
-  "name": "projects/support/locations/global/agents/support-agent/flows/order-management",
+  "name": "00000000-0000-0000-0000-000000000000",
   "displayName": "OrderManagementFlow",
-  "description": "Order status lookup and cancellation self-service flow.",
-  "startPage": "WelcomePage",
-  "nluSettings": {
-    "modelType": "MODEL_TYPE_ADVANCED",
-    "classificationThreshold": 0.3
-  },
-  "intents": [
+  "description": "Complex retail flow with dynamic conditions, slot filling, and system fallbacks.",
+  "startPage": "projects/sample-project/locations/global/agents/sample-agent/flows/0000/pages/WelcomePage",
+  "transitionRoutes": [
     {
-      "displayName": "Intent_Cancel_Order",
-      "description": "User wants to cancel an existing order.",
-      "trainingPhrases": [
-        "I want to cancel my order",
-        "cancel order",
-        "please cancel my purchase",
-        "stop my order",
-        "I'd like to cancel"
-      ]
-    },
-    {
-      "displayName": "Intent_Check_Order_Status",
-      "description": "User wants to know the status of an order.",
-      "trainingPhrases": [
-        "where is my order",
-        "what is the status of my order",
-        "track my order",
-        "has my order shipped",
-        "order status"
-      ]
-    },
-    {
-      "displayName": "Intent_Provide_Order_Id",
-      "description": "User provides an order id / number.",
-      "trainingPhrases": [
-        "my order number is 123456",
-        "it is 654321",
-        "order 100000"
-      ]
+      "name": "route-global-intent-cancel",
+      "intent": "projects/sample-project/locations/global/agents/sample-agent/intents/Intent_Cancel_Order",
+      "triggerFulfillment": {
+        "messages": [
+          {
+            "text": {
+              "text": [
+                "Canceling the process. Let's return to the main menu."
+              ]
+            }
+          }
+        ]
+      },
+      "targetPage": "projects/sample-project/locations/global/agents/sample-agent/flows/0000/pages/MainMenu"
     }
   ],
-  "webhooks": [
+  "eventHandlers": [
     {
-      "displayName": "ERP_Lookup_Service",
-      "genericWebService": {
-        "uri": "${ORDER_LOOKUP_BASE_URL}${ORDER_LOOKUP_PATH}",
-        "requestHeaders": {},
-        "timeout": "5s"
-      },
-      "tag": "fetchOrderStatus"
+      "name": "handler-sys-no-match-1",
+      "event": "sys.no-match-1",
+      "triggerFulfillment": {
+        "messages": [
+          {
+            "text": {
+              "text": [
+                "I didn't quite catch that. Could you rephrase your request?"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "handler-sys-no-match-2",
+      "event": "sys.no-match-2",
+      "triggerFulfillment": {
+        "messages": [
+          {
+            "text": {
+              "text": [
+                "I am still having trouble understanding you. Let me route you to a live support team member."
+              ]
+            }
+          }
+        ],
+        "liveAgentHandoff": {
+          "metadata": {
+            "reason": "Max consecutive no-match reached"
+          }
+        }
+      }
     }
   ],
   "pages": [
     {
+      "name": "projects/sample-project/locations/global/agents/sample-agent/flows/0000/pages/WelcomePage",
       "displayName": "WelcomePage",
       "entryFulfillment": {
         "messages": [
-          { "id": "welcome.entry", "text": { "text": ["welcome.entry"] } }
-        ]
-      },
-      "transitionRoutes": [
-        {
-          "intent": "Intent_Check_Order_Status",
-          "targetPage": "OrderLookupPage",
-          "triggerFulfillment": {
-            "messages": [
-              { "id": "welcome.route.check_status", "text": { "text": ["welcome.route.check_status"] } }
-            ]
+          {
+            "text": {
+              "text": [
+                "Welcome to our automated assistant! Please provide your 6-digit order ID to begin."
+              ]
+            }
           }
-        },
-        {
-          "intent": "Intent_Cancel_Order",
-          "targetPage": "OrderLookupPage",
-          "triggerFulfillment": {
-            "setParameterActions": [
-              { "parameter": "cancel_requested", "value": true }
-            ],
-            "messages": [
-              { "id": "welcome.route.cancel", "text": { "text": ["welcome.route.cancel"] } }
-            ]
-          }
-        }
-      ],
-      "eventHandlers": [
-        {
-          "event": "sys.no-match-1",
-          "triggerFulfillment": {
-            "messages": [
-              { "id": "event.no_match_1", "text": { "text": ["event.no_match_1"] } }
-            ]
-          }
-        },
-        {
-          "event": "sys.no-match-2",
-          "triggerFulfillment": {
-            "liveAgentHandoff": { "metadata": { "reason": "no_match_limit_reached", "page": "WelcomePage" } },
-            "messages": [
-              { "id": "event.handoff", "text": { "text": ["event.handoff"] } }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "displayName": "OrderLookupPage",
-      "entryFulfillment": {
-        "messages": [
-          { "id": "lookup.entry", "text": { "text": ["lookup.entry"] } }
         ]
       },
       "form": {
         "parameters": [
           {
             "displayName": "order_id",
-            "entityType": "sys.number",
             "required": true,
+            "entityType": "projects/sample-project/locations/global/agents/sample-agent/entityTypes/sys.number",
             "fillBehavior": {
               "initialPromptFulfillment": {
                 "messages": [
-                  { "id": "form.order_id.initial", "text": { "text": ["form.order_id.initial"] } }
+                  {
+                    "text": {
+                      "text": [
+                        "What is your order number?"
+                      ]
+                    }
+                  }
                 ]
               },
-              "repromptEventHandlers": [
+              "repromptFulfillments": [
                 {
-                  "event": "sys.no-match-1",
-                  "triggerFulfillment": {
-                    "messages": [
-                      { "id": "form.order_id.reprompt_1", "text": { "text": ["form.order_id.reprompt_1"] } }
-                    ]
-                  }
-                },
-                {
-                  "event": "sys.no-match-2",
-                  "triggerFulfillment": {
-                    "liveAgentHandoff": { "metadata": { "reason": "order_id_no_match", "page": "OrderLookupPage" } },
-                    "messages": [
-                      { "id": "event.handoff", "text": { "text": ["event.handoff"] } }
-                    ]
-                  }
-                },
-                {
-                  "event": "sys.invalid-param",
-                  "triggerFulfillment": {
-                    "messages": [
-                      { "id": "form.order_id.invalid", "text": { "text": ["form.order_id.invalid"] } }
-                    ]
-                  }
+                  "messages": [
+                    "Please provide a valid 6-digit number."
+                  ]
                 }
               ]
-            },
-            "validation": {
-              "condition": "$session.params.order_id >= 100000 AND $session.params.order_id <= 999999",
-              "invalidEvent": "sys.invalid-param"
             }
           }
         ]
       },
       "transitionRoutes": [
         {
-          "condition": "$page.params.status = \"FINAL\" AND $session.params.order_status = \"SHIPPED\"",
-          "targetPage": "ModifyOrderPage",
+          "name": "route-conditional-validation",
+          "condition": "$session.params.order_id >= 100000 AND $session.params.order_id <= 999999",
           "triggerFulfillment": {
-            "webhook": "ERP_Lookup_Service",
-            "tag": "fetchOrderStatus",
-            "messages": [
-              { "id": "lookup.result.shipped", "text": { "text": ["lookup.result.shipped"] } }
+            "setParameterActions": [
+              {
+                "parameter": "is_valid_order",
+                "value": true
+              }
             ]
-          }
+          },
+          "targetPage": "projects/sample-project/locations/global/agents/sample-agent/flows/0000/pages/OrderLookupPage"
         },
         {
-          "condition": "$page.params.status = \"FINAL\" AND $session.params.order_status = \"PENDING\"",
-          "targetPage": "ModifyOrderPage",
-          "triggerFulfillment": {
-            "webhook": "ERP_Lookup_Service",
-            "tag": "fetchOrderStatus",
-            "messages": [
-              { "id": "lookup.result.pending", "text": { "text": ["lookup.result.pending"] } }
-            ]
-          }
-        },
-        {
-          "condition": "$page.params.status = \"FINAL\" AND $session.params.order_status = \"NOT_FOUND\"",
-          "targetPage": "WelcomePage",
-          "triggerFulfillment": {
-            "webhook": "ERP_Lookup_Service",
-            "tag": "fetchOrderStatus",
-            "messages": [
-              { "id": "lookup.result.not_found", "text": { "text": ["lookup.result.not_found"] } }
-            ]
-          }
-        }
-      ],
-      "eventHandlers": [
-        {
-          "event": "sys.no-match-1",
+          "name": "route-conditional-invalid",
+          "condition": "$session.params.order_id < 100000 OR $session.params.order_id > 999999",
           "triggerFulfillment": {
             "messages": [
-              { "id": "event.no_match_1", "text": { "text": ["event.no_match_1"] } }
+              {
+                "text": {
+                  "text": [
+                    "That order ID format is invalid. Let's try starting over."
+                  ]
+                }
+              }
+            ],
+            "setParameterActions": [
+              {
+                "parameter": "order_id",
+                "value": null
+              }
             ]
-          }
-        },
-        {
-          "event": "sys.no-match-2",
-          "triggerFulfillment": {
-            "liveAgentHandoff": { "metadata": { "reason": "no_match_limit_reached", "page": "OrderLookupPage" } },
-            "messages": [
-              { "id": "event.handoff", "text": { "text": ["event.handoff"] } }
-            ]
-          }
+          },
+          "targetPage": "projects/sample-project/locations/global/agents/sample-agent/flows/0000/pages/WelcomePage"
         }
       ]
     },
     {
-      "displayName": "ModifyOrderPage",
+      "name": "projects/sample-project/locations/global/agents/sample-agent/flows/0000/pages/OrderLookupPage",
+      "displayName": "OrderLookupPage",
       "entryFulfillment": {
-        "messages": [
-          { "id": "modify.entry", "text": { "text": ["modify.entry"] } }
-        ]
+        "webhook": "projects/sample-project/locations/global/agents/sample-agent/webhooks/ERP_Lookup_Service",
+        "tag": "fetchOrderStatus"
       },
       "transitionRoutes": [
         {
-          "intent": "Intent_Cancel_Order",
-          "condition": "$session.params.order_status = \"PENDING\"",
-          "targetFlow": "OrderManagementFlow",
-          "targetPage": "WelcomePage",
-          "triggerFulfillment": {
-            "setParameterActions": [
-              { "parameter": "cancel_confirmed", "value": true }
-            ],
-            "messages": [
-              { "id": "modify.cancel.success", "text": { "text": ["modify.cancel.success"] } }
-            ]
-          }
-        },
-        {
-          "intent": "Intent_Cancel_Order",
+          "name": "route-status-shipped",
           "condition": "$session.params.order_status = \"SHIPPED\"",
           "triggerFulfillment": {
             "messages": [
-              { "id": "modify.cancel.too_late", "text": { "text": ["modify.cancel.too_late"] } }
+              {
+                "text": {
+                  "text": [
+                    "Good news! Your order $session.params.order_id has shipped and will arrive via $session.params.carrier."
+                  ]
+                }
+              }
             ]
-          }
-        }
-      ],
-      "eventHandlers": [
-        {
-          "event": "sys.no-match-1",
-          "triggerFulfillment": {
-            "messages": [
-              { "id": "event.no_match_1", "text": { "text": ["event.no_match_1"] } }
-            ]
-          }
+          },
+          "targetFlow": "projects/sample-project/locations/global/agents/sample-agent/flows/FollowUpFlow"
         },
         {
-          "event": "sys.no-match-2",
+          "name": "route-status-pending",
+          "condition": "$session.params.order_status = \"PENDING\"",
           "triggerFulfillment": {
-            "liveAgentHandoff": { "metadata": { "reason": "no_match_limit_reached", "page": "ModifyOrderPage" } },
             "messages": [
-              { "id": "event.handoff", "text": { "text": ["event.handoff"] } }
+              {
+                "text": {
+                  "text": [
+                    "Your order $session.params.order_id is currently being packed. Would you like to modify it?"
+                  ]
+                }
+              }
             ]
-          }
+          },
+          "targetPage": "projects/sample-project/locations/global/agents/sample-agent/flows/0000/pages/ModifyOrderPage"
         }
       ]
     }
   ]
 }
+

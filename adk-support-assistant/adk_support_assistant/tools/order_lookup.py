@@ -3,8 +3,8 @@
 Provides:
   * :class:`OrderLookupClient` - the interface,
   * :class:`MockOrderLookupClient` - in-memory impl for tests/dev,
-  * :class:`HttpOrderLookupClient` - HTTP impl calling a Broadleaf endpoint,
-  * :func:`map_broadleaf_status` - maps Broadleaf ``OrderStatus`` to flow status,
+  * :class:`HttpOrderLookupClient` - HTTP impl calling a configurable endpoint,
+  * :func:`map_backend_status` - normalises a raw backend status to a flow status,
   * :func:`fetch_order_status` - the ADK ``FunctionTool`` entry point.
 
 Flow-level statuses (as used in transition conditions): ``SHIPPED``,
@@ -27,33 +27,33 @@ STATUS_PENDING = "PENDING"
 STATUS_NOT_FOUND = "NOT_FOUND"
 
 # ---------------------------------------------------------------------------
-# Broadleaf OrderStatus -> flow status mapping.
+# Backend status -> flow status normalisation.
 #
-# Broadleaf core defines (org.broadleafcommerce.core.order.service.type.OrderStatus):
-#   NAMED, QUOTE, IN_PROCESS, SUBMITTED, CANCELLED, CSR_OWNED
-# The flow only distinguishes SHIPPED vs PENDING (plus NOT_FOUND). A submitted
-# order that has shipped is reported as SHIPPED; everything still in flight maps
-# to PENDING. The backend endpoint may also return a synthetic "SHIPPED" (see
-# the Broadleaf controller reference in the README) derived from fulfillment
-# status; that value passes through unchanged.
+# The flow only distinguishes SHIPPED vs PENDING (plus NOT_FOUND). Backends model
+# many in-flight states; they all normalise to PENDING, while any shipped/
+# fulfilled/delivered signal normalises to SHIPPED and a cancelled order to
+# NOT_FOUND. Endpoints that already return one of the flow statuses pass through
+# unchanged. Extend this map (or supply your own) for other backends.
 # ---------------------------------------------------------------------------
-_BROADLEAF_STATUS_MAP: dict[str, str] = {
+_BACKEND_STATUS_MAP: dict[str, str] = {
     "SHIPPED": STATUS_SHIPPED,
     "FULFILLED": STATUS_SHIPPED,
+    "DELIVERED": STATUS_SHIPPED,
+    "PENDING": STATUS_PENDING,
     "SUBMITTED": STATUS_PENDING,
     "IN_PROCESS": STATUS_PENDING,
-    "NAMED": STATUS_PENDING,
-    "QUOTE": STATUS_PENDING,
-    "CSR_OWNED": STATUS_PENDING,
+    "PROCESSING": STATUS_PENDING,
+    "PACKING": STATUS_PENDING,
     "CANCELLED": STATUS_NOT_FOUND,
+    "CANCELED": STATUS_NOT_FOUND,
 }
 
 
-def map_broadleaf_status(raw_status: str | None) -> str:
-    """Map a raw Broadleaf order status string to a flow status."""
+def map_backend_status(raw_status: str | None) -> str:
+    """Normalise a raw backend order-status string to a flow status."""
     if not raw_status:
         return STATUS_NOT_FOUND
-    return _BROADLEAF_STATUS_MAP.get(raw_status.strip().upper(), STATUS_PENDING)
+    return _BACKEND_STATUS_MAP.get(raw_status.strip().upper(), STATUS_PENDING)
 
 
 @dataclass(frozen=True)
@@ -62,6 +62,7 @@ class OrderStatusResult:
     status: str  # SHIPPED / PENDING / NOT_FOUND
     found: bool
     raw_status: str | None = None
+    carrier: str | None = None
     error: str | None = None
 
     def as_dict(self) -> dict[str, object]:
@@ -70,6 +71,7 @@ class OrderStatusResult:
             "status": self.status,
             "found": self.found,
             "raw_status": self.raw_status,
+            "carrier": self.carrier,
             "error": self.error,
         }
 
@@ -88,7 +90,7 @@ class _BaseClient(abc.ABC):
 
 
 class MockOrderLookupClient(_BaseClient):
-    """In-memory client. Maps order_id -> raw Broadleaf status for tests/dev."""
+    """In-memory client. Maps order_id -> raw backend status for tests/dev."""
 
     #: Deterministic seed data used by tests and local runs.
     DEFAULT_DATA: dict[str, str] = {
@@ -98,6 +100,9 @@ class MockOrderLookupClient(_BaseClient):
         "999999": "SHIPPED",
         "100000": "SUBMITTED",  # -> PENDING
     }
+
+    #: Carrier reported for shipped orders (kept simple for tests/dev).
+    DEFAULT_CARRIER = "UPS"
 
     def __init__(self, data: dict[str, str] | None = None):
         self._data = dict(self.DEFAULT_DATA if data is None else data)
@@ -109,20 +114,23 @@ class MockOrderLookupClient(_BaseClient):
         raw = self._data.get(str(order_id))
         if raw is None:
             return OrderStatusResult(order_id, STATUS_NOT_FOUND, found=False)
+        status = map_backend_status(raw)
+        carrier = self.DEFAULT_CARRIER if status == STATUS_SHIPPED else None
         return OrderStatusResult(
-            order_id, map_broadleaf_status(raw), found=True, raw_status=raw
+            order_id, status, found=True, raw_status=raw, carrier=carrier
         )
 
 
 class HttpOrderLookupClient(_BaseClient):
-    """Calls a Broadleaf order-lookup HTTP endpoint.
+    """Calls a configurable order-lookup HTTP endpoint.
 
     Expected JSON response, e.g.::
 
-        {"orderNumber": "123456", "status": "SUBMITTED", "found": true}
+        {"orderNumber": "123456", "status": "SUBMITTED",
+         "found": true, "carrier": "UPS"}
 
-    ``status`` is a raw Broadleaf ``OrderStatus`` (or a synthetic SHIPPED); it is
-    mapped through :func:`map_broadleaf_status`.
+    ``status`` is a raw backend status (or already a flow status); it is
+    normalised through :func:`map_backend_status`. ``carrier`` is optional.
     """
 
     def __init__(self, config: OrderLookupConfig | None = None, client: httpx.Client | None = None):
@@ -164,7 +172,11 @@ class HttpOrderLookupClient(_BaseClient):
         if not found:
             return OrderStatusResult(order_id, STATUS_NOT_FOUND, found=False, raw_status=raw)
         return OrderStatusResult(
-            order_id, map_broadleaf_status(raw), found=True, raw_status=raw
+            order_id,
+            map_backend_status(raw),
+            found=True,
+            raw_status=raw,
+            carrier=payload.get("carrier"),
         )
 
 

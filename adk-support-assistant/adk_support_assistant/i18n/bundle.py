@@ -40,8 +40,10 @@ class ResourceBundle:
         return _safe_format(template, params)
 
 
-def _safe_format(template: str, params: dict[str, Any]) -> str:
+def render_template(template: str, params: dict[str, Any] | None = None) -> str:
     """Format ``{name}`` placeholders, leaving unknown placeholders intact."""
+    if not params:
+        return template
 
     def repl(match: re.Match[str]) -> str:
         key = match.group(1)
@@ -50,6 +52,10 @@ def _safe_format(template: str, params: dict[str, Any]) -> str:
         return match.group(0)
 
     return re.sub(r"\{([A-Za-z_][A-Za-z0-9_]*)\}", repl, template)
+
+
+# Backwards-compatible alias.
+_safe_format = render_template
 
 
 def load_bundles(i18n_dir: str | Path | None = None) -> dict[str, ResourceBundle]:

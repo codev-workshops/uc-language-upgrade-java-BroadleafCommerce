@@ -11,7 +11,7 @@ from adk_support_assistant.tools.order_lookup import (
     HttpOrderLookupClient,
     MockOrderLookupClient,
     fetch_order_status,
-    map_broadleaf_status,
+    map_backend_status,
     set_default_client,
 )
 
@@ -38,14 +38,15 @@ def test_order_id_validation(value, valid):
         ("weird", STATUS_PENDING),
     ],
 )
-def test_map_broadleaf_status(raw, expected):
-    assert map_broadleaf_status(raw) == expected
+def test_map_backend_status(raw, expected):
+    assert map_backend_status(raw) == expected
 
 
 def test_mock_client_found_and_not_found():
     client = MockOrderLookupClient({"123456": "SHIPPED"})
     ok = client.lookup("123456")
     assert ok.found and ok.status == STATUS_SHIPPED
+    assert ok.carrier == "UPS"  # carrier reported for shipped orders
     missing = client.lookup("000000")
     assert not missing.found and missing.status == STATUS_NOT_FOUND
 
@@ -63,7 +64,10 @@ def test_fetch_order_status_tool_uses_default_client():
 def test_http_client_maps_response():
     def handler(request: httpx.Request) -> httpx.Response:
         assert "123456" in str(request.url)
-        return httpx.Response(200, json={"orderNumber": "123456", "status": "SUBMITTED", "found": True})
+        return httpx.Response(
+            200,
+            json={"orderNumber": "123456", "status": "SHIPPED", "found": True, "carrier": "FedEx"},
+        )
 
     transport = httpx.MockTransport(handler)
     from adk_support_assistant.config import OrderLookupConfig
@@ -71,7 +75,8 @@ def test_http_client_maps_response():
     cfg = OrderLookupConfig(client="http", base_url="http://erp", path="/orders/{order_id}")
     client = HttpOrderLookupClient(cfg, client=httpx.Client(transport=transport))
     result = client.lookup("123456")
-    assert result.status == STATUS_PENDING and result.found
+    assert result.status == STATUS_SHIPPED and result.found
+    assert result.carrier == "FedEx"
 
 
 def test_http_client_404_is_not_found():

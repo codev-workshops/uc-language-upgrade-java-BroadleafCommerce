@@ -10,10 +10,10 @@ def test_stt_feeds_flow(engine):
     state = SessionState(session_id="voice", locale="en")
     engine.start(state)
     # Audio payload here is just UTF-8 text bytes (noop adapter round-trips).
-    transcript = stt.transcribe(b"where is my order", "en")
-    assert transcript.text == "where is my order"
+    transcript = stt.transcribe(b"123456", "en")
+    assert transcript.text == "123456"
     result = engine.handle(state, transcript.text)
-    assert result.current_page == "OrderLookupPage"
+    assert result.current_page == "FollowUpFlow"
 
 
 def test_flow_output_to_tts(engine):
@@ -30,7 +30,7 @@ def test_stt_to_flow_to_tts_roundtrip(engine):
     stt, tts = NoopSttAdapter(), NoopTtsAdapter()
     state = SessionState(session_id="voice3", locale="es")
     engine.start(state)
-    transcript = stt.transcribe("dónde está mi pedido".encode(), "es")
+    transcript = stt.transcribe(b"123456", "es")
     result = engine.handle(state, transcript.text)
     audio = tts.synthesize("\n".join(result.messages), result.locale)
     assert audio.locale == "es"

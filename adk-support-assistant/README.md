@@ -4,17 +4,35 @@ A standalone, multilingual (**en** / **es**), text **and** voice customer-suppor
 assistant built on **Google ADK** (`google-adk`) driven by an **in-house LLM**
 (via `litellm` / `LiteLlm`) instead of Google Conversational Agents.
 
-It replicates the Dialogflow CX **`OrderManagementFlow`** (pages `WelcomePage`,
-`OrderLookupPage`, `ModifyOrderPage`; a required 6-digit `order_id` slot; intent
-and condition transition routes; `sys.no-match` escalation to a live agent; and
-the `ERP_Lookup_Service` webhook with tag `fetchOrderStatus`) using a
-**data-driven, deterministic flow engine**. The Dialogflow CX export is parsed
-from config — no flow logic is hard-coded — so new flows and languages are added
-without touching engine code.
+It replicates the Dialogflow CX **`OrderManagementFlow`** (a required 6-digit
+`order_id` form slot on `WelcomePage`; validation via condition transition
+routes; the `ERP_Lookup_Service` webhook with tag `fetchOrderStatus` fired on
+`OrderLookupPage` **entry**; status-based routing; a flow-level `Intent_Cancel_Order`
+route; and flow-level `sys.no-match-1` / `sys.no-match-2` handlers escalating to a
+live agent) using a **data-driven, deterministic flow engine**. The Dialogflow CX
+export is parsed from config — no flow logic is hard-coded — so new flows and
+languages are added without touching engine code.
 
-> This app lives in its own top-level directory and does **not** modify the
-> Broadleaf Commerce Java code. A reference Spring controller backing the order
-> lookup with `OrderService#findOrderByOrderNumber` is documented below (opt-in).
+> This app is fully **standalone**: it lives in its own top-level directory and
+> has **no dependency** on any other code in this repository. Order lookup is a
+> generic, configurable REST contract (see below) that you can point at any
+> backend.
+
+### The supplied export is partial
+
+The committed `flows/order_management_flow.json` is the real CX sample. It
+**references** pages/flows it does not define — `MainMenu` (cancel target),
+`ModifyOrderPage` (pending target) and `FollowUpFlow` (shipped target). The
+engine treats an **undefined target as terminal**: it emits the route's
+fulfillment, records the transition in the trace, sets `current_page` to that
+target name, and stops (no entry/form processing, no `KeyError`). Drop in a
+fuller export defining those pages and they light up with no code changes.
+
+CX messages in the export are **inline text with no stable ids**. The loader
+generates a deterministic id for each message (e.g. `WelcomePage.entry.0`,
+`route-status-shipped.0`) and keeps the inline copy as a fallback, so the app
+runs with or without i18n bundles. `$session.params.x` references are normalised
+to `{x}` placeholders for interpolation.
 
 ## Architecture
 
@@ -32,7 +50,7 @@ user text/audio ─► channel gateway (REST/WebSocket)
           NLU (LLM/rules)  i18n bundles   fetchOrderStatus tool
           nlu/             i18n/          tools/order_lookup.py
                  │                          │
-          in-house LLM (litellm)      Mock / HTTP → Broadleaf endpoint
+          in-house LLM (litellm)      Mock / HTTP → configurable endpoint
           llm/in_house_llm.py
 ```
 
@@ -85,8 +103,7 @@ adk web                     # then pick "adk_support_assistant"
 
 ```bash
 curl -XPOST localhost:8000/session -H 'content-type: application/json' -d '{"locale":"en"}'
-curl -XPOST localhost:8000/session/s-1/text -H 'content-type: application/json' \
-     -d '{"text":"where is my order"}'
+# WelcomePage immediately asks for the 6-digit order id; just provide it:
 curl -XPOST localhost:8000/session/s-1/text -H 'content-type: application/json' \
      -d '{"text":"123456"}'
 ```
@@ -137,10 +154,12 @@ needed.
    register a client for its tag (see `tools/order_lookup.py` as the template).
 4. Add trajectory `.test.json` files under `eval/`.
 
-Supported flow features: entry/trigger fulfillments, forms with required
-parameters + validation, initial prompt & reprompt handlers, intent- and
-condition-based transition routes, `setParameterActions`, event handlers
-(`sys.no-match-1/2`, `sys.invalid-param`), `liveAgentHandoff`, and webhooks.
+Supported flow features: flow-level (global) **and** page-level transition
+routes and event handlers, entry/trigger fulfillments, entry-fulfillment
+webhooks, forms with required parameters, initial prompt & `repromptFulfillments`,
+intent- and condition-based transition routes, `setParameterActions`, event
+handlers (`sys.no-match-1/2`, `sys.invalid-param`), `liveAgentHandoff`, fully
+qualified resource-name normalisation, and undefined (terminal) targets.
 
 ### Safe condition evaluation
 
@@ -152,65 +171,40 @@ execute code. Supported: references (`$session.params.*`, `$page.params.*`,
 `$flow.params.*`, `$intent`), comparisons (`= == != < <= > >=`), `AND/OR/NOT`,
 parentheses, and truthiness of a bare reference.
 
-## Order lookup & the Broadleaf backend
+## Order lookup backend
 
 `tools/order_lookup.py` defines the `OrderLookupClient` interface with two
 implementations selected via `ORDER_LOOKUP_CLIENT`:
 
 * `mock` — in-memory, seeded data (used by tests/dev),
-* `http` — calls a Broadleaf order-lookup endpoint at
+* `http` — calls a configurable order-lookup endpoint at
   `ORDER_LOOKUP_BASE_URL + ORDER_LOOKUP_PATH` with a timeout; any transport
   error / non-2xx / bad JSON → graceful fallback (the flow escalates to a live
   agent via `system.error.lookup_failed`).
 
-Broadleaf `OrderStatus` is mapped to the flow's statuses by
-`map_broadleaf_status()`:
+### Endpoint contract
 
-| Broadleaf `OrderStatus` | Flow status |
-|-------------------------|-------------|
-| `SHIPPED` / `FULFILLED` (synthetic, from fulfillment) | `SHIPPED` |
-| `SUBMITTED`, `IN_PROCESS`, `NAMED`, `QUOTE`, `CSR_OWNED` | `PENDING` |
-| `CANCELLED` | `NOT_FOUND` |
-| unknown / missing | `PENDING` / `NOT_FOUND` |
+The HTTP client expects a JSON response of the shape:
 
-### Reference backend endpoint (opt-in, not wired into the Java build)
-
-To keep the existing Broadleaf code untouched, the endpoint is **not** added to
-the Maven modules. If you want to expose it, add a controller like the following
-to `core/broadleaf-framework-web` (it uses the existing
-`OrderService#findOrderByOrderNumber(String)` and
-`org.broadleafcommerce.core.order.service.type.OrderStatus`) and set
-`ORDER_LOOKUP_CLIENT=http`:
-
-```java
-@RestController
-@RequestMapping("/api/support/orders")
-public class SupportOrderLookupController {
-
-    @Resource(name = "blOrderService")
-    protected OrderService orderService;
-
-    @GetMapping("/{orderNumber}/status")
-    public ResponseEntity<Map<String, Object>> status(@PathVariable String orderNumber) {
-        Order order = orderService.findOrderByOrderNumber(orderNumber);
-        Map<String, Object> body = new HashMap<>();
-        body.put("orderNumber", orderNumber);
-        if (order == null) {
-            body.put("found", false);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
-        }
-        OrderStatus status = order.getStatus();
-        body.put("found", true);
-        // Prefer a shipped signal derived from fulfillment status when available;
-        // otherwise pass the raw OrderStatus type through (mapped client-side).
-        body.put("status", status == null ? null : status.getType());
-        return ResponseEntity.ok(body);
-    }
-}
+```json
+{ "orderNumber": "123456", "status": "SHIPPED", "found": true, "carrier": "UPS" }
 ```
 
-The Python `HttpOrderLookupClient` maps that `status` string through
-`map_broadleaf_status()`.
+`status` is normalised to a flow status by `map_backend_status()`; `carrier` is
+optional and interpolated into the shipped message. Point this at any backend
+that can return that shape (adapt `ORDER_LOOKUP_PATH` / add a small adapter as
+needed):
+
+| Raw backend status | Flow status |
+|--------------------|-------------|
+| `SHIPPED` / `FULFILLED` / `DELIVERED` | `SHIPPED` |
+| `PENDING`, `SUBMITTED`, `IN_PROCESS`, `PROCESSING`, `PACKING` | `PENDING` |
+| `CANCELLED` / `CANCELED` | `NOT_FOUND` |
+| unknown | `PENDING` |
+| missing / not found | `NOT_FOUND` |
+
+Extend `_BACKEND_STATUS_MAP` (or supply your own client implementing
+`OrderLookupClient`) for other backends.
 
 ## Tests & CI
 

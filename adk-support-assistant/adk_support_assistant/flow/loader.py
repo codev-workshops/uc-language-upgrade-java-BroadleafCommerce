@@ -1,15 +1,23 @@
 """Parse a Dialogflow-CX-style flow export into the internal :mod:`schema`.
 
-The loader is tolerant of the two shapes Dialogflow CX uses:
+The loader is tolerant of the shapes Dialogflow CX uses:
   * ``camelCase`` keys (as exported by the CX API / gcloud), and
   * already-normalised ``snake_case`` keys.
 
-It never invents user-facing copy; message ``id`` fields become i18n keys.
+Resource paths (``.../pages/WelcomePage``, ``.../intents/Intent_Cancel_Order``,
+``.../entityTypes/sys.number``) are reduced to their short display name.
+
+Messages in a raw CX export have inline text and no stable ``id``. The loader
+generates a deterministic ``id`` for every message (used as the i18n key) and
+keeps the inline copy as ``default_text`` so the flow works with or without
+locale bundles. CX-style ``$session.params.x`` interpolation is normalised to
+``{x}`` placeholders.
 """
 
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +38,8 @@ from .schema import (
     Webhook,
 )
 
+_VAR_RE = re.compile(r"\$(?:session|page|flow)\.params\.([A-Za-z_][A-Za-z0-9_]*)")
+
 
 def _get(d: dict[str, Any], *keys: str, default: Any = None) -> Any:
     """Return the first present key among ``keys`` (camelCase or snake_case)."""
@@ -39,17 +49,45 @@ def _get(d: dict[str, Any], *keys: str, default: Any = None) -> Any:
     return default
 
 
-def _parse_messages(raw_messages: list[dict[str, Any]] | None) -> list[Message]:
+def _leaf(value: Any) -> Any:
+    """Reduce a CX resource path to its last path segment (display name)."""
+    if isinstance(value, str) and "/" in value:
+        return value.rsplit("/", 1)[-1]
+    return value
+
+
+def _normalize_text(text: str) -> str:
+    """Convert CX ``$session.params.x`` references to ``{x}`` placeholders."""
+    return _VAR_RE.sub(r"{\1}", text)
+
+
+def _message_text(m: dict[str, Any]) -> str | None:
+    text = _get(m, "text", default=None)
+    if isinstance(text, dict):
+        texts = text.get("text")
+        if texts:
+            return str(texts[0])
+    return None
+
+
+def _parse_messages(raw_messages: Any, prefix: str) -> list[Message]:
+    """Parse a message list, generating ids as ``{prefix}.{index}``.
+
+    Entries may be plain strings (older CX reprompt shape) or objects with a
+    ``text.text`` payload and an optional explicit ``id``.
+    """
     messages: list[Message] = []
-    for m in raw_messages or []:
-        mid = m.get("id")
-        if mid is None:
-            # Fall back to the text payload's first entry as the key.
-            text = _get(m, "text", default={})
-            texts = text.get("text") if isinstance(text, dict) else None
-            mid = texts[0] if texts else None
-        if mid is not None:
-            messages.append(Message(id=str(mid)))
+    for i, m in enumerate(raw_messages or []):
+        if isinstance(m, str):
+            messages.append(Message(id=f"{prefix}.{i}", default_text=_normalize_text(m)))
+            continue
+        if not isinstance(m, dict):
+            continue
+        explicit_id = m.get("id")
+        raw_text = _message_text(m)
+        mid = str(explicit_id) if explicit_id else f"{prefix}.{i}"
+        default_text = _normalize_text(raw_text) if raw_text else ""
+        messages.append(Message(id=mid, default_text=default_text))
     return messages
 
 
@@ -66,15 +104,15 @@ def _parse_handoff(raw: dict[str, Any] | None) -> LiveAgentHandoff | None:
     return LiveAgentHandoff(metadata=raw.get("metadata", {}) or {})
 
 
-def _parse_fulfillment(raw: dict[str, Any] | None) -> Fulfillment:
+def _parse_fulfillment(raw: dict[str, Any] | None, prefix: str) -> Fulfillment:
     if not raw:
         return Fulfillment()
     return Fulfillment(
-        messages=_parse_messages(raw.get("messages")),
+        messages=_parse_messages(raw.get("messages"), prefix),
         set_parameter_actions=_parse_set_params(
             _get(raw, "setParameterActions", "set_parameter_actions")
         ),
-        webhook=raw.get("webhook"),
+        webhook=_leaf(raw.get("webhook")),
         tag=raw.get("tag"),
         live_agent_handoff=_parse_handoff(
             _get(raw, "liveAgentHandoff", "live_agent_handoff")
@@ -82,23 +120,27 @@ def _parse_fulfillment(raw: dict[str, Any] | None) -> Fulfillment:
     )
 
 
-def _parse_event_handler(raw: dict[str, Any]) -> EventHandler:
+def _parse_event_handler(raw: dict[str, Any], prefix: str) -> EventHandler:
+    event = raw["event"]
     return EventHandler(
-        event=raw["event"],
+        event=event,
         trigger_fulfillment=_parse_fulfillment(
-            _get(raw, "triggerFulfillment", "trigger_fulfillment")
+            _get(raw, "triggerFulfillment", "trigger_fulfillment"),
+            f"{prefix}.{event}",
         ),
     )
 
 
-def _parse_route(raw: dict[str, Any]) -> TransitionRoute:
+def _parse_route(raw: dict[str, Any], index: int) -> TransitionRoute:
+    name = raw.get("name") or f"route-{index}"
     return TransitionRoute(
-        intent=raw.get("intent"),
+        name=name,
+        intent=_leaf(raw.get("intent")),
         condition=raw.get("condition"),
-        target_page=_get(raw, "targetPage", "target_page"),
-        target_flow=_get(raw, "targetFlow", "target_flow"),
+        target_page=_leaf(_get(raw, "targetPage", "target_page")),
+        target_flow=_leaf(_get(raw, "targetFlow", "target_flow")),
         trigger_fulfillment=_parse_fulfillment(
-            _get(raw, "triggerFulfillment", "trigger_fulfillment")
+            _get(raw, "triggerFulfillment", "trigger_fulfillment"), name
         ),
     )
 
@@ -112,22 +154,32 @@ def _parse_validation(raw: dict[str, Any] | None) -> Validation | None:
     )
 
 
-def _parse_parameter(raw: dict[str, Any]) -> Parameter:
+def _parse_parameter(raw: dict[str, Any], page_name: str) -> Parameter:
+    display_name = _get(raw, "displayName", "display_name")
+    prefix = f"{page_name}.{display_name}"
     fill_raw = _get(raw, "fillBehavior", "fill_behavior", default={}) or {}
+    reprompt_fulfillments = [
+        _parse_fulfillment(f, f"{prefix}.reprompt.{j}")
+        for j, f in enumerate(
+            _get(fill_raw, "repromptFulfillments", "reprompt_fulfillments", default=[])
+        )
+    ]
     fill = FillBehavior(
         initial_prompt_fulfillment=_parse_fulfillment(
-            _get(fill_raw, "initialPromptFulfillment", "initial_prompt_fulfillment")
+            _get(fill_raw, "initialPromptFulfillment", "initial_prompt_fulfillment"),
+            f"{prefix}.initial",
         ),
         reprompt_event_handlers=[
-            _parse_event_handler(h)
+            _parse_event_handler(h, f"{prefix}.reprompt")
             for h in _get(
                 fill_raw, "repromptEventHandlers", "reprompt_event_handlers", default=[]
             )
         ],
+        reprompt_fulfillments=reprompt_fulfillments,
     )
     return Parameter(
-        display_name=_get(raw, "displayName", "display_name"),
-        entity_type=_get(raw, "entityType", "entity_type"),
+        display_name=display_name,
+        entity_type=_leaf(_get(raw, "entityType", "entity_type")),
         required=bool(raw.get("required", False)),
         fill_behavior=fill,
         validation=_parse_validation(raw.get("validation")),
@@ -135,22 +187,27 @@ def _parse_parameter(raw: dict[str, Any]) -> Parameter:
 
 
 def _parse_page(raw: dict[str, Any]) -> Page:
+    display_name = _get(raw, "displayName", "display_name") or _leaf(raw.get("name"))
     form_raw = raw.get("form") or {}
     form = Form(
-        parameters=[_parse_parameter(p) for p in form_raw.get("parameters", [])]
+        parameters=[
+            _parse_parameter(p, display_name) for p in form_raw.get("parameters", [])
+        ]
     )
     return Page(
-        display_name=_get(raw, "displayName", "display_name"),
+        display_name=display_name,
         entry_fulfillment=_parse_fulfillment(
-            _get(raw, "entryFulfillment", "entry_fulfillment")
+            _get(raw, "entryFulfillment", "entry_fulfillment"), f"{display_name}.entry"
         ),
         form=form,
         transition_routes=[
-            _parse_route(r)
-            for r in _get(raw, "transitionRoutes", "transition_routes", default=[])
+            _parse_route(r, i)
+            for i, r in enumerate(
+                _get(raw, "transitionRoutes", "transition_routes", default=[])
+            )
         ],
         event_handlers=[
-            _parse_event_handler(h)
+            _parse_event_handler(h, f"{display_name}.event")
             for h in _get(raw, "eventHandlers", "event_handlers", default=[])
         ],
     )
@@ -180,11 +237,21 @@ def parse_flow(data: dict[str, Any]) -> Flow:
     return Flow(
         display_name=_get(data, "displayName", "display_name"),
         description=data.get("description", ""),
-        start_page=_get(data, "startPage", "start_page"),
+        start_page=_leaf(_get(data, "startPage", "start_page")),
         pages=[_parse_page(p) for p in data.get("pages", [])],
+        transition_routes=[
+            _parse_route(r, i)
+            for i, r in enumerate(
+                _get(data, "transitionRoutes", "transition_routes", default=[])
+            )
+        ],
+        event_handlers=[
+            _parse_event_handler(h, "event")
+            for h in _get(data, "eventHandlers", "event_handlers", default=[])
+        ],
         intents=[
             TrainingIntent(
-                display_name=_get(i, "displayName", "display_name"),
+                display_name=_leaf(_get(i, "displayName", "display_name")),
                 description=i.get("description", ""),
                 training_phrases=_get(
                     i, "trainingPhrases", "training_phrases", default=[]
