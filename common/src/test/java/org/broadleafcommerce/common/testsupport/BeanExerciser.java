@@ -22,6 +22,7 @@ package org.broadleafcommerce.common.testsupport;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import org.mockito.Mockito;
 
@@ -91,6 +92,49 @@ public final class BeanExerciser {
         assertEquals(bean, bean);
         assertFalse(bean.equals(null), type.getSimpleName() + ".equals(null)");
         bean.hashCode();
+        assertNotNull(bean.toString());
+    }
+
+    /**
+     * Drives a fluent builder style value object: every single argument method that returns the builder itself
+     * is called with a representative value and the matching {@code getXxx()} accessor is asserted to hand that
+     * value back. The remaining readers are called so that derived properties are covered too.
+     */
+    public static void exerciseFluent(Class<?> type, String... excludedProperties) {
+        Object bean = instantiate(type);
+        assertNotNull(bean, type.getName());
+
+        Set<String> skipped = new LinkedHashSet<String>();
+        for (String property : excludedProperties) {
+            skipped.add(property);
+        }
+
+        for (Method builderMethod : type.getMethods()) {
+            if (builderMethod.getParameterTypes().length != 1
+                    || Modifier.isStatic(builderMethod.getModifiers())
+                    || !builderMethod.getReturnType().isAssignableFrom(type)
+                    || builderMethod.getName().startsWith("set")
+                    || skipped.contains(builderMethod.getName())) {
+                continue;
+            }
+            Class<?> propertyType = builderMethod.getParameterTypes()[0];
+            Object value = sampleValueFor(propertyType);
+            assertSame(bean, invoke(bean, builderMethod, value),
+                    type.getSimpleName() + "." + builderMethod.getName() + "() should return the builder");
+
+            String property = Character.toUpperCase(builderMethod.getName().charAt(0))
+                    + builderMethod.getName().substring(1);
+            Method getter = getterFor(type, property, propertyType);
+            if (getter == null) {
+                continue;
+            }
+            Object read = invoke(bean, getter);
+            if (value != null && read != null) {
+                assertEquals(value, read, type.getSimpleName() + "." + property + " should round trip");
+            }
+        }
+
+        exerciseRemainingReaders(type, bean, skipped);
         assertNotNull(bean.toString());
     }
 

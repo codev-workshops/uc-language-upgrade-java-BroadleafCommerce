@@ -42,7 +42,15 @@ import java.util.Map;
 public class ValueObjectAccessorTest {
 
     private static final List<String> VALUE_OBJECT_PACKAGES = Arrays.asList(
+            "org.broadleafcommerce.common.admin.domain.",
             "org.broadleafcommerce.common.audit.",
+            "org.broadleafcommerce.common.value.",
+            "org.broadleafcommerce.common.rule.",
+            "org.broadleafcommerce.common.notification.service.type.",
+            "org.broadleafcommerce.common.persistence.",
+            "org.broadleafcommerce.common.presentation.override.",
+            "org.broadleafcommerce.common.security.util.",
+            "org.broadleafcommerce.common.template.",
             "org.broadleafcommerce.common.breadcrumbs.dto.",
             "org.broadleafcommerce.common.config.domain.",
             "org.broadleafcommerce.common.currency.domain.",
@@ -89,7 +97,13 @@ public class ValueObjectAccessorTest {
      * {@code StructuredContentDTOWrapperTest} instead.
      */
     private static final List<String> EXCLUDED_CLASSES = Arrays.asList(
-            "org.broadleafcommerce.common.structure.dto.StructuredContentDTOWrapper");
+            "org.broadleafcommerce.common.structure.dto.StructuredContentDTOWrapper",
+            // the following are Spring/Hibernate infrastructure beans rather than value objects: their
+            // accessors need a running container, so they are driven by their own tests where possible
+            "org.broadleafcommerce.common.persistence.EntityConfiguration",
+            "org.broadleafcommerce.common.persistence.transaction.LifecycleAwareJDBCServices",
+            "org.broadleafcommerce.common.persistence.transaction.LifecycleAwareJpaTransactionManager",
+            "org.broadleafcommerce.common.template.TemplateOverrideExtensionManager");
 
     private static List<Class<?>> valueObjects() {
         List<Class<?>> valueObjects = new ArrayList<Class<?>>();
