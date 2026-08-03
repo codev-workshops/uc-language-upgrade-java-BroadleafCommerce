@@ -2,7 +2,7 @@
  * #%L
  * BroadleafCommerce Common Libraries
  * %%
- * Copyright (C) 2009 - 2013 Broadleaf Commerce
+ * Copyright (C) 2009 - 2016 Broadleaf Commerce
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,122 +19,116 @@
  */
 package org.broadleafcommerce.common.util.dao;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import org.broadleafcommerce.common.util.dao.TQRestriction.Mode;
+import org.junit.jupiter.api.Test;
 
-public class TypedQueryBuilderTest extends TestCase {
-    
-    public void testNoParameters() {
-        TypedQueryBuilder<String> q = new TypedQueryBuilder<String>(String.class, "test");
-        StringBuilder expected = new StringBuilder("SELECT test FROM " + String.class.getName() + " test");
-        assertEquals(q.toQueryString(), expected.toString());
-    }
-    
-    public void testSingleParameter() {
-        TypedQueryBuilder<String> q = new TypedQueryBuilder<String>(String.class, "test");
-        q.addRestriction("test.attr", "=", "sample");
-        StringBuilder expected = new StringBuilder("SELECT test FROM " + String.class.getName() + " test")
-            .append(" WHERE (test.attr = :p0)");
-        assertEquals(q.toQueryString(), expected.toString()); 
-        assertEquals(q.getParamMap().get("p0"), "sample");
-        assertEquals(q.getParamMap().size(), 1);
-    }
-    
-    public void testTwoParameters() {
-        TypedQueryBuilder<String> q = new TypedQueryBuilder<String>(String.class, "test");
-        q.addRestriction("test.attr", "=", "sample");
-        q.addRestriction("test.attr2", "=", "sample2");
-        StringBuilder expected = new StringBuilder("SELECT test FROM " + String.class.getName() + " test")
-            .append(" WHERE (test.attr = :p0) AND (test.attr2 = :p1)");
-        assertEquals(q.toQueryString(), expected.toString()); 
-        assertEquals(q.getParamMap().get("p0"), "sample");
-        assertEquals(q.getParamMap().get("p1"), "sample2");
-        assertEquals(q.getParamMap().size(), 2);
-    }
-    
-    public void testThreeParameters() {
-        TypedQueryBuilder<String> q = new TypedQueryBuilder<String>(String.class, "test");
-        q.addRestriction("test.attr", "=", "sample");
-        q.addRestriction("test.attr2", "=", "sample2");
-        q.addRestriction("test.attr3", "=", "sample3");
-        StringBuilder expected = new StringBuilder("SELECT test FROM " + String.class.getName() + " test")
-            .append(" WHERE (test.attr = :p0) AND (test.attr2 = :p1) AND (test.attr3 = :p2)");
-        assertEquals(q.toQueryString(), expected.toString()); 
-        assertEquals(q.getParamMap().get("p0"), "sample");
-        assertEquals(q.getParamMap().get("p1"), "sample2");
-        assertEquals(q.getParamMap().get("p2"), "sample3");
-        assertEquals(q.getParamMap().size(), 3);
-    }
-    
-    public void testOneNested() {
-        TypedQueryBuilder<String> q = new TypedQueryBuilder<String>(String.class, "test");
-        
-        TQRestriction r = new TQRestriction(TQRestriction.Mode.AND)
-            .addChildRestriction(new TQRestriction("test.startDate", "&lt;", "123"))
-            .addChildRestriction(new TQRestriction(TQRestriction.Mode.OR)
-                .addChildRestriction(new TQRestriction("test.endDate", "is null"))
-                .addChildRestriction(new TQRestriction("test.endDate", "&gt;", "456")));
-        
-        q.addRestriction("test.attr", "=", "sample");
-        q.addRestriction(r);
-        
-        StringBuilder expected = new StringBuilder("SELECT test FROM " + String.class.getName() + " test")
-            .append(" WHERE (test.attr = :p0)")
-            .append(" AND ((test.startDate &lt; :p1_0) AND ((test.endDate is null) OR (test.endDate &gt; :p1_1_1)))");
-        assertEquals(q.toQueryString(), expected.toString()); 
-        
-        assertEquals(q.getParamMap().get("p0"), "sample");
-        assertEquals(q.getParamMap().get("p1_0"), "123");
-        assertEquals(q.getParamMap().get("p1_1"), null);
-        assertEquals(q.getParamMap().get("p1_1_0"), null);
-        assertEquals(q.getParamMap().get("p1_1_1"), "456");
-        assertEquals(q.getParamMap().size(), 5);
-    }
-    
-    public void testTwoNested() {
-        TypedQueryBuilder<String> q = new TypedQueryBuilder<String>(String.class, "test");
-        
-        TQRestriction r = new TQRestriction(TQRestriction.Mode.AND)
-            .addChildRestriction(new TQRestriction("test.startDate", "&lt;", "123"))
-            .addChildRestriction(new TQRestriction(TQRestriction.Mode.OR)
-                .addChildRestriction(new TQRestriction("test.endDate", "is null"))
-                .addChildRestriction(new TQRestriction("test.endDate", "&gt;", "456")));
-        
-        TQRestriction r2 = new TQRestriction(TQRestriction.Mode.OR)
-            .addChildRestriction(new TQRestriction("test.res1", "=", "333"))
-            .addChildRestriction(new TQRestriction(TQRestriction.Mode.AND)
-                .addChildRestriction(new TQRestriction("test.res2", "is null"))
-                .addChildRestriction(new TQRestriction("test.res3", "&gt;", "456")));
-        
-        q.addRestriction("test.attr", "=", "sample");
-        q.addRestriction(r);
-        q.addRestriction(r2);
-        
-        System.out.println(q.toQueryString());
-        
-        StringBuilder expected = new StringBuilder("SELECT test FROM " + String.class.getName() + " test")
-            .append(" WHERE (test.attr = :p0)")
-            .append(" AND ((test.startDate &lt; :p1_0) AND ((test.endDate is null) OR (test.endDate &gt; :p1_1_1)))")
-            .append(" AND ((test.res1 = :p2_0) OR ((test.res2 is null) AND (test.res3 &gt; :p2_1_1)))");
-        assertEquals(q.toQueryString(), expected.toString()); 
-        
-        assertEquals(q.getParamMap().get("p0"), "sample");
-        assertEquals(q.getParamMap().get("p1_0"), "123");
-        assertEquals(q.getParamMap().get("p1_1"), null);
-        assertEquals(q.getParamMap().get("p1_1_0"), null);
-        assertEquals(q.getParamMap().get("p1_1_1"), "456");
-        assertEquals(q.getParamMap().get("p2_0"), "333");
-        assertEquals(q.getParamMap().get("p2_1"), null);
-        assertEquals(q.getParamMap().get("p2_1_0"), null);
-        assertEquals(q.getParamMap().get("p2_1_1"), "456");
-        assertEquals(q.getParamMap().size(), 9);
-    }
-    
-    public void testCountQuery() {
-        TypedQueryBuilder<String> q = new TypedQueryBuilder<String>(String.class, "test");
-        StringBuilder expected = new StringBuilder("SELECT COUNT(*) FROM " + String.class.getName() + " test");
-        assertEquals(q.toQueryString(true), expected.toString());
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+
+/**
+ * The query builder is exercised against a mocked {@link EntityManager}; no persistence unit is started.
+ */
+public class TypedQueryBuilderTest {
+
+    private TypedQueryBuilder<String> builder() {
+        return new TypedQueryBuilder<String>(String.class, "item");
     }
 
+    @Test
+    public void aBuilderWithoutRestrictionsSelectsEverything() {
+        assertEquals("SELECT item FROM java.lang.String item", builder().toQueryString());
+        assertEquals("SELECT COUNT(*) FROM java.lang.String item", builder().toQueryString(true));
+    }
+
+    @Test
+    public void restrictionsAreAndedAndParametersCollected() {
+        TypedQueryBuilder<String> builder = builder()
+                .addRestriction("item.name", "=", "shirt")
+                .addRestriction("item.id", "in", Arrays.asList(1L, 2L));
+
+        assertEquals("SELECT item FROM java.lang.String item WHERE (item.name = :p0) AND (item.id in (:p1))",
+                builder.toQueryString());
+        assertEquals("shirt", builder.getParamMap().get("p0"));
+        assertEquals(Arrays.asList(1L, 2L), builder.getParamMap().get("p1"));
+    }
+
+    @Test
+    public void joinsAndOrdersAreRendered() {
+        String ql = builder()
+                .addJoin(new TQJoin("item.collection", "collection"))
+                .addOrder(new TQOrder("item.name", true))
+                .addOrder(new TQOrder("item.id", false))
+                .toQueryString();
+
+        assertEquals("SELECT item FROM java.lang.String item JOIN item.collection collection"
+                + " ORDER BY item.name ASC, item.id DESC", ql);
+    }
+
+    @Test
+    public void nestedRestrictionsUseTheirJoinMode() {
+        Map<String, Object> paramMap = new HashMap<String, Object>();
+        String ql = new TQRestriction(Mode.OR)
+                .addChildRestriction(new TQRestriction("item.name", "=", "a"))
+                .addChildRestriction(new TQRestriction("item.name", "=", "b"))
+                .toQl("p0", paramMap);
+
+        assertEquals("((item.name = :p0_0) OR (item.name = :p0_1))", ql);
+        assertEquals("a", paramMap.get("p0_0"));
+        assertEquals("b", paramMap.get("p0_1"));
+    }
+
+    @Test
+    public void aValuelessRestrictionBindsNoParameter() {
+        Map<String, Object> paramMap = new HashMap<String, Object>();
+        // the operation is lower cased by the restriction
+        assertEquals("(item.name is null)", new TQRestriction("item.name", "IS NULL").toQl("p0", paramMap));
+        assertEquals(0, paramMap.size());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void queriesAreCreatedWithTheirParametersBound() {
+        EntityManager entityManager = mock(EntityManager.class);
+        TypedQuery<String> query = mock(TypedQuery.class);
+        TypedQuery<Long> countQuery = mock(TypedQuery.class);
+        when(entityManager.createQuery(eq("SELECT item FROM java.lang.String item WHERE (item.name = :p0)"),
+                eq(String.class))).thenReturn(query);
+        when(entityManager.createQuery(eq("SELECT COUNT(*) FROM java.lang.String item WHERE (item.name = :p0)"),
+                eq(Long.class))).thenReturn(countQuery);
+
+        TypedQueryBuilder<String> builder = builder().addRestriction("item.name", "=", "shirt");
+
+        assertSame(query, builder.toQuery(entityManager));
+        verify(query).setParameter("p0", "shirt");
+
+        assertSame(countQuery, builder.toCountQuery(entityManager));
+        verify(countQuery).setParameter("p0", "shirt");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void nullParameterValuesAreNotBound() {
+        EntityManager entityManager = mock(EntityManager.class);
+        TypedQuery<String> query = mock(TypedQuery.class);
+        when(entityManager.createQuery(eq("SELECT item FROM java.lang.String item"), eq(String.class)))
+                .thenReturn(query);
+
+        TypedQueryBuilder<String> builder = builder();
+        builder.getParamMap().put("p0", null);
+        builder.toQuery(entityManager);
+
+        verify(query, never()).setParameter(eq("p0"), eq((Object) null));
+    }
 }
-

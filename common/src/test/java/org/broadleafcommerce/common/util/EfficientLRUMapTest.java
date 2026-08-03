@@ -2,7 +2,7 @@
  * #%L
  * BroadleafCommerce Common Libraries
  * %%
- * Copyright (C) 2009 - 2013 Broadleaf Commerce
+ * Copyright (C) 2009 - 2016 Broadleaf Commerce
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,51 +17,93 @@
  * limitations under the License.
  * #L%
  */
-
 package org.broadleafcommerce.common.util;
 
-import org.apache.commons.collections4.map.LRUMap;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.concurrent.ConcurrentHashMap;
+import org.junit.jupiter.api.Test;
 
-import junit.framework.TestCase;
+import java.util.HashMap;
+import java.util.Map;
 
-public class EfficientLRUMapTest extends TestCase {
+public class EfficientLRUMapTest {
 
-    public void testMapSwitch() {
-        EfficientLRUMap<String, String> testMap = new EfficientLRUMap<String, String>(5);
+    private Map<String, String> map(int maxEntries) {
+        return new EfficientLRUMap<String, String>(maxEntries);
+    }
 
-        // Test basics for a single name value pair
-        testMap.put("key1", "value1");
-        assertEquals("The value for key1 should be value 1", "value1", testMap.get("key1"));
-        assertEquals("The size() for the map should be 1", 1, testMap.size());
-        assertEquals("The type of Map should be ConcurrentHashMap",
-                testMap.getUnderlyingMapClass(), ConcurrentHashMap.class);
+    @Test
+    public void theConcurrentBackingMapIsUsedBelowTheThreshold() {
+        Map<String, String> map = map(5);
+        assertTrue(map.isEmpty());
 
-        // Add keys up to the limit
-        testMap.put("key2", "value2");
-        testMap.put("key3", "value3");
-        testMap.put("key4", "value4");
-        testMap.put("key5", "value5");
+        assertNull(map.put("a", "1"));
+        assertEquals("1", map.put("a", "2"));
+        assertEquals("2", map.get("a"));
+        assertEquals(1, map.size());
+        assertTrue(map.containsKey("a"));
+        assertTrue(map.containsValue("2"));
+        assertFalse(map.containsKey("missing"));
+        assertFalse(map.containsValue("missing"));
+        assertEquals(1, map.keySet().size());
+        assertEquals(1, map.values().size());
+        assertEquals(1, map.entrySet().size());
 
-        // Validate last items and map type.
-        assertEquals("The value for key5 should be value5", "value5", testMap.get("key5"));
-        assertEquals("The size() for the map should be 5", 5, testMap.size());
-        assertEquals("The type of Map should be ConcurrentHashMap",
-                testMap.getUnderlyingMapClass(), ConcurrentHashMap.class);
+        assertEquals("2", map.remove("a"));
+        assertTrue(map.isEmpty());
+    }
 
-        // Updating an item shouldn't change the map type
-        testMap.put("key5", "value5b");
-        assertEquals("The value for key5 should now be value5b", "value5b", testMap.get("key5"));
-        assertEquals("The size() for the map should be 5", 5, testMap.size());
-        assertEquals("The type of Map should be ConcurrentHashMap",
-                testMap.getUnderlyingMapClass(), ConcurrentHashMap.class);
+    @Test
+    public void theMapSwitchesToAnLruOnceTheThresholdIsExceeded() {
+        Map<String, String> map = map(2);
+        map.put("a", "1");
+        map.put("b", "2");
+        map.put("c", "3");
 
-        // Add another item which should trigger a switch in the map type
-        testMap.put("key6", "value6");
-        assertEquals("The value for key6 should be value6", "value6", testMap.get("key6"));
-        assertEquals("The size() for the map should be 5 since we are now LRU", 5, testMap.size());
-        assertTrue("The type of Map should not be a ConcurrentHashMap.   It should be a synchronized map",
-                !testMap.getUnderlyingMapClass().equals(LRUMap.class));
+        // the oldest entry is evicted by the LRU backing map
+        assertEquals(2, map.size());
+        assertFalse(map.containsKey("a"));
+        assertEquals("3", map.get("c"));
+        assertTrue(map.containsValue("3"));
+        assertEquals(2, map.keySet().size());
+        assertEquals(2, map.values().size());
+        assertEquals(2, map.entrySet().size());
+        assertFalse(map.isEmpty());
+
+        assertEquals("3", map.remove("c"));
+    }
+
+    @Test
+    public void putAllAlsoSwitchesTheBackingMap() {
+        Map<String, String> source = new HashMap<String, String>();
+        source.put("a", "1");
+        source.put("b", "2");
+        source.put("c", "3");
+
+        Map<String, String> map = map(2);
+        map.putAll(source);
+        assertEquals(2, map.size());
+
+        map.putAll(source);
+        assertEquals(2, map.size());
+    }
+
+    @Test
+    public void clearingRevertsToTheConcurrentBackingMap() {
+        Map<String, String> map = map(1);
+        map.put("a", "1");
+        map.put("b", "2");
+        assertEquals(1, map.size());
+
+        map.clear();
+        assertTrue(map.isEmpty());
+
+        map.put("c", "3");
+        assertEquals("3", map.get("c"));
+        map.clear();
+        assertTrue(map.isEmpty());
     }
 }
