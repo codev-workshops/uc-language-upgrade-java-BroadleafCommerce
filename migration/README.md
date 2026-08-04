@@ -20,6 +20,7 @@ Phase 0  (toolchain / root POM) .............. COMPLETE
    |
    v
 Phase 1  (broadleaf-common) .................. COMPLETE
+(all downstream phases below: COMPLETE)
    |
    +------+------+
    |             |
@@ -62,15 +63,15 @@ Phase 7  (broadleaf-admin-functional-tests)
 |-------|------------------------------------------------------------------------|-----------------|--------|
 | 0     | Root POM / toolchain                                                   | -               | Complete |
 | 1     | `common/` (broadleaf-common)                                           | No              | Complete |
-| 2a    | `core/broadleaf-profile/`                                              | Yes (with 2b)   | Pending |
-| 2b    | `admin/broadleaf-open-admin-platform/`                                 | Yes (with 2a)   | Pending |
-| 3a    | `core/broadleaf-profile-web/`                                          | Yes (with 3b)   | Pending |
-| 3b    | `admin/broadleaf-contentmanagement-module/`                            | Yes (with 3a)   | Pending |
-| 4     | `core/broadleaf-framework/`                                            | No              | Pending |
-| 5a    | `core/broadleaf-framework-web/`                                        | Yes (with 5b)   | Pending |
-| 5b    | `admin/broadleaf-admin-module/`                                        | Yes (with 5a)   | Pending |
-| 6     | `integration/`                                                         | No              | Pending |
-| 7     | `admin/broadleaf-admin-functional-tests/`                              | No              | Pending |
+| 2a    | `core/broadleaf-profile/`                                              | Yes (with 2b)   | Complete |
+| 2b    | `admin/broadleaf-open-admin-platform/`                                 | Yes (with 2a)   | Complete |
+| 3a    | `core/broadleaf-profile-web/`                                          | Yes (with 3b)   | Complete |
+| 3b    | `admin/broadleaf-contentmanagement-module/`                            | Yes (with 3a)   | Complete |
+| 4     | `core/broadleaf-framework/`                                            | No              | Complete |
+| 5a    | `core/broadleaf-framework-web/`                                        | Yes (with 5b)   | Complete |
+| 5b    | `admin/broadleaf-admin-module/`                                        | Yes (with 5a)   | Complete |
+| 6     | `integration/`                                                         | No              | Complete |
+| 7     | `admin/broadleaf-admin-functional-tests/`                              | No              | Complete |
 
 ## Playbooks
 
@@ -78,15 +79,15 @@ Each phase has a detailed playbook in `migration/playbooks/`:
 
 - [Phase 0 - Toolchain](playbooks/phase0-toolchain.md) - **Complete**
 - [Phase 1 - broadleaf-common](playbooks/phase1-broadleaf-common.md) - **Complete**
-- [Phase 2a - broadleaf-profile](playbooks/phase2a-broadleaf-profile.md)
-- [Phase 2b - broadleaf-open-admin-platform](playbooks/phase2b-broadleaf-open-admin-platform.md)
-- [Phase 3a - broadleaf-profile-web](playbooks/phase3a-broadleaf-profile-web.md)
-- [Phase 3b - broadleaf-contentmanagement-module](playbooks/phase3b-broadleaf-contentmanagement-module.md)
-- [Phase 4 - broadleaf-framework](playbooks/phase4-broadleaf-framework.md)
-- [Phase 5a - broadleaf-framework-web](playbooks/phase5a-broadleaf-framework-web.md)
-- [Phase 5b - broadleaf-admin-module](playbooks/phase5b-broadleaf-admin-module.md)
-- [Phase 6 - integration](playbooks/phase6-integration.md)
-- [Phase 7 - broadleaf-admin-functional-tests](playbooks/phase7-broadleaf-admin-functional-tests.md)
+- [Phase 2a - broadleaf-profile](playbooks/phase2a-broadleaf-profile.md) - **Complete**
+- [Phase 2b - broadleaf-open-admin-platform](playbooks/phase2b-broadleaf-open-admin-platform.md) - **Complete**
+- [Phase 3a - broadleaf-profile-web](playbooks/phase3a-broadleaf-profile-web.md) - **Complete**
+- [Phase 3b - broadleaf-contentmanagement-module](playbooks/phase3b-broadleaf-contentmanagement-module.md) - **Complete**
+- [Phase 4 - broadleaf-framework](playbooks/phase4-broadleaf-framework.md) - **Complete**
+- [Phase 5a - broadleaf-framework-web](playbooks/phase5a-broadleaf-framework-web.md) - **Complete**
+- [Phase 5b - broadleaf-admin-module](playbooks/phase5b-broadleaf-admin-module.md) - **Complete**
+- [Phase 6 - integration](playbooks/phase6-integration.md) - **Complete**
+- [Phase 7 - broadleaf-admin-functional-tests](playbooks/phase7-broadleaf-admin-functional-tests.md) - **Complete**
 
 ## Execution
 
