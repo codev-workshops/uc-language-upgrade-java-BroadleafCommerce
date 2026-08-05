@@ -37,7 +37,7 @@ import org.broadleafcommerce.profile.core.domain.State;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * <p>

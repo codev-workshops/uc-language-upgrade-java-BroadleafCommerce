@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @Component("blCommitTaxRollbackHandler")
 public class CommitTaxRollbackHandler implements RollbackHandler<CheckoutSeed> {

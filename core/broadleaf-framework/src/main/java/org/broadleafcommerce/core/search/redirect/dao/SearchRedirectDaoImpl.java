@@ -21,15 +21,15 @@ package org.broadleafcommerce.core.search.redirect.dao;
 
 import org.broadleafcommerce.common.time.SystemTime;
 import org.broadleafcommerce.core.search.redirect.domain.SearchRedirect;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 /**
  * Created by ppatel.
@@ -60,7 +60,7 @@ public class SearchRedirectDaoImpl implements SearchRedirectDao {
         query.setParameter("searchTerm", searchTerm);
         query.setParameter("now", getCurrentDateAfterFactoringInDateResolution());
         query.setMaxResults(1);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
 
         List<SearchRedirect> results = query.getResultList();
         if (results != null && !results.isEmpty()) {

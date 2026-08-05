@@ -24,15 +24,15 @@ import org.broadleafcommerce.common.extension.ExtensionResultStatusType;
 import org.broadleafcommerce.common.persistence.EntityConfiguration;
 import org.broadleafcommerce.core.offer.domain.OfferCode;
 import org.broadleafcommerce.core.offer.domain.OfferCodeImpl;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 @Repository("blOfferCodeDao")
 public class OfferCodeDaoImpl implements OfferCodeDao {
@@ -84,8 +84,8 @@ public class OfferCodeDaoImpl implements OfferCodeDao {
         } else {
             query = em.createNamedQuery("BC_READ_OFFER_CODE_BY_CODE");
             query.setParameter("code", code);
-            query.setHint(QueryHints.HINT_CACHEABLE, true);
-            query.setHint(QueryHints.HINT_CACHE_REGION, "query.Offer");
+            query.setHint(HibernateHints.HINT_CACHEABLE, true);
+            query.setHint(HibernateHints.HINT_CACHE_REGION, "query.Offer");
         }
 
         List<OfferCode> result = query.getResultList();

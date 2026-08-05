@@ -21,13 +21,13 @@ package org.broadleafcommerce.core.store.dao;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 import org.broadleafcommerce.core.store.domain.Store;
 import org.broadleafcommerce.core.store.domain.StoreImpl;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 
 @Repository("blStoreDao")
@@ -44,7 +44,7 @@ public class StoreDaoImpl implements StoreDao {
     public Store readStoreByStoreName(final String storeName) {
         Query query = em.createNamedQuery("BC_FIND_STORE_BY_STORE_NAME");
         query.setParameter("storeName", storeName);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         List result = query.getResultList();
         return (result.size() > 0) ? (Store) result.get(0) : null;
     }
@@ -53,7 +53,7 @@ public class StoreDaoImpl implements StoreDao {
     public Store readStoreByStoreCode(final String storeCode) {
         Query query = em.createNamedQuery("BC_FIND_STORE_BY_STORE_NAME");
         query.setParameter("storeName", storeCode.toUpperCase());
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         List result = query.getResultList();
         return (result.size() > 0) ? (Store) result.get(0) : null;
     }
@@ -62,7 +62,7 @@ public class StoreDaoImpl implements StoreDao {
     public List<Store> readAllStores() {
         Query query = em.createNamedQuery("BC_FIND_ALL_STORES");
         query.setParameter("archived", 'N');
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         return query.getResultList();
     }
 
@@ -71,7 +71,7 @@ public class StoreDaoImpl implements StoreDao {
         Query query = em.createNamedQuery("BC_FIND_ALL_STORES_BY_STATE");
         query.setParameter("state", state);
         query.setParameter("archived", 'N');
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         return query.getResultList();
     }
 

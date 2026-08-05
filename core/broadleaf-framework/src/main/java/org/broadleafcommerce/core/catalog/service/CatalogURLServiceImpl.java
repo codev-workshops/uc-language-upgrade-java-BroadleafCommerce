@@ -19,6 +19,7 @@
  */
 package org.broadleafcommerce.core.catalog.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.broadleafcommerce.core.catalog.domain.Category;
 import org.broadleafcommerce.core.catalog.domain.Product;
@@ -64,7 +65,8 @@ public class CatalogURLServiceImpl implements CatalogURLService {
     protected String buildRelativeUrlWithParam(String currentUrl, String fragment, String idParam, String idValue) {
         try {
             URIBuilder builder = new URIBuilder(currentUrl);
-            builder.setPath(builder.getPath() + "/" + fragment);
+            String path = StringUtils.defaultString(builder.getPath());
+            builder.setPath(StringUtils.removeEnd(path, "/") + "/" + fragment);
 
             if (appendIdToRelativeURI) {
                 builder.setParameter(idParam, String.valueOf(idValue));
