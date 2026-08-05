@@ -30,12 +30,12 @@ import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 
-import javax.annotation.Resource;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * This is a basic filter for finding the customer ID on the request and setting the customer object on the request.  
