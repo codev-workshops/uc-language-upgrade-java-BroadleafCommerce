@@ -19,7 +19,6 @@
  */
 package org.broadleafcommerce.cms.structure.service;
 
-import net.sf.ehcache.Cache;
 
 import org.broadleafcommerce.cms.structure.domain.StructuredContent;
 import org.broadleafcommerce.cms.structure.domain.StructuredContentType;
@@ -27,9 +26,12 @@ import org.broadleafcommerce.common.locale.domain.Locale;
 import org.broadleafcommerce.common.persistence.EntityConfiguration;
 import org.broadleafcommerce.common.sandbox.domain.SandBox;
 import org.broadleafcommerce.common.structure.dto.StructuredContentDTO;
-import org.hibernate.Criteria;
 
 import java.util.List;
+
+import javax.cache.Cache;
+
+import jakarta.persistence.criteria.CriteriaQuery;
 import java.util.Map;
 
 /**
@@ -90,10 +92,10 @@ public interface StructuredContentService {
      *
      * @param sandbox - the sandbox to find structured content items (null indicates items that are in production for
      *                  sites that are single tenant.
-     * @param criteria - the criteria used to search for content
+     * @param criteria - the JPA criteria query used to search for content
      * @return
      */
-    List<StructuredContent> findContentItems(Criteria criteria);
+    List<StructuredContent> findContentItems(CriteriaQuery<StructuredContent> criteria);
     
     /**
      * Finds all content items regardless of the {@link Sandbox} they are a member of
@@ -102,11 +104,11 @@ public interface StructuredContentService {
     List<StructuredContent> findAllContentItems();
     
     /**
-     * Follows the same rules as {@link #findContentItems(org.broadleafcommerce.common.sandbox.domain.SandBox, org.hibernate.Criteria) findContentItems}.
+     * Follows the same rules as {@link #findContentItems(jakarta.persistence.criteria.CriteriaQuery) findContentItems}.
      *
-     * @return the count of items in this sandbox that match the passed in Criteria
+     * @return the count of items that match the passed in criteria query
      */
-    Long countContentItems(Criteria c);
+    Long countContentItems(CriteriaQuery<Long> criteria);
 
     /**
      * Saves the given <b>type</b> and returns the merged instance
@@ -191,7 +193,7 @@ public interface StructuredContentService {
 
     List<StructuredContentDTO> evaluateAndPriortizeContent(List<StructuredContentDTO> structuredContentList, int count, Map<String, Object> ruleDTOs);
 
-    Cache getStructuredContentCache();
+    Cache<Object, Object> getStructuredContentCache();
 
     /**
      * Converts a StructuredContent into a StructuredContentDTO.   If the item contains fields with

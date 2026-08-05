@@ -17,50 +17,69 @@
   limitations under the License.
   #L%
   -->
-<ehcache>
+<config xmlns="http://www.ehcache.org/v3"
+        xmlns:jsr107="http://www.ehcache.org/v3/jsr107"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.10.xsd
+                            http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext-3.10.xsd">
 
-    <diskStore path="java.io.tmpdir"/>
+    <service>
+        <jsr107:defaults enable-management="false" enable-statistics="true"/>
+    </service>
 
-    <defaultCache
-        maxElementsInMemory="100000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="60"/>
+    <cache alias="blCMSElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">10000</heap>
+        </resources>
+    </cache>
 
-    <!-- 1 hour cache -->
-    <cache
-        name="blCMSElements"
-        maxElementsInMemory="10000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="3600"/>
+    <cache alias="cmsPageCache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
 
-    <!-- Page Cache - 1 hour cache -->
-    <cache name="cmsPageCache"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="3600"/>
+    <cache alias="cmsPageMapCache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
 
-    <!-- Page Map Cache - 1 hour cache -->
-    <cache name="cmsPageMapCache"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="3600"/>
+    <cache alias="cmsStructuredContentCache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">5000</heap>
+        </resources>
+    </cache>
 
-    <!-- Structured Content Cache - 1 hour cache -->
-    <cache name="cmsStructuredContentCache"
-        maxElementsInMemory="5000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="3600"/>             
-    
-    <!--  URLHandlerCache -->
-    <cache name="cmsUrlHandlerCache"
-        maxElementsInMemory="5000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="3600"/>
+    <cache alias="cmsUrlHandlerCache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">5000</heap>
+        </resources>
+    </cache>
 
-</ehcache>
+</config>

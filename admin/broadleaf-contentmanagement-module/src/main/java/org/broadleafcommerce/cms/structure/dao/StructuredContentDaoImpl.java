@@ -27,21 +27,22 @@ import org.broadleafcommerce.common.locale.domain.Locale;
 import org.broadleafcommerce.common.persistence.EntityConfiguration;
 import org.broadleafcommerce.common.sandbox.domain.SandBox;
 import org.broadleafcommerce.common.sandbox.domain.SandBoxImpl;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Created by bpolster.
@@ -73,10 +74,20 @@ public class StructuredContentDaoImpl implements StructuredContentDao {
     @Override
     public List<StructuredContentType> retrieveAllStructuredContentTypes() {
         Query query = em.createNamedQuery("BC_READ_ALL_STRUCTURED_CONTENT_TYPES");
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         return query.getResultList();
     }
     
+    @Override
+    public List<StructuredContent> findContentItems(CriteriaQuery<StructuredContent> criteria) {
+        return em.createQuery(criteria).getResultList();
+    }
+
+    @Override
+    public Long countContentItems(CriteriaQuery<Long> criteria) {
+        return em.createQuery(criteria).getSingleResult();
+    }
+
     @Override
     public List<StructuredContent> findAllContentItems() {
         CriteriaBuilder builder = em.getCriteriaBuilder();
@@ -87,7 +98,7 @@ public class StructuredContentDaoImpl implements StructuredContentDao {
 
         try {
             TypedQuery<StructuredContent> query = em.createQuery(criteria);
-            query.setHint(QueryHints.HINT_CACHEABLE, true);
+            query.setHint(HibernateHints.HINT_CACHEABLE, true);
             return query.getResultList();
         } catch (NoResultException e) {
             return new ArrayList<StructuredContent>();
@@ -128,7 +139,7 @@ public class StructuredContentDaoImpl implements StructuredContentDao {
         query.setParameter("contentType", type);
         query.setParameter("fullLocale", fullLocale);
         query.setParameter("languageOnlyLocale", languageOnlyLocale);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
 
         return query.getResultList();
     }
@@ -148,7 +159,7 @@ public class StructuredContentDaoImpl implements StructuredContentDao {
         query.setParameter("contentName", name);
         query.setParameter("fullLocale", fullLocale);
         query.setParameter("languageOnlyLocale", languageOnlyLocale);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
 
         return query.getResultList();
     }
@@ -169,7 +180,7 @@ public class StructuredContentDaoImpl implements StructuredContentDao {
         query.setParameter("contentName", name);
         query.setParameter("fullLocale", fullLocale);
         query.setParameter("languageOnlyLocale", languageOnlyLocale);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
 
         return query.getResultList();
     }
@@ -178,7 +189,7 @@ public class StructuredContentDaoImpl implements StructuredContentDao {
     public StructuredContentType findStructuredContentTypeByName(String name) {
         Query query = em.createNamedQuery("BC_READ_STRUCTURED_CONTENT_TYPE_BY_NAME");
         query.setParameter("name",name);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
 
         List<StructuredContentType> results = query.getResultList();
         if (results.size() > 0) {

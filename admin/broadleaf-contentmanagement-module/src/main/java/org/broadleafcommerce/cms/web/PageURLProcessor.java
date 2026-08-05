@@ -23,10 +23,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Resource;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -100,7 +100,7 @@ public class PageURLProcessor implements URLProcessor {
      * @return false if the url could not be processed
      *
      * @throws java.io.IOException
-     * @throws javax.servlet.ServletException
+     * @throws jakarta.servlet.ServletException
      */
     public boolean processURL(String key) throws IOException, ServletException {
         BroadleafRequestContext context = BroadleafRequestContext.getBroadleafRequestContext();

@@ -19,7 +19,6 @@
  */
 package org.broadleafcommerce.cms.page.service;
 
-import net.sf.ehcache.Cache;
 
 import org.broadleafcommerce.cms.page.domain.Page;
 import org.broadleafcommerce.cms.page.domain.PageField;
@@ -28,6 +27,8 @@ import org.broadleafcommerce.common.locale.domain.Locale;
 import org.broadleafcommerce.common.page.dto.PageDTO;
 
 import java.util.List;
+
+import javax.cache.Cache;
 import java.util.Map;
 
 /**
@@ -100,9 +101,9 @@ public interface PageService {
      */
     public void removePageFromCache(String key);
 
-    Cache getPageCache();
+    Cache<Object, Object> getPageCache();
 
-    Cache getPageMapCache();
+    Cache<Object, Object> getPageMapCache();
 
     /**
      * Builds a list of {@link PageDTO} objects from the given list of {@link Page} objects.

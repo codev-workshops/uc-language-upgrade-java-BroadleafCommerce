@@ -22,7 +22,7 @@ package org.broadleafcommerce.cms.web;
 import org.broadleafcommerce.common.config.RuntimeEnvironmentPropertiesConfigurer;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Properties;
 
 /**

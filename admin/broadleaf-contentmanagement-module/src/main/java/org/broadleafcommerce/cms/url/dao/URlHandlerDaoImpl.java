@@ -22,20 +22,20 @@ package org.broadleafcommerce.cms.url.dao;
 import org.broadleafcommerce.cms.url.domain.URLHandler;
 import org.broadleafcommerce.cms.url.domain.URLHandlerImpl;
 import org.broadleafcommerce.common.persistence.EntityConfiguration;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Created by ppatel.
@@ -53,7 +53,7 @@ public class URlHandlerDaoImpl implements URLHandlerDao {
     public URLHandler findURLHandlerByURI(String uri) {
         TypedQuery<URLHandler> query = em.createNamedQuery("BC_READ_OUTGOING_URL", URLHandler.class);
         query.setParameter("incomingURL", uri);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
 
         List<URLHandler> results = query.getResultList();
         if (results != null && !results.isEmpty()) {
@@ -75,7 +75,7 @@ public class URlHandlerDaoImpl implements URLHandlerDao {
         Root<URLHandlerImpl> handler = criteria.from(URLHandlerImpl.class);
         criteria.select(handler);
         TypedQuery<URLHandler> query = em.createQuery(criteria);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         try {
             return query.getResultList();
         } catch (NoResultException e) {

@@ -19,11 +19,11 @@
  */
 package org.broadleafcommerce.cms.page.message.jms;
 
-import javax.annotation.Resource;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.TextMessage;
+import jakarta.annotation.Resource;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
+import jakarta.jms.TextMessage;
 
 import org.broadleafcommerce.cms.page.service.PageService;
 
@@ -40,7 +40,7 @@ public class JMSArchivedPageSubscriber implements MessageListener {
 
     /*
      * (non-Javadoc)
-     * @see javax.jms.MessageListener#onMessage(javax.jms.Message)
+     * @see jakarta.jms.MessageListener#onMessage(jakarta.jms.Message)
      */
     @SuppressWarnings("unchecked")
     public void onMessage(Message message) {
