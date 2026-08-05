@@ -23,15 +23,15 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.broadleafcommerce.common.persistence.EntityConfiguration;
 import org.broadleafcommerce.profile.core.domain.Customer;
 import org.broadleafcommerce.profile.core.domain.CustomerImpl;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 @Repository("blCustomerDao")
 public class CustomerDaoImpl implements CustomerDao {
@@ -67,8 +67,8 @@ public class CustomerDaoImpl implements CustomerDao {
     public List<Customer> readCustomersByUsername(String username, Boolean cacheable) {
         TypedQuery<Customer> query = em.createNamedQuery("BC_READ_CUSTOMER_BY_USER_NAME", Customer.class);
         query.setParameter("username", username);
-        query.setHint(QueryHints.HINT_CACHEABLE, cacheable);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "query.Order");
+        query.setHint(HibernateHints.HINT_CACHEABLE, cacheable);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "query.Order");
         return query.getResultList();
     }
 
@@ -82,8 +82,8 @@ public class CustomerDaoImpl implements CustomerDao {
     public List<Customer> readCustomersByEmail(String emailAddress) {
         TypedQuery<Customer> query = em.createNamedQuery("BC_READ_CUSTOMER_BY_EMAIL", Customer.class);
         query.setParameter("email", emailAddress);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "query.Order");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "query.Order");
         return query.getResultList();        
     }
 

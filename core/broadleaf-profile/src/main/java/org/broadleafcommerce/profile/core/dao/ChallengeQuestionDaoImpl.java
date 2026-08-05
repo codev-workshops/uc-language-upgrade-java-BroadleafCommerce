@@ -20,15 +20,15 @@
 package org.broadleafcommerce.profile.core.dao;
 
 import org.broadleafcommerce.profile.core.domain.ChallengeQuestion;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 @Repository("blChallengeQuestionDao")
 public class ChallengeQuestionDaoImpl implements ChallengeQuestionDao {
@@ -40,7 +40,7 @@ public class ChallengeQuestionDaoImpl implements ChallengeQuestionDao {
     @SuppressWarnings("unchecked")
     public List<ChallengeQuestion> readChallengeQuestions() {
         Query query = em.createNamedQuery("BC_READ_CHALLENGE_QUESTIONS");
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         return query.getResultList();
     }
 
