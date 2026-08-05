@@ -20,9 +20,9 @@
 package org.broadleafcommerce.core.web.catalog.taglib;
 
 import org.broadleafcommerce.core.catalog.domain.Category;
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 
-import javax.servlet.jsp.JspException;
+import jakarta.servlet.jsp.JspException;
 
 public class CategoryTagTest extends BaseTagLibTest {
     

@@ -61,26 +61,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * This class exposes catalog services as RESTful APIs.  It is dependent on
  * a JAX-RS implementation such as Jersey.  This class must be extended, with appropriate JAX-RS 
  * annotations, such as: <br></br> 
  * 
- * <code>javax.ws.rs.@Scope</code> <br></br> 
- * <code>javax.ws.rs.@Path</code> <br></br> 
- * <code>javax.ws.rs.@Produces</code> <br></br> 
- * <code>javax.ws.rs.@Consumes</code> <br></br> 
- * <code>javax.ws.rs.@Context</code> <br></br> 
+ * <code>jakarta.ws.rs.@Scope</code> <br></br> 
+ * <code>jakarta.ws.rs.@Path</code> <br></br> 
+ * <code>jakarta.ws.rs.@Produces</code> <br></br> 
+ * <code>jakarta.ws.rs.@Consumes</code> <br></br> 
+ * <code>jakarta.ws.rs.@Context</code> <br></br> 
  * etc... <br></br>
  * 
  * ... in the subclass.  The subclass must also be a Spring Bean.  The subclass can then override 
  * the methods, and specify custom inputs and outputs.  It will also specify 
- * <code>javax.ws.rs.@Path annotations</code>, <code>javax.ws.rs.@Context</code>, 
- * <code>javax.ws.rs.@PathParam</code>, <code>javax.ws.rs.@QueryParam</code>, 
- * <code>javax.ws.rs.@GET</code>, <code>javax.ws.rs.@POST</code>, etc...  Essentially, the subclass 
+ * <code>jakarta.ws.rs.@Path annotations</code>, <code>jakarta.ws.rs.@Context</code>, 
+ * <code>jakarta.ws.rs.@PathParam</code>, <code>jakarta.ws.rs.@QueryParam</code>, 
+ * <code>jakarta.ws.rs.@GET</code>, <code>jakarta.ws.rs.@POST</code>, etc...  Essentially, the subclass 
  * will override and extend the methods of this class, add new methods, and control the JAX-RS behavior 
  * using annotations according to the JAX-RS specification.
  *

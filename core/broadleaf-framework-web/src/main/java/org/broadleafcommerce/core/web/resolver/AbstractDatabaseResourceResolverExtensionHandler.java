@@ -1,8 +1,8 @@
 /*
  * #%L
- * BroadleafCommerce Framework
+ * broadleaf-theme
  * %%
- * Copyright (C) 2009 - 2013 Broadleaf Commerce
+ * Copyright (C) 2009 - 2014 Broadleaf Commerce
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,16 @@ package org.broadleafcommerce.core.web.resolver;
 import org.broadleafcommerce.common.extension.AbstractExtensionHandler;
 import org.broadleafcommerce.common.extension.ExtensionResultHolder;
 import org.broadleafcommerce.common.extension.ExtensionResultStatusType;
-import org.thymeleaf.TemplateProcessingParameters;
 
 
 /**
  * @author Andre Azzolini (apazzolini)
  */
-public abstract class AbstractDatabaseResourceResolverExtensionHandler extends AbstractExtensionHandler 
+public abstract class AbstractDatabaseResourceResolverExtensionHandler extends AbstractExtensionHandler
         implements DatabaseResourceResolverExtensionHandler {
-    
-    public ExtensionResultStatusType resolveResource(ExtensionResultHolder erh, 
-            TemplateProcessingParameters params, String resourceName) {
+
+    @Override
+    public ExtensionResultStatusType resolveResource(ExtensionResultHolder erh, String resourceName) {
         return ExtensionResultStatusType.NOT_HANDLED;
     }
 

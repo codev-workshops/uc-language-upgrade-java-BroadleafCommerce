@@ -27,7 +27,7 @@ import org.broadleafcommerce.core.catalog.domain.Product;
 
 import java.util.List;
 
-import javax.servlet.jsp.JspException;
+import jakarta.servlet.jsp.JspException;
 
 /**
  * This class is for demonstration purposes only. It contains a call to

@@ -22,11 +22,10 @@ package org.broadleafcommerce.core.web.api;
 import java.util.Locale;
 import java.util.Set;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -115,7 +114,7 @@ public class BroadleafSpringRestExceptionMapper {
         if (locale == null) {
             locale = Locale.getDefault();
         }
-        errorWrapper.setHttpStatusCode(HttpStatus.SC_NOT_FOUND);
+        errorWrapper.setHttpStatusCode(HttpServletResponse.SC_NOT_FOUND);
         response.setStatus(resolveResponseStatusCode(ex, errorWrapper));
         ErrorMessageWrapper errorMessageWrapper = (ErrorMessageWrapper) context.getBean(ErrorMessageWrapper.class.getName());
         errorMessageWrapper.setMessageKey(resolveClientMessageKey(BroadleafWebServicesException.NOT_FOUND));
@@ -139,7 +138,7 @@ public class BroadleafSpringRestExceptionMapper {
         if (locale == null) {
             locale = Locale.getDefault();
         }
-        errorWrapper.setHttpStatusCode(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE);
+        errorWrapper.setHttpStatusCode(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
         response.setStatus(resolveResponseStatusCode(ex, errorWrapper));
         ErrorMessageWrapper errorMessageWrapper = (ErrorMessageWrapper) context.getBean(ErrorMessageWrapper.class.getName());
         errorMessageWrapper.setMessageKey(resolveClientMessageKey(BroadleafWebServicesException.CONTENT_TYPE_NOT_SUPPORTED));
@@ -176,7 +175,7 @@ public class BroadleafSpringRestExceptionMapper {
         if(parameterName == null) {
             parameterName = "[unknown name]";
         }
-        errorWrapper.setHttpStatusCode(HttpStatus.SC_BAD_REQUEST);
+        errorWrapper.setHttpStatusCode(HttpServletResponse.SC_BAD_REQUEST);
         response.setStatus(resolveResponseStatusCode(ex, errorWrapper));
         ErrorMessageWrapper errorMessageWrapper = (ErrorMessageWrapper) context.getBean(ErrorMessageWrapper.class.getName());
         errorMessageWrapper.setMessageKey(resolveClientMessageKey(BroadleafWebServicesException.QUERY_PARAMETER_NOT_PRESENT));
@@ -200,7 +199,7 @@ public class BroadleafSpringRestExceptionMapper {
         if (locale == null) {
             locale = Locale.getDefault();
         }
-        errorWrapper.setHttpStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        errorWrapper.setHttpStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         response.setStatus(resolveResponseStatusCode(ex, errorWrapper));
         ErrorMessageWrapper errorMessageWrapper = (ErrorMessageWrapper) context.getBean(ErrorMessageWrapper.class.getName());
         errorMessageWrapper.setMessageKey(resolveClientMessageKey(BroadleafWebServicesException.UNKNOWN_ERROR));

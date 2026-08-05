@@ -70,6 +70,7 @@
         <ehcache.version>3.10.8</ehcache.version>
         <slf4j.version>2.0.13</slf4j.version>
         <httpclient5.version>5.3.1</httpclient5.version>
+        <caffeine.version>3.1.8</caffeine.version>
         <geb.version>5.1</geb.version>
         <spock.core.version>2.3-groovy-4.0</spock.core.version>
         <spock.spring.version>2.3-groovy-4.0</spock.spring.version>
@@ -689,6 +690,18 @@
                 <artifactId>jakarta.ws.rs-api</artifactId>
                 <version>${jakarta.ws.rs.version}</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5</artifactId>
+                <version>${httpclient5.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <version>${caffeine.version}</version>
+                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>

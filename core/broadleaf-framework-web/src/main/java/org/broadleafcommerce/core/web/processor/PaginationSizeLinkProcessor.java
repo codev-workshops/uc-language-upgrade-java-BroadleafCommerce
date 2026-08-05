@@ -22,11 +22,11 @@ package org.broadleafcommerce.core.web.processor;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
 import org.broadleafcommerce.core.search.domain.SearchCriteria;
 import org.broadleafcommerce.core.web.util.ProcessorUtils;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.broadleafcommerce.core.web.dialect.AbstractAttributeModifierProcessor;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,19 +36,16 @@ import java.util.Map;
  *
  * @author Joseph Fridye (jfridye)
  */
-public class PaginationSizeLinkProcessor extends AbstractAttributeModifierAttrProcessor {
+public class PaginationSizeLinkProcessor extends AbstractAttributeModifierProcessor {
 
     public PaginationSizeLinkProcessor() {
-        super("pagination-size-link");
+        super("pagination-size-link", 10000);
     }
 
-    @Override
-    public int getPrecedence() {
-        return 10000;
-    }
 
     @Override
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
+    protected Map<String, String> getModifiedAttributes(ITemplateContext context, IProcessableElementTag tag,
+                                                       String attributeValue) {
 
         Map<String, String> attributes = new HashMap<String, String>();
 
@@ -58,7 +55,7 @@ public class PaginationSizeLinkProcessor extends AbstractAttributeModifierAttrPr
 
         Map<String, String[]> params = new HashMap<String, String[]>(request.getParameterMap());
 
-        Integer pageSize = Integer.parseInt(element.getAttributeValue(attributeName));
+        Integer pageSize = Integer.parseInt(attributeValue);
 
         if (pageSize != null && pageSize > 1) {
             params.put(SearchCriteria.PAGE_SIZE_STRING, new String[]{pageSize.toString()});
@@ -72,21 +69,6 @@ public class PaginationSizeLinkProcessor extends AbstractAttributeModifierAttrPr
 
         return attributes;
 
-    }
-
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
     }
 
 }

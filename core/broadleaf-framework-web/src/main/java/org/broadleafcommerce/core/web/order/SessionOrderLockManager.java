@@ -31,13 +31,13 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.context.request.ServletWebRequest;
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * An {@link HttpSession} based {@link OrderLockManager}. This implementation is less concerned with the given Order
@@ -52,9 +52,10 @@ public class SessionOrderLockManager implements OrderLockManager, ApplicationLis
     private static final ConcurrentMap<String, ReentrantLock> SESSION_LOCKS;
     
     static {
-        SESSION_LOCKS = new ConcurrentLinkedHashMap.Builder<String, ReentrantLock>()
-            .maximumWeightedCapacity(10000)
-            .build();
+        SESSION_LOCKS = Caffeine.newBuilder()
+            .maximumSize(10000)
+            .<String, ReentrantLock>build()
+            .asMap();
     }
 
     /**
