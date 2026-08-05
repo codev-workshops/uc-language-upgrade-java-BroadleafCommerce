@@ -25,6 +25,8 @@ import org.apache.commons.logging.Log;
 import org.broadleafcommerce.common.sandbox.domain.SandBox;
 import org.broadleafcommerce.common.site.domain.Site;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
+
+import javax.cache.Cache;
 import org.springframework.util.ClassUtils;
 
 import java.io.Serializable;
@@ -34,9 +36,6 @@ import java.lang.reflect.Proxy;
 
 import jakarta.annotation.Resource;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
 
 /**
  * Support for any class that wishes to utilize a query miss cache. This cache is capable of caching a query miss
@@ -52,7 +51,7 @@ public abstract class AbstractCacheMissAware {
     @Resource(name="blStatisticsService")
     protected StatisticsService statisticsService;
 
-    protected Cache cache;
+    protected Cache<Object, Object> cache;
 
     private Object nullObject = null;
 
@@ -86,11 +85,7 @@ public abstract class AbstractCacheMissAware {
      * @return the cache item instance
      */
     protected <T> T getObjectFromCache(String key, String cacheName) {
-        Element cacheElement = getCache(cacheName).get(key);
-        if (cacheElement != null) {
-            return (T) cacheElement.getValue();
-        }
-        return null;
+        return (T) getCache(cacheName).get(key);
     }
 
     /**
@@ -100,9 +95,9 @@ public abstract class AbstractCacheMissAware {
      * @param cacheName the name of the cache - the ehcache region name
      * @return the underlying cache
      */
-    protected Cache getCache(String cacheName) {
+    protected Cache<Object, Object> getCache(String cacheName) {
         if (cache == null) {
-            cache = CacheManager.getInstance().getCache(cacheName);
+            cache = JCacheUtil.getCache(cacheName);
         }
         return cache;
     }
@@ -190,7 +185,7 @@ public abstract class AbstractCacheMissAware {
             //only handle null, non-hits. Otherwise, let level 2 cache handle it
             if ((context.isProductionSandBox() || (context.getAdditionalProperties().containsKey("allowLevel2Cache") && (Boolean) context.getAdditionalProperties().get("allowLevel2Cache"))) && response.equals(nullResponse)) {
                 statisticsService.addCacheStat(statisticsName, false);
-                getCache(cacheName).put(new Element(key, response));
+                getCache(cacheName).put(key, response);
                 if (getLogger().isTraceEnabled()) {
                     getLogger().trace("Caching [" + key + "] as null in the [" + cacheName + "] cache.");
                 }

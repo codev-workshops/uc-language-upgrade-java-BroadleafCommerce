@@ -23,17 +23,18 @@ package org.broadleafcommerce.common.web.payment.processor;
 import org.broadleafcommerce.common.payment.dto.PaymentRequestDTO;
 import org.broadleafcommerce.common.vendor.service.exception.PaymentException;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Attribute;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.ProcessorResult;
-import org.thymeleaf.processor.element.AbstractElementProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IAttribute;
+import org.thymeleaf.model.IModel;
+import org.thymeleaf.model.IModelFactory;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementModelProcessor;
+import org.thymeleaf.processor.element.IElementModelStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
 import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.templatemode.TemplateMode;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.Resource;
@@ -72,45 +73,37 @@ import jakarta.annotation.Resource;
  * @author Elbert Bautista (elbertbautista)
  */
 @Component("blTransparentRedirectCreditCardFormProcessor")
-public class TransparentRedirectCreditCardFormProcessor extends AbstractElementProcessor {
+public class TransparentRedirectCreditCardFormProcessor extends AbstractElementModelProcessor {
 
     @Resource(name = "blTRCreditCardExtensionManager")
     protected TRCreditCardExtensionManager extensionManager;
 
     public TransparentRedirectCreditCardFormProcessor() {
-        super("transparent_credit_card_form");
+        super(TemplateMode.HTML, "blc", "transparent_credit_card_form", true, null, false, 1);
     }
 
     @Override
-    public int getPrecedence() {
-        return 1;
-    }
+    protected void doProcess(ITemplateContext context, IModel model,
+                             IElementModelStructureHandler structureHandler) {
+        IModelFactory modelFactory = context.getModelFactory();
+        IProcessableElementTag tag = (IProcessableElementTag) model.get(0);
 
-    @Override
-    protected ProcessorResult processElement(Arguments arguments, Element element) {
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue("paymentRequestDTO"));
-        PaymentRequestDTO requestDTO = (PaymentRequestDTO) expression.execute(arguments.getConfiguration(), arguments);
+        IStandardExpression expression = StandardExpressions.getExpressionParser(context.getConfiguration())
+                .parseExpression(context, tag.getAttributeValue("paymentRequestDTO"));
+        PaymentRequestDTO requestDTO = (PaymentRequestDTO) expression.execute(context);
 
-        element.removeAttribute("paymentRequestDTO");
-
+        Map<String, String> formAttributes = new HashMap<String, String>();
         Map<String, Map<String,String>> formParameters = new HashMap<String, Map<String,String>>();
         Map<String, String> configurationSettings = new HashMap<String, String>();
 
         //Create the configuration settings map to pass into the payment module
-        Map<String, Attribute> attributeMap  = element.getAttributeMap();
-        List<String> keysToRemove = new ArrayList<String>();
-        for (String key : attributeMap.keySet()) {
-            if (key.startsWith("config-")){
-                final int trimLength = "config-".length();
-                String configParam = key.substring(trimLength);
-                configurationSettings.put(configParam, attributeMap.get(key).getValue());
-                keysToRemove.add(key);
+        for (IAttribute attribute : tag.getAllAttributes()) {
+            String key = attribute.getAttributeCompleteName();
+            if (key.startsWith("config-")) {
+                configurationSettings.put(key.substring("config-".length()), attribute.getValue());
+            } else if (!"paymentRequestDTO".equals(key)) {
+                formAttributes.put(key, attribute.getValue());
             }
-        }
-
-        for (String keyToRemove : keysToRemove) {
-            element.removeAttribute(keyToRemove);
         }
 
         try {
@@ -132,27 +125,32 @@ public class TransparentRedirectCreditCardFormProcessor extends AbstractElementP
             String key = (String)actionValue.keySet().toArray()[0];
             actionUrl = actionValue.get(key);
         }
-        element.setAttribute("action", actionUrl);
+        formAttributes.put("action", actionUrl);
 
         //Append any hidden fields necessary for the Transparent Redirect
+        IModel hiddenInputs = modelFactory.createModel();
         Map<String, String> hiddenFields = formParameters.get(formHiddenParamsKey.toString());
         if (hiddenFields != null && !hiddenFields.isEmpty()) {
-            for (String key : hiddenFields.keySet()) {
-                Element hiddenNode = new Element("input");
-                hiddenNode.setAttribute("type", "hidden");
-                hiddenNode.setAttribute("name", key);
-                hiddenNode.setAttribute("value", hiddenFields.get(key));
-                element.addChild(hiddenNode);
+            for (Map.Entry<String, String> hiddenField : hiddenFields.entrySet()) {
+                Map<String, String> attributes = new HashMap<String, String>();
+                attributes.put("type", "hidden");
+                attributes.put("name", hiddenField.getKey());
+                attributes.put("value", hiddenField.getValue());
+                hiddenInputs.add(modelFactory.createStandaloneElementTag("input", attributes, null, false, true));
             }
         }
 
-        // Convert the <blc:transparent_credit_card_form> node to a normal <form> node
-        Element newElement = element.cloneElementNodeWithNewName(element.getParent(), "form", false);
-        newElement.setRecomputeProcessorsImmediately(true);
-        element.getParent().insertAfter(element, newElement);
-        element.getParent().removeChild(element);
+        // Convert the <blc:transparent_credit_card_form> node to a normal <form> node, preserving its body
+        IModel body = modelFactory.createModel();
+        for (int i = 1; i < model.size() - 1; i++) {
+            body.add(model.get(i));
+        }
 
-        return ProcessorResult.OK;
+        model.reset();
+        model.add(modelFactory.createOpenElementTag("form", formAttributes, null, false));
+        model.addModel(hiddenInputs);
+        model.addModel(body);
+        model.add(modelFactory.createCloseElementTag("form"));
     }
 
     public TRCreditCardExtensionManager getExtensionManager() {

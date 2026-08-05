@@ -19,13 +19,12 @@
  */
 package org.broadleafcommerce.common.web.resource;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
+import javax.cache.Cache;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.broadleafcommerce.common.cache.JCacheUtil;
 import org.broadleafcommerce.common.cache.CacheStatType;
 import org.broadleafcommerce.common.cache.StatisticsService;
 import org.broadleafcommerce.common.extension.ExtensionResultHolder;
@@ -61,7 +60,7 @@ public abstract class AbstractGeneratedResourceHandler implements Ordered {
     @jakarta.annotation.Resource(name = "blResourceRequestExtensionManager")
     protected ResourceRequestExtensionManager extensionManager;
 
-    protected Cache generatedResourceCache;
+    protected Cache<Object, Object> generatedResourceCache;
     
     /**
      * @param path
@@ -93,27 +92,26 @@ public abstract class AbstractGeneratedResourceHandler implements Ordered {
      * @return the generated resource
      */
     public Resource getResource(final String path, final List<Resource> locations) {
-        Element e = getGeneratedResourceCache().get(path);
+        Object cached = getGeneratedResourceCache().get(path);
         Resource r = null;
-        if (e == null) {
+        if (cached == null) {
             statisticsService.addCacheStat(CacheStatType.GENERATED_RESOURCE_CACHE_HIT_RATE.toString(), false);
         } else {
             statisticsService.addCacheStat(CacheStatType.GENERATED_RESOURCE_CACHE_HIT_RATE.toString(), true);
         }
         boolean shouldGenerate = false;
-        if (e == null || e.getObjectValue() == null) {
+        if (cached == null) {
             shouldGenerate = true;
-        } else if (e.getObjectValue() instanceof GeneratedResource
-                && isCachedResourceExpired((GeneratedResource) e.getObjectValue(), path, locations)) {
+        } else if (cached instanceof GeneratedResource
+                && isCachedResourceExpired((GeneratedResource) cached, path, locations)) {
             shouldGenerate = true;
         } else {
-            r = (Resource) e.getObjectValue();
+            r = (Resource) cached;
         }
 
         if (shouldGenerate) {
             r = getFileContents(path, locations);
-            e = new Element(path,  r);
-            getGeneratedResourceCache().put(e);
+            getGeneratedResourceCache().put(path, r);
         }
         return r;
     }
@@ -164,9 +162,9 @@ public abstract class AbstractGeneratedResourceHandler implements Ordered {
 	    }
 	}
     
-    protected Cache getGeneratedResourceCache() {
+    protected Cache<Object, Object> getGeneratedResourceCache() {
         if (generatedResourceCache == null) {
-            generatedResourceCache = CacheManager.getInstance().getCache("generatedResourceCache");
+            generatedResourceCache = JCacheUtil.getCache("generatedResourceCache");
         }
         return generatedResourceCache;
     }

@@ -26,7 +26,6 @@ import org.broadleafcommerce.common.weave.ConditionalFieldAnnotationCopyTransfor
 import org.broadleafcommerce.common.weave.ConditionalFieldAnnotationCopyTransformersManager;
 
 import java.io.ByteArrayInputStream;
-import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -40,6 +39,7 @@ import javassist.LoaderClassPath;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
+import jakarta.persistence.spi.TransformerException;
 
 /**
  * The purpose of this class is to allow the conditional addition or removal of annotations to a target entity based on template class.
@@ -76,10 +76,10 @@ public class ConditionalFieldAnnotationsClassTransformer extends AbstractClassTr
      * @param protectionDomain
      * @param classfileBuffer
      * @return
-     * @throws IllegalClassFormatException
+     * @throws TransformerException
      */
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws TransformerException {
 
         // Lambdas and anonymous methods in Java 8 do not have a class name defined and so no transformation should be done
         if (className == null) {

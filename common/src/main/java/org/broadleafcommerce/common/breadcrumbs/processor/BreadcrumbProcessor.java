@@ -24,8 +24,9 @@ import org.broadleafcommerce.common.breadcrumbs.service.BreadcrumbService;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
 import org.broadleafcommerce.common.web.dialect.AbstractModelVariableModifierProcessor;
 import org.springframework.util.CollectionUtils;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,31 +48,28 @@ public class BreadcrumbProcessor extends AbstractModelVariableModifierProcessor 
      * Sets the name of this processor to be used in the Thymeleaf template
      */
     public BreadcrumbProcessor() {
-        super("breadcrumbs");
+        super(DIALECT_PREFIX, "breadcrumbs", 1000);
     }
 
-    @Override
-    public int getPrecedence() {
-        return 1000;
-    }
 
     @Override
-    protected void modifyModelAttributes(Arguments arguments, Element element) {
-        String baseUrl = getBaseUrl(arguments, element);
-        Map<String, String[]> params = getParams(arguments, element);
+    protected void modifyModelAttributes(ITemplateContext context, IProcessableElementTag tag,
+                                         IElementTagStructureHandler structureHandler) {
+        String baseUrl = getBaseUrl();
+        Map<String, String[]> params = getParams();
         List<BreadcrumbDTO> dtos = breadcrumbService.buildBreadcrumbDTOs(baseUrl, params);
-        String resultVar = element.getAttributeValue("resultVar");
+        String resultVar = tag.getAttributeValue("resultVar");
         
         if (resultVar == null) {
             resultVar = "breadcrumbs";
         }
         
         if (!CollectionUtils.isEmpty(dtos)) {
-            addToModel(arguments, resultVar, dtos);
+            addToModel(structureHandler, resultVar, dtos);
         }
     }
 
-    protected String getBaseUrl(Arguments arguments, Element element) {
+    protected String getBaseUrl() {
         BroadleafRequestContext brc = BroadleafRequestContext.getBroadleafRequestContext();
 
         if (brc != null) {
@@ -80,7 +78,7 @@ public class BreadcrumbProcessor extends AbstractModelVariableModifierProcessor 
         return "";
     }
 
-    protected Map<String, String[]> getParams(Arguments arguments, Element element) {
+    protected Map<String, String[]> getParams() {
         Map<String, String[]> paramMap = new HashMap<String, String[]>();
         BroadleafRequestContext brc = BroadleafRequestContext.getBroadleafRequestContext();
 

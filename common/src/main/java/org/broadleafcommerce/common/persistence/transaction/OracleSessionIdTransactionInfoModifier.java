@@ -19,7 +19,6 @@
  */
 package org.broadleafcommerce.common.persistence.transaction;
 
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.jdbc.ReturningWork;
 

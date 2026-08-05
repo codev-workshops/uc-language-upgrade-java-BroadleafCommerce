@@ -24,8 +24,8 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 
-import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
+import jakarta.persistence.spi.TransformerException;
 
 /**
  * Based on a Spring property value resolving to a boolean, this ClassTransformer will optionally perform
@@ -57,11 +57,11 @@ public class OptionalDirectCopyClassTransformer extends DirectCopyClassTransform
      * @param protectionDomain
      * @param classfileBuffer
      * @return
-     * @throws IllegalClassFormatException
+     * @throws TransformerException
      */
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws TransformerException {
 
         Boolean shouldProceed;
         try {

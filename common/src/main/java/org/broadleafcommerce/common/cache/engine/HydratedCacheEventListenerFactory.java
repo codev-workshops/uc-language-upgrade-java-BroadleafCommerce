@@ -19,39 +19,31 @@
  */
 package org.broadleafcommerce.common.cache.engine;
 
-import net.sf.ehcache.event.CacheEventListener;
-import net.sf.ehcache.event.CacheEventListenerFactory;
-
-import java.lang.reflect.Method;
-import java.util.Properties;
-
 /**
- * 
- * @author jfischer
+ * Holder for the {@link HydratedCacheManager} in use by the application. Previously this was an Ehcache 2
+ * {@code CacheEventListenerFactory}; with JCache the manager registers itself as an entry listener on the cache
+ * regions that hold hydratable entities.
  *
+ * @author jfischer
  */
-public class HydratedCacheEventListenerFactory extends CacheEventListenerFactory {
+public class HydratedCacheEventListenerFactory {
 
-    private static HydratedCacheManager manager = null;
+  private static HydratedCacheManager manager = EhcacheHydratedCacheManagerImpl.getInstance();
 
-    @Override
-    public CacheEventListener createCacheEventListener(Properties props) {
-        try {
-            if (props == null || props.isEmpty()) {
-                manager = EhcacheHydratedCacheManagerImpl.getInstance();
-            } else {
-                String managerClass = props.getProperty("managerClass");
-                Class<?> clazz = Class.forName(managerClass);
-                Method method = clazz.getDeclaredMethod("getInstance");
-                manager = (HydratedCacheManager) method.invoke(null);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to create a CacheEventListener instance", e);
-        }
-        return (CacheEventListener) manager;
-    }
+  private HydratedCacheEventListenerFactory() {
+  }
 
-    public static HydratedCacheManager getConfiguredManager() {
-        return manager;
-    }
+  /**
+   * @return the manager currently configured for hydrated caching
+   */
+  public static HydratedCacheManager getConfiguredManager() {
+    return manager;
+  }
+
+  /**
+   * Overrides the default {@link EhcacheHydratedCacheManagerImpl} manager.
+   */
+  public static void setConfiguredManager(HydratedCacheManager hydratedCacheManager) {
+    manager = hydratedCacheManager;
+  }
 }

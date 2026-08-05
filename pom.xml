@@ -66,6 +66,8 @@
         <solr.version>9.6.1</solr.version>
         <jackson.version>2.17.1</jackson.version>
         <log4j2.version>2.23.1</log4j2.version>
+        <jcache.version>1.1.1</jcache.version>
+        <ehcache.version>3.10.8</ehcache.version>
         <slf4j.version>2.0.13</slf4j.version>
         <httpclient5.version>5.3.1</httpclient5.version>
         <geb.version>5.1</geb.version>
@@ -493,6 +495,13 @@
     </profiles>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>5.10.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!--Broadleaf libraries -->
             <dependency>
                 <groupId>org.broadleafcommerce</groupId>
@@ -1179,11 +1188,20 @@
                 <scope>runtime</scope>
             </dependency>
             <dependency>
+                <groupId>javax.cache</groupId>
+                <artifactId>cache-api</artifactId>
+                <version>${jcache.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ehcache</groupId>
+                <artifactId>ehcache</artifactId>
+                <version>${ehcache.version}</version>
+                <classifier>jakarta</classifier>
+            </dependency>
+            <dependency>
                 <groupId>net.sf.ehcache</groupId>
                 <artifactId>ehcache</artifactId>
                 <version>2.7.2</version>
-                <scope>compile</scope>
-                <type>jar</type>
             </dependency>
 
             <!--Spring Libraries -->

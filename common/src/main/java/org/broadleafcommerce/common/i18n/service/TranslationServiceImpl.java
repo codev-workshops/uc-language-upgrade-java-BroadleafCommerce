@@ -22,6 +22,7 @@ package org.broadleafcommerce.common.i18n.service;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.broadleafcommerce.common.cache.JCacheUtil;
 import org.broadleafcommerce.common.cache.StatisticsService;
 import org.broadleafcommerce.common.extension.ExtensionResultHolder;
 import org.broadleafcommerce.common.extension.ItemStatus;
@@ -47,8 +48,7 @@ import java.util.Map.Entry;
 
 import jakarta.annotation.Resource;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
+import javax.cache.Cache;
 
 @Service("blTranslationService")
 public class TranslationServiceImpl implements TranslationService, TranslationSupport {
@@ -65,7 +65,7 @@ public class TranslationServiceImpl implements TranslationService, TranslationSu
     @Resource(name="blSandBoxHelper")
     protected SandBoxHelper sandBoxHelper;
     
-    protected Cache cache;
+    protected Cache<Object, Object> cache;
 
     @Resource(name="blTranslationServiceExtensionManager")
     protected TranslationServiceExtensionManager extensionManager;
@@ -162,9 +162,9 @@ public class TranslationServiceImpl implements TranslationService, TranslationSu
     }
 
     @Override
-    public Cache getCache() {
+    public Cache<Object, Object> getCache() {
         if (cache == null) {
-            cache = CacheManager.getInstance().getCache("blTranslationElements");
+            cache = JCacheUtil.getCache("blTranslationElements");
         }
         return cache;
     }

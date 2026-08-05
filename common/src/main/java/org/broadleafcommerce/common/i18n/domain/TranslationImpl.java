@@ -96,7 +96,6 @@ public class TranslationImpl implements Serializable, Translation {
 
     @Column(name = "TRANSLATED_VALUE", length = Integer.MAX_VALUE - 1)
     @Lob
-    @Type(type = "org.hibernate.type.StringClobType")
     @AdminPresentation(friendlyName = "TranslationImpl_TranslatedValue", prominent = true, requiredOverride = RequiredOverride.REQUIRED)
     protected String translatedValue;
 

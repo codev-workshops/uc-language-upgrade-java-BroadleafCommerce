@@ -24,12 +24,19 @@ import org.broadleafcommerce.common.security.handler.CsrfFilter;
 import org.broadleafcommerce.common.security.service.ExploitProtectionService;
 import org.broadleafcommerce.common.security.service.StaleStateProtectionService;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.ProcessorResult;
-import org.thymeleaf.processor.element.AbstractElementProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IModel;
+import org.thymeleaf.model.IModelFactory;
+import org.thymeleaf.model.IAttribute;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementModelProcessor;
+import org.thymeleaf.processor.element.IElementModelStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
 import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.templatemode.TemplateMode;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import jakarta.annotation.Resource;
 
@@ -41,7 +48,7 @@ import jakarta.annotation.Resource;
  * @see {@link CsrfFilter}
  */
 @Component("blFormProcessor")
-public class FormProcessor extends AbstractElementProcessor {
+public class FormProcessor extends AbstractElementModelProcessor {
     
     @Resource(name = "blExploitProtectionService")
     protected ExploitProtectionService eps;
@@ -53,23 +60,25 @@ public class FormProcessor extends AbstractElementProcessor {
      * Sets the name of this processor to be used in Thymeleaf template
      */
     public FormProcessor() {
-        super("form");
-    }
-    
-    /**
-     * We need this replacement to execute as early as possible to allow subsequent processors to act
-     * on this element as if it were a normal form instead of a blc:form
-     */
-    @Override
-    public int getPrecedence() {
-        return 1;
+        // Precedence 1: this replacement must execute as early as possible so that subsequent processors act
+        // on this element as if it were a normal form instead of a blc:form
+        super(TemplateMode.HTML, "blc", "form", true, null, false, 1);
     }
 
     @Override
-    protected ProcessorResult processElement(Arguments arguments, Element element) {
+    protected void doProcess(ITemplateContext context, IModel model,
+                             IElementModelStructureHandler structureHandler) {
+        IModelFactory modelFactory = context.getModelFactory();
+        IProcessableElementTag tag = (IProcessableElementTag) model.get(0);
+        Map<String, String> formAttributes = new HashMap<String, String>();
+        for (IAttribute attribute : tag.getAllAttributes()) {
+            formAttributes.put(attribute.getAttributeCompleteName(), attribute.getValue());
+        }
+        IModel hiddenInputs = modelFactory.createModel();
+
         // If the form will be not be submitted with a GET, we must add the CSRF token
         // We do this instead of checking for a POST because post is default if nothing is specified
-        if (!"GET".equalsIgnoreCase(element.getAttributeValueFromNormalizedName("method"))) {
+        if (!"GET".equalsIgnoreCase(tag.getAttributeValue("method"))) {
             try {
                 String csrfToken = eps.getCSRFToken();
                 String stateVersionToken = null;
@@ -78,28 +87,21 @@ public class FormProcessor extends AbstractElementProcessor {
                 }
 
                 //detect multipart form
-                if ("multipart/form-data".equalsIgnoreCase(element.getAttributeValueFromNormalizedName("enctype"))) {
-                    Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                            .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValueFromNormalizedName("th:action"));
-                    String action = (String) expression.execute(arguments.getConfiguration(), arguments);
+                if ("multipart/form-data".equalsIgnoreCase(tag.getAttributeValue("enctype"))) {
+                    IStandardExpression expression = StandardExpressions.getExpressionParser(context.getConfiguration())
+                            .parseExpression(context, tag.getAttributeValue("th:action"));
+                    String action = (String) expression.execute(context);
                     String csrfQueryParameter = "?" + eps.getCsrfTokenParameter() + "=" + csrfToken;
                     if (stateVersionToken != null) {
                         csrfQueryParameter += "&" + spps.getStateVersionTokenParameter() + "=" + stateVersionToken;
                     }
-                    element.removeAttribute("th:action");
-                    element.setAttribute("action", action + csrfQueryParameter);
+                    formAttributes.remove("th:action");
+                    formAttributes.put("action", action + csrfQueryParameter);
                 } else {
-                    Element csrfNode = new Element("input");
-                    csrfNode.setAttribute("type", "hidden");
-                    csrfNode.setAttribute("name", eps.getCsrfTokenParameter());
-                    csrfNode.setAttribute("value", csrfToken);
-                    element.addChild(csrfNode);
+                    hiddenInputs.add(createHiddenInput(modelFactory, eps.getCsrfTokenParameter(), csrfToken));
                     if (stateVersionToken != null) {
-                        Element versionNode = new Element("input");
-                        versionNode.setAttribute("type", "hidden");
-                        versionNode.setAttribute("name", spps.getStateVersionTokenParameter());
-                        versionNode.setAttribute("value", stateVersionToken);
-                        element.addChild(versionNode);
+                        hiddenInputs.add(createHiddenInput(modelFactory, spps.getStateVersionTokenParameter(),
+                                stateVersionToken));
                     }
                 }
 
@@ -108,13 +110,25 @@ public class FormProcessor extends AbstractElementProcessor {
             }
         }
         
-        // Convert the <blc:form> node to a normal <form> node
-        Element newElement = element.cloneElementNodeWithNewName(element.getParent(), "form", false);
-        newElement.setRecomputeProcessorsImmediately(true);
-        element.getParent().insertAfter(element, newElement);
-        element.getParent().removeChild(element);
-        
-        return ProcessorResult.OK;
+        // Convert the <blc:form> node to a normal <form> node, preserving its body
+        IModel body = modelFactory.createModel();
+        for (int i = 1; i < model.size() - 1; i++) {
+            body.add(model.get(i));
+        }
+
+        model.reset();
+        model.add(modelFactory.createOpenElementTag("form", formAttributes, null, false));
+        model.addModel(hiddenInputs);
+        model.addModel(body);
+        model.add(modelFactory.createCloseElementTag("form"));
     }
-    
+
+    protected IProcessableElementTag createHiddenInput(IModelFactory modelFactory, String name, String value) {
+        Map<String, String> attributes = new HashMap<String, String>();
+        attributes.put("type", "hidden");
+        attributes.put("name", name);
+        attributes.put("value", value);
+        return modelFactory.createStandaloneElementTag("input", attributes, null, false, true);
+    }
+
 }

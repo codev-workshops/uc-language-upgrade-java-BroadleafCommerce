@@ -19,49 +19,43 @@
  */
 package org.broadleafcommerce.common.web.dialect;
 
-import org.thymeleaf.dialect.AbstractDialect;
+import org.broadleafcommerce.common.web.expression.BroadleafVariableExpressionEvaluator;
+import org.thymeleaf.dialect.AbstractProcessorDialect;
+import org.thymeleaf.dialect.IExpressionObjectDialect;
+import org.thymeleaf.expression.IExpressionObjectFactory;
 import org.thymeleaf.processor.IProcessor;
-import org.thymeleaf.standard.expression.IStandardVariableExpressionEvaluator;
-import org.thymeleaf.standard.expression.StandardExpressions;
 
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 
 import jakarta.annotation.Resource;
 
-public class BLCDialect extends AbstractDialect {
-    
+public class BLCDialect extends AbstractProcessorDialect implements IExpressionObjectDialect {
+
+    public static final String NAME = "Broadleaf Commerce Dialect";
+    public static final String PREFIX = "blc";
+
     private Set<IProcessor> processors = new HashSet<IProcessor>();
-    
+
     @Resource(name = "blVariableExpressionEvaluator")
-    private IStandardVariableExpressionEvaluator expressionEvaluator;
+    private BroadleafVariableExpressionEvaluator expressionEvaluator;
 
-    @Override
-    public String getPrefix() {
-        return "blc";
+    public BLCDialect() {
+        super(NAME, PREFIX, 1000);
     }
 
     @Override
-    public boolean isLenient() {
-        return true;
+    public Set<IProcessor> getProcessors(String dialectPrefix) {
+        return processors;
     }
-    
-    @Override 
-    public Set<IProcessor> getProcessors() {        
-        return processors; 
-    } 
-    
+
     public void setProcessors(Set<IProcessor> processors) {
         this.processors = processors;
     }
-    
+
     @Override
-    public Map<String, Object> getExecutionAttributes() {
-        final Map<String,Object> executionAttributes = new LinkedHashMap<String, Object>();
-        executionAttributes.put(StandardExpressions.STANDARD_VARIABLE_EXPRESSION_EVALUATOR_ATTRIBUTE_NAME, expressionEvaluator);
-        return executionAttributes;
+    public IExpressionObjectFactory getExpressionObjectFactory() {
+        return expressionEvaluator;
     }
 
 }

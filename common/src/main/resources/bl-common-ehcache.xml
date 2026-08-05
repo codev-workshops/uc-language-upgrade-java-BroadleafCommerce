@@ -17,221 +17,333 @@
   limitations under the License.
   #L%
   -->
-<ehcache>
+<config xmlns="http://www.ehcache.org/v3"
+        xmlns:jsr107="http://www.ehcache.org/v3/jsr107"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.10.xsd
+                            http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext-3.10.xsd">
 
-    <diskStore path="java.io.tmpdir"/>
-    
-    <defaultCache
-        maxElementsInMemory="100000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="60"
-        timeToIdleSeconds="30"/>
-    
-    <cache
-        name="blStandardElements"
-        maxElementsInMemory="100000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="86400">
-        <cacheEventListenerFactory class="org.broadleafcommerce.common.cache.engine.HydratedCacheEventListenerFactory"/>
+    <service>
+        <jsr107:defaults enable-management="false" enable-statistics="true"/>
+    </service>
+
+    <cache alias="blStandardElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">86400</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">100000</heap>
+        </resources>
     </cache>
 
-    <cache
-        name="blProducts"
-        maxElementsInMemory="100000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="86400">
-        <cacheEventListenerFactory class="org.broadleafcommerce.common.cache.engine.HydratedCacheEventListenerFactory"/>
+    <cache alias="blProducts">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">86400</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">100000</heap>
+        </resources>
     </cache>
 
-    <cache name="blProductUrlCache"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="3600"/>
-
-    <cache
-        name="blCategories"
-        maxElementsInMemory="100000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="86400">
-        <cacheEventListenerFactory class="org.broadleafcommerce.common.cache.engine.HydratedCacheEventListenerFactory"/>
+    <cache alias="blProductUrlCache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
     </cache>
 
-    <cache name="blCategoryUrlCache"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="3600"/>
-
-    <cache
-        name="blOffers"
-        maxElementsInMemory="100000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="86400">
-        <cacheEventListenerFactory class="org.broadleafcommerce.common.cache.engine.HydratedCacheEventListenerFactory"/>
+    <cache alias="blCategories">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">86400</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">100000</heap>
+        </resources>
     </cache>
 
-    <cache
-        name="blInventoryElements"
-        maxElementsInMemory="100000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="60"/>
-        
-    <cache
-        name="org.hibernate.cache.internal.StandardQueryCache"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="600"/>
+    <cache alias="blCategoryUrlCache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
 
-    <cache
-        name="query.Catalog"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="600"/>
-        
-    <cache
-        name="query.PriceList"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="600"/>
-        
-    <cache
-        name="query.Cms"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="600"/>
+    <cache alias="blOffers">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">86400</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">100000</heap>
+        </resources>
+    </cache>
 
-    <cache
-        name="query.Offer"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="600"/>
+    <cache alias="blInventoryElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">60</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">100000</heap>
+        </resources>
+    </cache>
 
-    <cache
-        name="blOrderElements"
-        maxElementsInMemory="100000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="600"/>
-        
-     <cache
-        name="blCustomerElements"
-        maxElementsInMemory="100000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="600"/>
+    <cache alias="org.hibernate.cache.internal.StandardQueryCache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
 
-    <cache
-        name="query.Order"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="60"/>
-        
-     <cache
-        name="generatedResourceCache"
-        maxElementsInMemory="100"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="600"/>
-        
-     <!-- This is required by Hibernate to ensure that query caches return 
-          corrrect results. It must contain at least as many entries as there are 
-          DB tables. -->
-     <cache name="org.hibernate.cache.spi.UpdateTimestampsCache" 
-        maxElementsInMemory="5000" 
-        eternal="true" 
-        overflowToDisk="true"/>
+    <cache alias="query.Catalog">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
 
-    <cache name="blTemplateElements"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="3600"/>
+    <cache alias="query.PriceList">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
 
-    <!-- 1 hour cache -->
-    <cache
-        name="blTranslationElements"
-        maxElementsInMemory="10000000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="3600"/>
-    
-    <!-- The translation cache is evicted manually by the indexing process, never expire it -->
-    <cache
-        name="blBatchTranslationCache"
-        maxElementsInMemory="10000"
-        eternal="false"
-        overflowToDisk="true"
-        timeToLiveSeconds="0"/>  
-        
-    <!-- 10 minute cache -->
-    <cache
-        name="blConfigurationModuleElements"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="600"/>      
-    
-    <!-- 10 minute cache -->    
-    <cache
-        name="blSystemPropertyElements"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="600"/>
+    <cache alias="query.Cms">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
 
-    <cache name="blSystemPropertyNullCheckCache"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="600"/>
-        
-    <!-- 24 hour cache -->
-    <cache
-        name="blBundleElements"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="86400"/>
-        
-    <cache
-        name="blResourceCacheElements"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="86400"/>
-                        
-    <cache
-        name="blResourceTransformerCacheElements"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="86400"/>
+    <cache alias="query.Offer">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
 
-    <cache
-        name="blSiteElements"
-        maxElementsInMemory="5000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="3600"/>
+    <cache alias="blOrderElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">100000</heap>
+        </resources>
+    </cache>
 
-    <cache
-        name="blSiteElementsQuery"
-        maxElementsInMemory="1000"
-        eternal="false"
-        overflowToDisk="false"
-        timeToLiveSeconds="3600"/>
+    <cache alias="blCustomerElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">100000</heap>
+        </resources>
+    </cache>
 
-</ehcache>
+    <cache alias="query.Order">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">60</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="generatedResourceCache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">100</heap>
+        </resources>
+    </cache>
+
+    <cache alias="org.hibernate.cache.spi.UpdateTimestampsCache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <none/>
+        </expiry>
+        <resources>
+            <heap unit="entries">5000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="blTemplateElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="blTranslationElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">10000000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="blBatchTranslationCache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <none/>
+        </expiry>
+        <resources>
+            <heap unit="entries">10000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="blConfigurationModuleElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="blSystemPropertyElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="blSystemPropertyNullCheckCache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="blBundleElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">86400</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="blResourceCacheElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">86400</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="blResourceTransformerCacheElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">86400</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="blSiteElements">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">5000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="blSiteElementsQuery">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <ttl unit="seconds">3600</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
+
+    <cache alias="hydrated-cache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry>
+            <none/>
+        </expiry>
+        <resources>
+            <heap unit="entries">100000</heap>
+        </resources>
+    </cache>
+
+</config>

@@ -35,7 +35,7 @@
         <property name="persistenceUnitName" value="blPU"/>
     </bean>
 
-    <bean id="blCacheManager" class="org.broadleafcommerce.common.extensibility.cache.ehcache.MergeEhCacheManagerFactoryBean">
+    <bean id="blCacheManager" class="org.broadleafcommerce.common.extensibility.cache.ehcache.MergeJCacheManagerFactoryBean">
         <property name="shared" value="true"/>
     </bean>
 

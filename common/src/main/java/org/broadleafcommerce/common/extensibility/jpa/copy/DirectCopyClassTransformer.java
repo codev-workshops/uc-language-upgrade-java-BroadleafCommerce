@@ -28,7 +28,6 @@ import org.broadleafcommerce.common.weave.ConditionalDirectCopyTransformMemberDt
 import org.broadleafcommerce.common.weave.ConditionalDirectCopyTransformersManager;
 
 import java.io.ByteArrayInputStream;
-import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +59,7 @@ import javassist.bytecode.annotation.ArrayMemberValue;
 import javassist.bytecode.annotation.BooleanMemberValue;
 import javassist.bytecode.annotation.MemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
+import jakarta.persistence.spi.TransformerException;
 
 /**
  * This class transformer will copy fields, methods, and interface definitions from a source class to a target class,
@@ -99,7 +99,7 @@ public class DirectCopyClassTransformer extends AbstractClassTransformer impleme
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws TransformerException {
 
         // Lambdas and anonymous methods in Java 8 do not have a class name defined and so no transformation should be done
         if (className == null) {

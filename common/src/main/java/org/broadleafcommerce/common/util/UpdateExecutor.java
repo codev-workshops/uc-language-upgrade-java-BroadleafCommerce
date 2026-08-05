@@ -78,12 +78,12 @@ public class UpdateExecutor {
             int counter = 0;
             if (!ArrayUtils.isEmpty(params)) {
                 for (Object param : params) {
-                    query.setParameter(counter, param, types[counter]);
+                    query.setParameter(counter, param);
                     counter++;
                 }
             }
             for (Long id : run) {
-                query.setLong(counter, id);
+                query.setParameter(counter, id);
                 counter++;
             }
             response += query.executeUpdate();

@@ -22,20 +22,24 @@ package org.broadleafcommerce.common.web.processor;
 import org.apache.commons.lang3.StringUtils;
 import org.broadleafcommerce.common.resource.service.ResourceBundlingService;
 import org.broadleafcommerce.common.util.BLCSystemProperty;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.context.IWebContext;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.dom.NestableNode;
-import org.thymeleaf.processor.ProcessorResult;
-import org.thymeleaf.processor.element.AbstractElementProcessor;
-import org.thymeleaf.standard.expression.Expression;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IModel;
+import org.thymeleaf.model.IModelFactory;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractElementTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.expression.IStandardExpression;
 import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.web.IWebExchange;
+import org.thymeleaf.context.IWebContext;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
 
 
 /**
@@ -122,7 +126,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * @author bpolster
  * @see {@link ResourceBundlingService}
  */
-public class ResourceBundleProcessor extends AbstractElementProcessor {
+public class ResourceBundleProcessor extends AbstractElementTagProcessor {
     
     @Resource(name = "blResourceBundlingService")
     protected ResourceBundlingService bundlingService;
@@ -132,23 +136,20 @@ public class ResourceBundleProcessor extends AbstractElementProcessor {
     }
 
     public ResourceBundleProcessor() {
-        super("bundle");
-    }
-    
-    @Override
-    public int getPrecedence() {
-        return 10000;
+        super(TemplateMode.HTML, "blc", "bundle", true, null, false, 10000);
     }
 
     @Override
-    protected ProcessorResult processElement(Arguments arguments, Element element) {
-        String name = element.getAttributeValue("name");
-        String mappingPrefix = element.getAttributeValue("mapping-prefix");
-        boolean async = element.hasAttribute("async");
-        boolean defer = element.hasAttribute("defer");
-        NestableNode parent = element.getParent();
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag,
+                             IElementTagStructureHandler structureHandler) {
+        String name = tag.getAttributeValue("name");
+        String mappingPrefix = tag.getAttributeValue("mapping-prefix");
+        boolean async = tag.hasAttribute("async");
+        boolean defer = tag.hasAttribute("defer");
+        IModelFactory modelFactory = context.getModelFactory();
+        IModel replacement = modelFactory.createModel();
         List<String> files = new ArrayList<String>();
-        for (String file : element.getAttributeValue("files").split(",")) {
+        for (String file : tag.getAttributeValue("files").split(",")) {
             files.add(file.trim());
         }
         List<String> additionalBundleFiles = bundlingService.getAdditionalBundleFiles(name);
@@ -158,22 +159,19 @@ public class ResourceBundleProcessor extends AbstractElementProcessor {
         
         if (getBundleEnabled()) {
             String bundleResourceName = bundlingService.resolveBundleResourceName(name, mappingPrefix, files);
-            String bundleUrl = getBundleUrl(arguments, bundleResourceName);
-            Element e = getElement(bundleUrl, async, defer);
-            parent.insertAfter(element, e);
+            String bundleUrl = getBundleUrl(context, bundleResourceName);
+            replacement.add(getElement(modelFactory, bundleUrl, async, defer));
         } else {
             for (String file : files) {
                 file = file.trim();
-                Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                        .parseExpression(arguments.getConfiguration(), arguments, "@{'" + mappingPrefix + file + "'}");
-                String value = (String) expression.execute(arguments.getConfiguration(), arguments);
-                Element e = getElement(value, async, defer);
-                parent.insertBefore(element, e);
+                IStandardExpression expression = StandardExpressions.getExpressionParser(context.getConfiguration())
+                        .parseExpression(context, "@{'" + mappingPrefix + file + "'}");
+                String value = (String) expression.execute(context);
+                replacement.add(getElement(modelFactory, value, async, defer));
             }
         }
-        
-        parent.removeChild(element);
-        return ProcessorResult.OK;
+
+        structureHandler.replaceWith(replacement, false);
     }
     
     /**
@@ -187,16 +185,15 @@ public class ResourceBundleProcessor extends AbstractElementProcessor {
      * @param bundleName
      * @return
      */
-    protected String getBundleUrl(Arguments arguments, String bundleName) {
+    protected String getBundleUrl(ITemplateContext context, String bundleName) {
         String bundleUrl = bundleName;
 
         if (!StringUtils.startsWith(bundleUrl, "/")) {
             bundleUrl = "/" + bundleUrl;
         }
 
-        IWebContext context = (IWebContext) arguments.getContext();
-        HttpServletRequest request = context.getHttpServletRequest();
-        String contextPath = request.getContextPath();
+        IWebExchange webExchange = ((IWebContext) context).getExchange();
+        String contextPath = webExchange.getRequest().getApplicationPath();
 
         if (StringUtils.isNotEmpty(contextPath)) {
             bundleUrl = contextPath + bundleUrl;
@@ -205,35 +202,36 @@ public class ResourceBundleProcessor extends AbstractElementProcessor {
         return bundleUrl;
     }
 
-    protected Element getScriptElement(String src, boolean async, boolean defer) {
-        Element e = new Element("script");
-        e.setAttribute("type", "text/javascript");
-        e.setAttribute("src", src);
+    protected IProcessableElementTag getScriptElement(IModelFactory modelFactory, String src, boolean async,
+                                                      boolean defer) {
+        Map<String, String> attributes = new HashMap<String, String>();
+        attributes.put("type", "text/javascript");
+        attributes.put("src", src);
         if (async) {
-            e.setAttribute("async", true, null);
+            attributes.put("async", "async");
         }
         if (defer) {
-            e.setAttribute("defer", true, null);
+            attributes.put("defer", "defer");
         }
-        return e;
+        return modelFactory.createStandaloneElementTag("script", attributes, null, false, true);
     }
-    
-    protected Element getLinkElement(String src) {
-        Element e = new Element("link");
-        e.setAttribute("rel", "stylesheet");
-        e.setAttribute("href", src);
-        return e;
+
+    protected IProcessableElementTag getLinkElement(IModelFactory modelFactory, String src) {
+        Map<String, String> attributes = new HashMap<String, String>();
+        attributes.put("rel", "stylesheet");
+        attributes.put("href", src);
+        return modelFactory.createStandaloneElementTag("link", attributes, null, false, true);
     }
-    
-    protected Element getElement(String src, boolean async, boolean defer) {
+
+    protected IProcessableElementTag getElement(IModelFactory modelFactory, String src, boolean async, boolean defer) {
         if (src.contains(";")) {
             src = src.substring(0, src.indexOf(';'));
         }
-        
+
         if (src.endsWith(".js")) {
-            return getScriptElement(src, async, defer);
+            return getScriptElement(modelFactory, src, async, defer);
         } else if (src.endsWith(".css")) {
-            return getLinkElement(src);
+            return getLinkElement(modelFactory, src);
         } else {
             throw new IllegalArgumentException("Unknown extension for: " + src + " - only .js and .css are supported");
         }

@@ -24,9 +24,9 @@
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:util="http://www.springframework.org/schema/util"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
-           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd
-           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
 
     <context:component-scan base-package="org.broadleafcommerce.common"/>
@@ -56,7 +56,7 @@
                             <value>org\.apache.*</value>
                             <value>org\.springframework.*</value>
                             <value>javassist.*</value>
-                            <value>javax.*</value>
+                            <value>jakarta.*</value>
                             <value>org.broadleafcommerce.openadmin.web.compatibility.JSCompatibilityRequestWrapper</value>
                         </array>
                     </property>
@@ -126,18 +126,6 @@
         <constructor-arg name="moduleName" value="Conditional Field Annotation Transformation" />
     </bean>
 
-    <!-- NOTE: Remove this transformer when Thymeleaf 2.1.5 is released. See the Javadocs for org.broadleafcommerce.common.web.patch.EvaluationUtilPatch -->
-    <bean id="blEvaluationUtilPatchClassTransformer" class="org.broadleafcommerce.common.extensibility.jpa.copy.DirectCopyClassTransformer">
-        <constructor-arg name="moduleName" value="EvaluationUtil Patch Transformation" />
-        <property name="xformTemplates">
-            <map>
-                <entry key="org.thymeleaf.util.EvaluationUtil"
-                       value="org.broadleafcommerce.common.web.patch.EvaluationUtilPatch"/>
-            </map>
-        </property>
-    </bean>
-    <!-- END NOTE -->
-
     <!-- to be overriden by 3rd party modules -->
     <bean id="blMergedClassTransformers" class="org.springframework.beans.factory.config.ListFactoryBean">
         <property name="sourceList">
@@ -145,7 +133,6 @@
                 <ref bean="blAnnotationDirectCopyClassTransformer"/>
                 <ref bean="blEntityMarkerClassTransformer"/>
                 <ref bean="blConditionalFieldAnnotationClassTransformer"/>
-                <ref bean="blEvaluationUtilPatchClassTransformer"/>
             </list>
         </property>
     </bean>
@@ -167,7 +154,7 @@
         </property>
     </bean>
     
-    <bean id="blSpringCacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
+    <bean id="blSpringCacheManager" class="org.springframework.cache.jcache.JCacheCacheManager">
         <property name="cacheManager" ref="blCacheManager"/>
     </bean>    
 
@@ -355,7 +342,7 @@
         </property>
     </bean>
     
-    <bean id="thymeleafSpringStandardDialect" class="org.thymeleaf.spring4.dialect.SpringStandardDialect" />
+    <bean id="thymeleafSpringStandardDialect" class="org.thymeleaf.spring6.dialect.SpringStandardDialect" />
     
     <bean id="blVariableExpressionEvaluator" class="org.broadleafcommerce.common.web.expression.BroadleafVariableExpressionEvaluator" />
     <bean id="blDataDrivenEnumerationProcessor" class="org.broadleafcommerce.common.web.processor.DataDrivenEnumerationProcessor" />

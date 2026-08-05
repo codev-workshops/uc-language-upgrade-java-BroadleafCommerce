@@ -19,8 +19,8 @@
  */
 package org.broadleafcommerce.common.cache;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 
 /**
  * Specific implementation used with a Log4j dependency
@@ -30,12 +30,12 @@ public class Log4jStatisticsServiceLogAdapter implements StatisticsServiceLogAda
 
     @Override
     public void activateLogging(Class clazz) {
-        LogManager.getLogger(clazz).setLevel(Level.INFO);
+        Configurator.setLevel(clazz.getName(), Level.INFO);
     }
 
     @Override
     public void disableLogging(Class clazz) {
-        LogManager.getLogger(StatisticsServiceImpl.class).setLevel(Level.DEBUG);
+        Configurator.setLevel(StatisticsServiceImpl.class.getName(), Level.DEBUG);
     }
 
 }

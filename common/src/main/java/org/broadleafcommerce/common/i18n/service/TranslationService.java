@@ -20,7 +20,7 @@
 
 package org.broadleafcommerce.common.i18n.service;
 
-import net.sf.ehcache.Cache;
+import javax.cache.Cache;
 
 import org.broadleafcommerce.common.extension.ResultType;
 import org.broadleafcommerce.common.i18n.domain.TranslatedEntity;

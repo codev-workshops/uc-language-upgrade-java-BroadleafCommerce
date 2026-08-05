@@ -26,7 +26,6 @@ import org.broadleafcommerce.common.logging.SupportLogManager;
 import org.broadleafcommerce.common.logging.SupportLogger;
 
 import java.io.ByteArrayInputStream;
-import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +41,7 @@ import javassist.LoaderClassPath;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
+import jakarta.persistence.spi.TransformerException;
 
 /**
  * This class transformer will copy fields, methods, and interface definitions from a source class to a target class,
@@ -71,7 +71,7 @@ public class AnnotationsCopyClassTransformer implements BroadleafClassTransforme
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, 
-            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws TransformerException {
         // Lambdas and anonymous methods in Java 8 do not have a class name defined and so no transformation should be done
         if (className == null) {
             return null;

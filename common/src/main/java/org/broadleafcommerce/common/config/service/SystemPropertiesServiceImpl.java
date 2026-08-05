@@ -19,9 +19,8 @@
  */
 package org.broadleafcommerce.common.config.service;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
+import org.broadleafcommerce.common.cache.JCacheUtil;
+import javax.cache.Cache;
 
 import org.apache.commons.lang3.StringUtils;
 import org.broadleafcommerce.common.config.RuntimeEnvironmentPropertiesManager;
@@ -49,7 +48,7 @@ public class SystemPropertiesServiceImpl implements SystemPropertiesService{
 
     private static final String NULL_RESPONSE = "*NULL_RESPONSE*";
 
-    protected Cache systemPropertyCache;
+    protected Cache<Object, Object> systemPropertyCache;
 
     @Resource(name="blSystemPropertiesDao")
     protected SystemPropertiesDao systemPropertiesDao;
@@ -114,21 +113,12 @@ public class SystemPropertiesServiceImpl implements SystemPropertiesService{
 
     protected void addPropertyToCache(String propertyName, String propertyValue) {
         String key = buildKey(propertyName);
-        if (systemPropertyCacheTimeout < 0) {
-            getSystemPropertyCache().put(new Element(key, propertyValue));
-        } else {
-            getSystemPropertyCache().put(new Element(key, propertyValue, systemPropertyCacheTimeout, 
-                    systemPropertyCacheTimeout));
-        }
+        getSystemPropertyCache().put(key, propertyValue);
     }
 
     protected String getPropertyFromCache(String propertyName) {
         String key = buildKey(propertyName);
-        Element cacheElement = getSystemPropertyCache().get(key);
-        if (cacheElement != null && cacheElement.getObjectValue() != null) {
-            return (String) cacheElement.getObjectValue();
-        }
-        return null;
+        return (String) getSystemPropertyCache().get(key);
     }
 
     /**
@@ -164,9 +154,9 @@ public class SystemPropertiesServiceImpl implements SystemPropertiesService{
         return key;
     }
 
-    protected Cache getSystemPropertyCache() {
+    protected Cache<Object, Object> getSystemPropertyCache() {
         if (systemPropertyCache == null) {
-            systemPropertyCache = CacheManager.getInstance().getCache("blSystemPropertyElements");
+            systemPropertyCache = JCacheUtil.getCache("blSystemPropertyElements");
         }
         return systemPropertyCache;
     }
