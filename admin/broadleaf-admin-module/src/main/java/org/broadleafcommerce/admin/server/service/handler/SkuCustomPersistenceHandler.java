@@ -73,7 +73,6 @@ import org.broadleafcommerce.openadmin.server.service.persistence.module.criteri
 import org.broadleafcommerce.openadmin.server.service.persistence.module.criteria.FilterMapping;
 import org.broadleafcommerce.openadmin.server.service.persistence.module.criteria.Restriction;
 import org.broadleafcommerce.openadmin.server.service.persistence.module.criteria.predicate.PredicateProvider;
-import org.hibernate.ejb.HibernateEntityManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -86,14 +85,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 
 /**
  * @author Phillip Verheyden
@@ -328,7 +327,7 @@ public class SkuCustomPersistenceHandler extends CustomPersistenceHandlerAdapter
     protected String[] getPolymorphicClasses(Class<?> clazz) {
         DynamicDaoHelperImpl helper = new DynamicDaoHelperImpl();
         Class<?>[] classes = helper.getAllPolymorphicEntitiesFromCeiling(clazz,
-                helper.getSessionFactory((HibernateEntityManager) em), 
+                helper.getSessionFactory(em), 
                 true,
                 skuMetadataCacheService.useCache());
         String[] result = new String[classes.length];
@@ -697,7 +696,7 @@ public class SkuCustomPersistenceHandler extends CustomPersistenceHandlerAdapter
     protected String[] getPolymorphicClasses(Class<?> clazz, EntityManager em, boolean useCache) {
         DynamicDaoHelperImpl helper = new DynamicDaoHelperImpl();
         Class<?>[] classes = helper.getAllPolymorphicEntitiesFromCeiling(clazz,
-                helper.getSessionFactory((HibernateEntityManager) em), true, useCache);
+                helper.getSessionFactory(em), true, useCache);
         String[] result = new String[classes.length];
         for (int i = 0; i < classes.length; i++) {
             result[i] = classes[i].getName();
