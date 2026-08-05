@@ -29,7 +29,7 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
  * Condition class that checks for the presence of a JAXRS class to determine if JAXRS is actually loaded
  *
  * <p>
- * By default, this checks the existence of javax.ws.rs.core.UriInfo
+ * By default, this checks the existence of jakarta.ws.rs.core.UriInfo
  *
  * @author Phillip Verheyden (phillipuniverse)
  */
@@ -38,7 +38,7 @@ public class IsJaxrsAvailableCondition implements Condition {
     /**
      * Fully-qualified name of a class that is representative of JAXRS being loaded
      */
-    public static String JAXRSCLASS = "javax.ws.rs.core.UriInfo";
+    public static String JAXRSCLASS = "jakarta.ws.rs.core.UriInfo";
     
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {

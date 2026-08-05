@@ -21,10 +21,10 @@ package org.broadleafcommerce.core.web.catalog.taglib;
 
 import junit.framework.TestCase;
 import org.broadleafcommerce.core.catalog.service.CatalogService;
-import org.easymock.classextension.EasyMock;
+import org.easymock.EasyMock;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.jsp.PageContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.jsp.PageContext;
 
 abstract public class BaseTagLibTest extends TestCase {
     
