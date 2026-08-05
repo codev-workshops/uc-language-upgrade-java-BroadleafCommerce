@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * @author Chad Harchar (charchar)

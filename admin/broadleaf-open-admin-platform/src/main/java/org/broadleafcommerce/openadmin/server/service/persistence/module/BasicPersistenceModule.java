@@ -117,8 +117,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 
 /**
  * @author jfischer
@@ -306,9 +306,9 @@ public class BasicPersistenceModule implements PersistenceModule, RecordHelper, 
             }
         });
         Session session = getPersistenceManager().getDynamicEntityDao().getStandardEntityManager().unwrap(Session.class);
-        FlushMode originalFlushMode = session.getFlushMode();
+        FlushMode originalFlushMode = session.getHibernateFlushMode();
         try {
-            session.setFlushMode(FlushMode.MANUAL);
+            session.setHibernateFlushMode(FlushMode.MANUAL);
             RuntimeException entityPersistenceException = null;
             for (Property property : sortedProperties) {
                 BasicFieldMetadata metadata = (BasicFieldMetadata) mergedProperties.get(property.getName());
@@ -377,7 +377,7 @@ public class BasicPersistenceModule implements PersistenceModule, RecordHelper, 
                                         defaultFieldPersistenceProvider.populateValue(new PopulateValueRequest(setId,
                                                 fieldManager, property, metadata, returnType, value, persistenceManager, this), instance);
                                     }
-                                } catch (ParentEntityPersistenceException | javax.validation.ValidationException e) {
+                                } catch (ParentEntityPersistenceException | jakarta.validation.ValidationException e) {
                                     entityPersistenceException = e;
                                     cleanupFailedPersistenceAttempt(instance);
                                     break;
@@ -426,7 +426,7 @@ public class BasicPersistenceModule implements PersistenceModule, RecordHelper, 
         } catch (InstantiationException e) {
             throw new PersistenceException(e);
         } finally {
-            session.setFlushMode(originalFlushMode);
+            session.setHibernateFlushMode(originalFlushMode);
         }
         return instance;
     }

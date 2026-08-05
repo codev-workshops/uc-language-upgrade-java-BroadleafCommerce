@@ -22,16 +22,16 @@ package org.broadleafcommerce.openadmin.server.security.dao;
 import org.broadleafcommerce.common.persistence.EntityConfiguration;
 import org.broadleafcommerce.common.util.dao.TypedQueryBuilder;
 import org.broadleafcommerce.openadmin.server.security.domain.AdminUser;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -81,8 +81,8 @@ public class AdminUserDaoImpl implements AdminUserDao {
 
     public AdminUser readAdminUserByUserName(String userName) {
         TypedQuery<AdminUser> query = em.createNamedQuery("BC_READ_ADMIN_USER_BY_USERNAME", AdminUser.class);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "blAdminSecurityVolatileQuery");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "blAdminSecurityVolatileQuery");
         query.setParameter("userName", userName);
         List<AdminUser> users = query.getResultList();
         if (users != null && !users.isEmpty()) {
@@ -93,8 +93,8 @@ public class AdminUserDaoImpl implements AdminUserDao {
 
     public List<AdminUser> readAllAdminUsers() {
         TypedQuery<AdminUser> query = em.createNamedQuery("BC_READ_ALL_ADMIN_USERS", AdminUser.class);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "blAdminSecurityVolatileQuery");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "blAdminSecurityVolatileQuery");
         return query.getResultList();
     }
 

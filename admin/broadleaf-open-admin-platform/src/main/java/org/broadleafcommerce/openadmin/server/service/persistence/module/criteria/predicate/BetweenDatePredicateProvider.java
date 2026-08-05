@@ -25,10 +25,10 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 
 /**
  * @author Jeff Fischer
@@ -58,7 +58,7 @@ public class BetweenDatePredicateProvider implements PredicateProvider<Comparabl
             // down to the millisecond, so we can't just do equals we have to filter dates between the date provided and
             // 1000 milliseconds later than the date provided to get all records for that particular second
             Date secondFromNow = new Date(((Date)directValues.get(0)).getTime() + 1000);
-            return builder.between(path, directValues.get(0), secondFromNow);
+            return builder.between(path, directValues.get(0), (Comparable) secondFromNow);
         }
     }
 }

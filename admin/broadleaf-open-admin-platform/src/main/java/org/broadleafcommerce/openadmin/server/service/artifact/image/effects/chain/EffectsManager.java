@@ -34,7 +34,7 @@ import org.broadleafcommerce.openadmin.server.service.artifact.image.effects.cha
 import org.broadleafcommerce.openadmin.server.service.artifact.image.effects.chain.filter.UnsharpMask;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;

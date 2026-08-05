@@ -21,7 +21,6 @@ package org.broadleafcommerce.openadmin.server.dao;
 
 import org.broadleafcommerce.common.persistence.EntityConfiguration;
 import org.broadleafcommerce.common.util.dao.DynamicDaoHelper;
-import org.broadleafcommerce.common.util.dao.EJB3ConfigurationDao;
 import org.broadleafcommerce.openadmin.dto.ClassTree;
 import org.broadleafcommerce.openadmin.dto.FieldMetadata;
 import org.broadleafcommerce.openadmin.dto.ForeignKey;
@@ -29,7 +28,6 @@ import org.broadleafcommerce.openadmin.dto.MergedPropertyType;
 import org.broadleafcommerce.openadmin.dto.PersistencePerspective;
 import org.broadleafcommerce.openadmin.server.dao.provider.metadata.FieldMetadataProvider;
 import org.broadleafcommerce.openadmin.server.service.persistence.module.FieldManager;
-import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.type.Type;
@@ -39,8 +37,8 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
+import jakarta.annotation.Nonnull;
+import jakarta.persistence.EntityManager;
 
 /**
  * 
@@ -101,6 +99,8 @@ public interface DynamicEntityDao {
      * @return The PersistentClass instance
      */
     PersistentClass getPersistentClass(String targetClassName);
+
+    org.hibernate.persister.entity.EntityPersister getEntityPersister(Class<?> entityClass);
     
     Map<String, FieldMetadata> getSimpleMergedProperties(String entityName, PersistencePerspective persistencePerspective);
 
@@ -116,7 +116,9 @@ public interface DynamicEntityDao {
 
     List<String> getPropertyNames(Class<?> entityClass);
 
-    Criteria createCriteria(Class<?> entityClass);
+    jakarta.persistence.criteria.CriteriaBuilder getCriteriaBuilder();
+
+    <T> List<T> query(jakarta.persistence.criteria.CriteriaQuery<T> criteriaQuery);
 
     Field[] getAllFields(Class<?> targetClass);
 
@@ -130,7 +132,6 @@ public interface DynamicEntityDao {
 
     boolean useCache();
 
-    EJB3ConfigurationDao getEjb3ConfigurationDao();
 
     DynamicDaoHelper getDynamicDaoHelper();
 

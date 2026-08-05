@@ -33,7 +33,6 @@ import org.broadleafcommerce.common.presentation.client.SupportedFieldType;
 import org.broadleafcommerce.common.presentation.client.VisibilityEnum;
 import org.broadleafcommerce.common.util.dao.DynamicDaoHelper;
 import org.broadleafcommerce.common.util.dao.DynamicDaoHelperImpl;
-import org.broadleafcommerce.common.util.dao.EJB3ConfigurationDao;
 import org.broadleafcommerce.openadmin.dto.BasicFieldMetadata;
 import org.broadleafcommerce.openadmin.dto.ClassTree;
 import org.broadleafcommerce.openadmin.dto.FieldMetadata;
@@ -47,11 +46,10 @@ import org.broadleafcommerce.openadmin.server.service.AppConfigurationService;
 import org.broadleafcommerce.openadmin.server.service.persistence.module.FieldManager;
 import org.broadleafcommerce.openadmin.server.service.persistence.validation.FieldNamePropertyValidator;
 import org.broadleafcommerce.openadmin.server.service.type.FieldProviderResponse;
-import org.hibernate.Criteria;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
-import org.hibernate.ejb.HibernateEntityManager;
 import org.hibernate.mapping.PersistentClass;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.mapping.Property;
 import org.hibernate.type.ComponentType;
 import org.hibernate.type.Type;
@@ -82,9 +80,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
 
 /**
  * 
@@ -116,8 +116,6 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
     @Resource(name="blMetadata")
     protected Metadata metadata;
 
-    @Resource(name="blEJB3ConfigurationDao")
-    protected EJB3ConfigurationDao ejb3ConfigurationDao;
 
     @Resource(name="blEntityConfiguration")
     protected EntityConfiguration entityConfiguration;
@@ -152,8 +150,13 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
     }
 
     @Override
-    public Criteria createCriteria(Class<?> entityClass) {
-        return ((HibernateEntityManager) getStandardEntityManager()).getSession().createCriteria(entityClass);
+    public CriteriaBuilder getCriteriaBuilder() {
+        return standardEntityManager.getCriteriaBuilder();
+    }
+
+    @Override
+    public <T> List<T> query(CriteriaQuery<T> criteriaQuery) {
+        return standardEntityManager.createQuery(criteriaQuery).getResultList();
     }
     
     @Override
@@ -208,7 +211,12 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
 
     @Override
     public PersistentClass getPersistentClass(String targetClassName) {
-        return ejb3ConfigurationDao.getConfiguration().getClassMapping(targetClassName);
+        return BootMetadataIntegrator.getPersistentClass(getSessionFactory(), targetClassName);
+    }
+
+    @Override
+    public EntityPersister getEntityPersister(Class<?> entityClass) {
+        return dynamicDaoHelper.getMappingMetamodel(getSessionFactory()).getEntityDescriptor(entityClass);
     }
 
     @Override
@@ -245,7 +253,7 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
 
     @Override
     public Class<?>[] getUpDownInheritance(Class<?> testClass) {
-        return dynamicDaoHelper.getUpDownInheritance(testClass, getSessionFactory(), true, useCache(), ejb3ConfigurationDao);
+        return dynamicDaoHelper.getUpDownInheritance(testClass, getSessionFactory(), true, useCache());
     }
 
     public Class<?>[] sortEntities(Class<?> ceilingClass, List<Class<?>> entities) {
@@ -813,22 +821,22 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
 
     @Override
     public SessionFactory getSessionFactory() {
-        return dynamicDaoHelper.getSessionFactory((HibernateEntityManager) standardEntityManager);
+        return dynamicDaoHelper.getSessionFactory(standardEntityManager);
     }
 
     @Override
     public Map<String, Object> getIdMetadata(Class<?> entityClass) {
-        return dynamicDaoHelper.getIdMetadata(entityClass, (HibernateEntityManager) standardEntityManager);
+        return dynamicDaoHelper.getIdMetadata(entityClass, standardEntityManager);
     }
 
     @Override
     public List<String> getPropertyNames(Class<?> entityClass) {
-        return dynamicDaoHelper.getPropertyNames(entityClass, (HibernateEntityManager) standardEntityManager);
+        return dynamicDaoHelper.getPropertyNames(entityClass, standardEntityManager);
     }
 
     @Override
     public List<Type> getPropertyTypes(Class<?> entityClass) {
-        return dynamicDaoHelper.getPropertyTypes(entityClass, (HibernateEntityManager) standardEntityManager);
+        return dynamicDaoHelper.getPropertyTypes(entityClass, standardEntityManager);
     }
 
     protected Map<String, FieldMetadata> getPropertiesForEntityClass(
@@ -864,7 +872,7 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
         propertyTypes.add(idType);
 
         PersistentClass persistentClass = getPersistentClass(targetClass.getName());
-        Iterator testIter = persistentClass.getPropertyIterator();
+        Iterator testIter = persistentClass.getProperties().iterator();
         List<Property> propertyList = new ArrayList<>();
 
         //check the properties for problems
@@ -1366,15 +1374,6 @@ public class DynamicEntityDaoImpl implements DynamicEntityDao, ApplicationContex
     @Override
     public void setStandardEntityManager(EntityManager entityManager) {
         this.standardEntityManager = entityManager;
-    }
-
-    @Override
-    public EJB3ConfigurationDao getEjb3ConfigurationDao() {
-        return ejb3ConfigurationDao;
-    }
-
-    public void setEjb3ConfigurationDao(EJB3ConfigurationDao ejb3ConfigurationDao) {
-        this.ejb3ConfigurationDao = ejb3ConfigurationDao;
     }
 
     @Override

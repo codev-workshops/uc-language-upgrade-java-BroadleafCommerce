@@ -55,7 +55,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.persistence.ManyToOne;
+import jakarta.persistence.ManyToOne;
 
 /**
  * @author Jeff Fischer

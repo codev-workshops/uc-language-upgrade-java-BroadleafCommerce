@@ -19,7 +19,7 @@
  */
 package org.broadleafcommerce.openadmin.server.service.persistence.datasource;
 
-import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.InvocationTargetException;
@@ -46,9 +46,9 @@ import java.util.concurrent.Executor;
 public class SandBoxConnection implements Connection {
 
     private Connection delegate;
-    private GenericObjectPool connectionPool;
+    private GenericObjectPool<SandBoxConnection> connectionPool;
 
-    public SandBoxConnection(Connection delegate, GenericObjectPool connectionPool) {
+    public SandBoxConnection(Connection delegate, GenericObjectPool<SandBoxConnection> connectionPool) {
         this.delegate = delegate;
         this.connectionPool = connectionPool;
     }

@@ -26,10 +26,10 @@ import org.broadleafcommerce.openadmin.server.security.domain.AdminUser;
 import java.lang.reflect.Field;
 import java.util.Calendar;
 
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 
 public class AdminAuditableListener {
 
