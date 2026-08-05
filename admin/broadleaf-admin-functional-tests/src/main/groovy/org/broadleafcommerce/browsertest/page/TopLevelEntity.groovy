@@ -20,7 +20,7 @@
 package org.broadleafcommerce.browsertest.page
 
 import geb.Page
-import geb.navigator.NonEmptyNavigator
+import geb.navigator.Navigator
 
 
 /**
@@ -51,7 +51,7 @@ class TopLevelEntity extends AdminPage {
         $('#sideMenu .blc-module .content a', text: contains(containingText))
     }
     
-    def findSectionLink(String containingText, NonEmptyNavigator containingModule) {
+    def findSectionLink(String containingText, Navigator containingModule) {
         containingModule.closest('.blc-module').find('.content a', text: contains(containingText))
     }
     

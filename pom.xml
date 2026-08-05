@@ -68,7 +68,7 @@
         <log4j2.version>2.23.1</log4j2.version>
         <slf4j.version>2.0.13</slf4j.version>
         <httpclient5.version>5.3.1</httpclient5.version>
-        <geb.version>5.1</geb.version>
+        <geb.version>7.0</geb.version>
         <spock.core.version>2.3-groovy-4.0</spock.core.version>
         <spock.spring.version>2.3-groovy-4.0</spock.spring.version>
         <selenium.version>4.21.0</selenium.version>
@@ -1004,6 +1004,41 @@
                 <version>${groovy.version}</version>
                 <type>pom</type>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.groovy</groupId>
+                <artifactId>groovy</artifactId>
+                <version>${groovy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.groovy</groupId>
+                <artifactId>groovy-json</artifactId>
+                <version>${groovy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.groovy</groupId>
+                <artifactId>groovy-macro</artifactId>
+                <version>${groovy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.groovy</groupId>
+                <artifactId>groovy-templates</artifactId>
+                <version>${groovy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.groovy</groupId>
+                <artifactId>groovy-xml</artifactId>
+                <version>${groovy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-api</artifactId>
+                <version>${selenium.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-remote-driver</artifactId>
+                <version>${selenium.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.spockframework</groupId>
