@@ -37,7 +37,7 @@ import org.broadleafcommerce.core.payment.domain.OrderPayment;
 import org.broadleafcommerce.core.payment.domain.PaymentTransaction;
 import org.broadleafcommerce.profile.core.dao.CustomerDao;
 import org.broadleafcommerce.profile.core.domain.Customer;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,15 +46,15 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.UUID;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityExistsException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 @Repository("blOrderDao")
 public class OrderDaoImpl implements OrderDao {
@@ -110,8 +110,8 @@ public class OrderDaoImpl implements OrderDao {
         criteria.where(order.get("id").as(Long.class).in(orderIds));
 
         TypedQuery<Order> query = em.createQuery(criteria);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "query.Order");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "query.Order");
 
         return query.getResultList();
     }
@@ -135,8 +135,8 @@ public class OrderDaoImpl implements OrderDao {
         TypedQuery<Order> query = em.createQuery(criteria);
         query.setFirstResult(start);
         query.setMaxResults(pageSize);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "query.Order");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "query.Order");
 
         return query.getResultList();
     }
@@ -194,8 +194,8 @@ public class OrderDaoImpl implements OrderDao {
         final Query query = em.createNamedQuery("BC_READ_ORDERS_BY_CUSTOMER_ID_AND_NAME_NULL");
         query.setParameter("customerId", customer.getId());
         query.setParameter("orderStatus", OrderStatus.IN_PROCESS.getType());
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "query.Order");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "query.Order");
         @SuppressWarnings("rawtypes")
         final List temp = query.getResultList();
         if (temp != null && !temp.isEmpty()) {
@@ -267,8 +267,8 @@ public class OrderDaoImpl implements OrderDao {
         query.setParameter("customerId", customer.getId());
         query.setParameter("orderStatus", OrderStatus.NAMED.getType());
         query.setParameter("orderName", name);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "query.Order");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "query.Order");
         List<Order> orders = query.getResultList();
         
         // Filter out orders that don't match the current locale (if one is set)
@@ -321,7 +321,7 @@ public class OrderDaoImpl implements OrderDao {
         Query q = em.createNamedQuery("BC_ORDER_LOCK_READ");
         q.setParameter("orderId", order.getId());
         q.setParameter("key", orderLockKey);
-        q.setHint(QueryHints.HINT_CACHEABLE, false);
+        q.setHint(HibernateHints.HINT_CACHEABLE, false);
         Long count = (Long) q.getSingleResult();
         
         if (count == 0L) {
@@ -350,7 +350,7 @@ public class OrderDaoImpl implements OrderDao {
         q.setParameter("key", orderLockKey);
         Long orderLockTimeToLive = getDatabaseOrderLockTimeToLive();
         q.setParameter("timeout", orderLockTimeToLive==-1L?orderLockTimeToLive:System.currentTimeMillis() - orderLockTimeToLive);
-        q.setHint(QueryHints.HINT_CACHEABLE, false);
+        q.setHint(HibernateHints.HINT_CACHEABLE, false);
         int rowsAffected = q.executeUpdate();
 
         return rowsAffected == 1;
@@ -366,7 +366,7 @@ public class OrderDaoImpl implements OrderDao {
                     Query q = em.createNamedQuery("BC_ORDER_LOCK_RELEASE");
                     q.setParameter("orderId", order.getId());
                     q.setParameter("key", getOrderLockKey());
-                    q.setHint(QueryHints.HINT_CACHEABLE, false);
+                    q.setHint(HibernateHints.HINT_CACHEABLE, false);
                     int rowsAffected = q.executeUpdate();
                     response[0] = rowsAffected == 1;
                 }

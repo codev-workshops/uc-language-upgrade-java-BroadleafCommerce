@@ -24,7 +24,7 @@ import org.broadleafcommerce.profile.core.domain.Country;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 
 @Service("blCountryService")

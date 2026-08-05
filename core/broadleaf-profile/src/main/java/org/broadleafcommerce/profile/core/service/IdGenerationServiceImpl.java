@@ -22,8 +22,8 @@ package org.broadleafcommerce.profile.core.service;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Resource;
-import javax.persistence.OptimisticLockException;
+import jakarta.annotation.Resource;
+import jakarta.persistence.OptimisticLockException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

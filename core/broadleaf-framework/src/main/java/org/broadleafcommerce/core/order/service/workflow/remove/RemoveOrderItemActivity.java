@@ -29,7 +29,7 @@ import org.broadleafcommerce.core.workflow.ProcessContext;
 
 import java.util.List;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * This class is responsible for determining which OrderItems should be removed from the order, taking into account

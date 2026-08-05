@@ -24,7 +24,7 @@ import org.broadleafcommerce.core.order.domain.Order;
 import org.broadleafcommerce.core.workflow.BaseActivity;
 import org.broadleafcommerce.core.workflow.ProcessContext;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 public class ShippingOfferActivity extends BaseActivity<ProcessContext<Order>> {
 

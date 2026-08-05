@@ -19,7 +19,7 @@
  */
 package org.broadleafcommerce.core.pricing.service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.broadleafcommerce.core.order.domain.Order;
 import org.broadleafcommerce.core.pricing.service.exception.PricingException;

@@ -27,17 +27,17 @@ import org.broadleafcommerce.core.rating.domain.RatingSummaryImpl;
 import org.broadleafcommerce.core.rating.domain.ReviewDetail;
 import org.broadleafcommerce.core.rating.service.type.RatingType;
 import org.broadleafcommerce.profile.core.domain.Customer;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 @Repository("blRatingSummaryDao")
 public class RatingSummaryDaoImpl extends BatchRetrieveDao implements RatingSummaryDao {
@@ -95,8 +95,8 @@ public class RatingSummaryDaoImpl extends BatchRetrieveDao implements RatingSumm
     public List<RatingSummary> readRatingSummaries(final List<String> itemIds, final RatingType type) {
         final Query query = em.createNamedQuery("BC_READ_RATING_SUMMARIES_BY_ITEM_ID_AND_TYPE");
         query.setParameter("ratingType", type.getType());
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "query.Catalog");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "query.Catalog");
         List<RatingSummary> ratings = batchExecuteReadQuery(query, itemIds, "itemIds");
 
         return ratings;
@@ -107,8 +107,8 @@ public class RatingSummaryDaoImpl extends BatchRetrieveDao implements RatingSumm
         final Query query = em.createNamedQuery("BC_READ_RATING_SUMMARY_BY_ITEM_ID_AND_TYPE");
         query.setParameter("itemId", itemId);
         query.setParameter("ratingType", type.getType());
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "query.Catalog");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "query.Catalog");
         RatingSummary ratingSummary = null;
 
         try {
@@ -125,8 +125,8 @@ public class RatingSummaryDaoImpl extends BatchRetrieveDao implements RatingSumm
         final Query query = em.createNamedQuery("BC_READ_RATING_DETAIL_BY_CUSTOMER_ID_AND_RATING_SUMMARY_ID");
         query.setParameter("customerId", customerId);
         query.setParameter("ratingSummaryId", ratingSummaryId);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "query.Catalog");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "query.Catalog");
         RatingDetail ratingDetail = null;
 
         try {
@@ -143,8 +143,8 @@ public class RatingSummaryDaoImpl extends BatchRetrieveDao implements RatingSumm
         final Query query = em.createNamedQuery("BC_READ_REVIEW_DETAIL_BY_CUSTOMER_ID_AND_RATING_SUMMARY_ID");
         query.setParameter("customerId", customerId);
         query.setParameter("ratingSummaryId", ratingSummaryId);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "query.Catalog");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "query.Catalog");
         ReviewDetail reviewDetail = null;
 
         try {

@@ -38,7 +38,7 @@ import org.broadleafcommerce.core.order.service.workflow.CartOperationRequest;
 import org.broadleafcommerce.core.workflow.BaseActivity;
 import org.broadleafcommerce.core.workflow.ProcessContext;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 public class AddOrderItemActivity extends BaseActivity<ProcessContext<CartOperationRequest>> {
     

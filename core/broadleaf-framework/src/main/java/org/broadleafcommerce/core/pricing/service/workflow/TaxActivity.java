@@ -25,7 +25,7 @@ import org.broadleafcommerce.core.pricing.service.module.TaxModule;
 import org.broadleafcommerce.core.workflow.BaseActivity;
 import org.broadleafcommerce.core.workflow.ProcessContext;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * Utilized within the blPricingWorkflow to calculate tax for an {@link Order}

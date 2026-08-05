@@ -37,7 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @Service("blInventoryService")
 public class InventoryServiceImpl implements ContextualInventoryService {

@@ -22,7 +22,7 @@ package org.broadleafcommerce.core.offer.service.workflow;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.broadleafcommerce.core.checkout.service.workflow.CheckoutSeed;
 import org.broadleafcommerce.core.offer.domain.OfferAudit;

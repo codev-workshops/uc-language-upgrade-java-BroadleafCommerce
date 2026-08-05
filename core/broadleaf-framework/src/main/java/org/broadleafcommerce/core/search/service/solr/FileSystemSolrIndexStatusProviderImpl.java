@@ -35,7 +35,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -188,11 +188,7 @@ public class FileSystemSolrIndexStatusProviderImpl implements SolrIndexStatusPro
     }
 
     protected String getStatusDirectory(SolrSearchServiceImpl searchService) {
-        String solrHome = searchService.getSolrHomePath();
-        if (solrHome == null) {
-            return System.getProperty("java.io.tmpdir");
-        }
-        return solrHome;
+        return System.getProperty("blc.solr.status.dir", System.getProperty("java.io.tmpdir"));
     }
     
 }

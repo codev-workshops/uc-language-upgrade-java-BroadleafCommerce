@@ -32,7 +32,7 @@ import org.broadleafcommerce.common.vendor.service.exception.PaymentException;
 import org.broadleafcommerce.core.order.service.OrderService;
 import org.broadleafcommerce.core.payment.service.OrderPaymentService;
 import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * This default implementation will create a compensating transaction response based on the transaction type passed in

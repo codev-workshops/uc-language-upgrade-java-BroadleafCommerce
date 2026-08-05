@@ -24,7 +24,7 @@ import org.broadleafcommerce.core.pricing.service.TaxService;
 import org.broadleafcommerce.core.workflow.BaseActivity;
 import org.broadleafcommerce.core.workflow.ProcessContext;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * This is an optional activity to allow a committal of taxes to a tax sub system. Many tax 
