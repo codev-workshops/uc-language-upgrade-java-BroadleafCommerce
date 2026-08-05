@@ -24,13 +24,13 @@ import org.broadleafcommerce.profile.core.domain.Country;
 import org.broadleafcommerce.profile.core.domain.CountryImpl;
 import org.broadleafcommerce.profile.core.domain.State;
 import org.broadleafcommerce.profile.core.domain.StateImpl;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import java.util.List;
 
 /**
@@ -53,7 +53,7 @@ public class StateDaoImpl implements StateDao {
     @SuppressWarnings("unchecked")
     public List<State> findStates() {
         Query query = em.createNamedQuery("BC_FIND_STATES");
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         return query.getResultList();
     }
 
@@ -61,7 +61,7 @@ public class StateDaoImpl implements StateDao {
     public List<State> findStates(String countryAbbreviation) {
         Query query = em.createNamedQuery("BC_FIND_STATES_BY_COUNTRY_ABBREVIATION");
         query.setParameter("countryAbbreviation", countryAbbreviation);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         return query.getResultList();
     }
 
@@ -72,7 +72,7 @@ public class StateDaoImpl implements StateDao {
     @SuppressWarnings("unchecked")
     public List<Country> findCountries() {
         Query query = em.createNamedQuery("BC_FIND_COUNTRIES");
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         return query.getResultList();
     }
 

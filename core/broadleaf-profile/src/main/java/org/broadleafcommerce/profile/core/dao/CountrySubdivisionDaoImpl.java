@@ -22,13 +22,13 @@ package org.broadleafcommerce.profile.core.dao;
 import org.broadleafcommerce.common.persistence.EntityConfiguration;
 import org.broadleafcommerce.profile.core.domain.CountrySubdivision;
 import org.broadleafcommerce.profile.core.domain.CountrySubdivisionImpl;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 import java.util.List;
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 /**
  * @author Elbert Bautista (elbertbautista)
@@ -51,7 +51,7 @@ public class CountrySubdivisionDaoImpl implements CountrySubdivisionDao {
     @SuppressWarnings("unchecked")
     public List<CountrySubdivision> findSubdivisions() {
         Query query = em.createNamedQuery("BC_FIND_COUNTRY_SUBDIVISIONS");
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         return query.getResultList();
     }
 
@@ -60,7 +60,7 @@ public class CountrySubdivisionDaoImpl implements CountrySubdivisionDao {
     public List<CountrySubdivision> findSubdivisions(String countryAbbreviation) {
         Query query = em.createNamedQuery("BC_FIND_SUBDIVISIONS_BY_COUNTRY_ABBREVIATION");
         query.setParameter("countryAbbreviation", countryAbbreviation);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         return query.getResultList();
     }
 
@@ -69,7 +69,7 @@ public class CountrySubdivisionDaoImpl implements CountrySubdivisionDao {
         Query query = em.createNamedQuery("BC_FIND_SUBDIVISIONS_BY_COUNTRY_ABBREVIATION_AND_CATEGORY");
         query.setParameter("countryAbbreviation", countryAbbreviation);
         query.setParameter("category", category);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
         return query.getResultList();
     }
 

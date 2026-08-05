@@ -25,7 +25,6 @@ import org.broadleafcommerce.common.service.GenericResponse;
 import org.broadleafcommerce.profile.core.domain.Customer;
 import org.broadleafcommerce.profile.core.service.handler.PasswordUpdatedHandler;
 import org.broadleafcommerce.profile.core.service.listener.PostRegistrationObserver;
-import org.springframework.security.authentication.dao.SaltSource;
 
 import java.util.List;
 
@@ -123,7 +122,7 @@ public interface CustomerService {
     /**
      * Verifies that the passed in token is valid.
      * <p>
-     * This method can only be used when using the deprecated {@link org.springframework.security.authentication.encoding.PasswordEncoder PasswordEncoder} bean, otherwise an exception will be thrown.
+     * This method can only be used when using the deprecated PasswordEncoder bean, otherwise an exception will be thrown.
      * The new {@link org.springframework.security.crypto.password.PasswordEncoder PasswordEncoder} bean requires passing in a Customer to find the appropriate token.
      *
      * @deprecated  {@link #checkPasswordResetToken(String, Customer)}, this will be removed in 4.2
@@ -151,7 +150,7 @@ public interface CustomerService {
     public Long findNextCustomerId();
     
     /**
-     * @deprecated use {@link #getSaltSource()} instead, this will be removed in 4.2
+     * @deprecated the PasswordEncoder handles salting internally, this will be removed in 4.2
      *
      * @return currently used salt string
      */
@@ -159,7 +158,7 @@ public interface CustomerService {
     public String getSalt();
     
     /**
-     * @deprecated use {@link #setSaltSource(SaltSource)} instead, this will be removed in 4.2
+     * @deprecated the PasswordEncoder handles salting internally, this will be removed in 4.2
      *
      * @param salt new salt string to use
      */
@@ -167,36 +166,13 @@ public interface CustomerService {
     public void setSalt(String salt);
 
     /**
-     * Returns the {@link SaltSource} used with the blPasswordEncoder to encrypt the user password. Usually configured in
-     * applicationContext-security.xml. This is not a required property and will return null if not configured
-     *
-     * @deprecated the new {@link org.springframework.security.crypto.password.PasswordEncoder PasswordEncoder} handles salting internally, this will be removed in 4.2
-     *
-     * @return the currently used {@link SaltSource}
-     */
-    @Deprecated
-    public SaltSource getSaltSource();
-    
-    /**
-     * Sets the {@link SaltSource} used with blPasswordEncoder to encrypt the user password. Usually configured within
-     * applicationContext-security.xml
-     *
-     * @deprecated the new {@link org.springframework.security.crypto.password.PasswordEncoder PasswordEncoder} handles salting internally, this will be removed in 4.2
-     *
-     * @param saltSource the new {@link SaltSource} to use
-     */
-    @Deprecated
-    public void setSaltSource(SaltSource saltSource);
-    
-    /**
      * @deprecated use {@link #getSalt(Customer, String)} instead, this will be removed in 4.2
      */
     @Deprecated
     public Object getSalt(Customer customer);
     
     /**
-     * Gets the salt object for the current customer. By default this delegates to {@link #getSaltSource()}. If there is
-     * not a {@link SaltSource} configured ({@link #getSaltSource()} returns null) then this also returns null.
+     * Gets the salt object for the current customer. Always null now that the PasswordEncoder salts internally.
      *
      * @deprecated the new {@link org.springframework.security.crypto.password.PasswordEncoder PasswordEncoder} handles salting internally, this will be removed in 4.2
      *
@@ -211,11 +187,11 @@ public interface CustomerService {
      * Encodes the clear text parameter, using the customer as a potential Salt. Does not change the customer properties. 
      * This method only encodes the password and returns the encoded result.
      * <p>
-     * The externally salted {@link org.springframework.security.authentication.encoding.PasswordEncoder PasswordEncoder} support is
+     * The externally salted PasswordEncoder support is
      * being deprecated, following in Spring Security's footsteps, in order to move towards self salting hashing algorithms such as bcrypt.
      * Bcrypt is a superior hashing algorithm that randomly generates a salt per password in order to protect against rainbow table attacks
      * and is an intentionally expensive algorithm to further guard against brute force attempts to crack hashed passwords.
-     * Additionally, having the encoding algorithm handle the salt internally reduces code complexity and dependencies such as {@link SaltSource}.
+     * Additionally, having the encoding algorithm handle the salt internally reduces code complexity and dependencies such as the salt source.
      *
      * @deprecated the new {@link org.springframework.security.crypto.password.PasswordEncoder PasswordEncoder} handles salting internally, this will be removed in 4.2
      *
@@ -244,11 +220,11 @@ public interface CustomerService {
      * Use this to determine if passwords match using a {@link Customer} for salting. Don't encode the password separately since sometimes salts
      * are generated randomly and stored with the password.
      * <p>
-     * The externally salted {@link org.springframework.security.authentication.encoding.PasswordEncoder PasswordEncoder} support is
+     * The externally salted PasswordEncoder support is
      * being deprecated, following in Spring Security's footsteps, in order to move towards self salting hashing algorithms such as bcrypt.
      * Bcrypt is a superior hashing algorithm that randomly generates a salt per password in order to protect against rainbow table attacks
      * and is an intentionally expensive algorithm to further guard against brute force attempts to crack hashed passwords.
-     * Additionally, having the encoding algorithm handle the salt internally reduces code complexity and dependencies such as {@link SaltSource}.
+     * Additionally, having the encoding algorithm handle the salt internally reduces code complexity and dependencies such as the salt source.
      *
      * @deprecated the new {@link org.springframework.security.crypto.password.PasswordEncoder PasswordEncoder} handles salting internally, this will be removed in 4.2
      * 
