@@ -140,8 +140,8 @@
                                 <goal>addTestSources</goal>
                                 <goal>generateStubs</goal>
                                 <goal>compile</goal>
-                                <goal>testGenerateStubs</goal>
-                                <goal>testCompile</goal>
+                                <goal>generateTestStubs</goal>
+                                <goal>compileTests</goal>
                                 <goal>removeStubs</goal>
                                 <goal>removeTestStubs</goal>
                             </goals>
@@ -169,10 +169,8 @@
                                         </versionRange>
                                         <goals>
                                             <goal>addTestSources</goal>
-                                            <goal>testCompile</goal>
-                                            <goal>
-                                                testGenerateStubs
-                                            </goal>
+                                            <goal>compileTests</goal>
+                                            <goal>generateTestStubs</goal>
                                             <goal>removeTestStubs</goal>
                                             <goal>compile</goal>
                                             <goal>removeStubs</goal>
