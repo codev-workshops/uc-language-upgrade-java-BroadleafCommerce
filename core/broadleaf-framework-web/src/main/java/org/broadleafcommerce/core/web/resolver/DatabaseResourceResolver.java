@@ -22,36 +22,33 @@ package org.broadleafcommerce.core.web.resolver;
 import org.broadleafcommerce.common.extension.ExtensionResultHolder;
 import org.broadleafcommerce.common.extension.ExtensionResultStatusType;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.TemplateProcessingParameters;
-import org.thymeleaf.resourceresolver.IResourceResolver;
 
 import java.io.InputStream;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 
 /**
- * An implementation of {@link IResourceResolver} that provides an extension point for retrieving
- * templates from the database.
- * 
+ * Resolves template contents from the database through an extension point.
+ *
+ * <p>Thymeleaf 3 removed the pluggable IResourceResolver abstraction, so this is now a plain service
+ * consumed by {@link DatabaseTemplateResolver}.
+ *
  * @author Andre Azzolini (apazzolini)
  */
 @Service("blDatabaseResourceResolver")
-public class DatabaseResourceResolver implements IResourceResolver {
-    
-    @Override
-    public String getName() {
-        return "BL_DATABASE";
-    }
-    
+public class DatabaseResourceResolver {
+
     @Resource(name = "blDatabaseResourceResolverExtensionManager")
     protected DatabaseResourceResolverExtensionManager extensionManager;
 
-    @Override
-    public InputStream getResourceAsStream(TemplateProcessingParameters params, String resourceName) {
+    /**
+     * @return the contents of the named resource, or null when no handler resolved it
+     */
+    public InputStream getResourceAsStream(String resourceName) {
         ExtensionResultHolder erh = new ExtensionResultHolder();
-        ExtensionResultStatusType result = extensionManager.getProxy().resolveResource(erh, params, resourceName);
-        if (result ==  ExtensionResultStatusType.HANDLED) {
+        ExtensionResultStatusType result = extensionManager.getProxy().resolveResource(erh, resourceName);
+        if (result == ExtensionResultStatusType.HANDLED) {
             return (InputStream) erh.getContextMap().get(DatabaseResourceResolverExtensionHandler.IS_KEY);
         }
         return null;

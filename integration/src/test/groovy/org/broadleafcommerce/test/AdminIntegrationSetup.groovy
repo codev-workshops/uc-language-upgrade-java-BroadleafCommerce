@@ -21,7 +21,8 @@ package org.broadleafcommerce.test
 
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.ContextHierarchy
-import org.springframework.test.context.transaction.TransactionConfiguration
+import org.springframework.test.annotation.Rollback
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.test.context.web.WebAppConfiguration
 
 import spock.lang.Specification
@@ -37,7 +38,8 @@ import spock.lang.Specification
  * @author austinrooke
  *
  */
-@TransactionConfiguration(transactionManager = "blTransactionManager")
+@Transactional(transactionManager = "blTransactionManager")
+@Rollback(true)
 @ContextHierarchy([
 @ContextConfiguration(name = "adminRoot",
     locations = ["classpath:/bl-open-admin-contentClient-applicationContext.xml",

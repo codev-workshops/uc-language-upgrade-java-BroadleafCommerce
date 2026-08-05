@@ -23,9 +23,9 @@ import org.broadleafcommerce.core.catalog.service.dynamic.DynamicSkuPricingServi
 import org.broadleafcommerce.profile.core.domain.Customer;
 import org.broadleafcommerce.profile.web.core.CustomerState;
 
-import javax.annotation.Resource;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 
 /**

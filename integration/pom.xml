@@ -72,7 +72,6 @@
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -82,7 +81,7 @@
                         <id>default-test</id>
                         <configuration>
                             <skipTests>true</skipTests>
-                            <argLine>-Xmx1024m -XX:MaxPermSize=512m
+                            <argLine>-Xmx1024m
                                 -Dlegacy=true ${surefire.argLine}</argLine>
                         </configuration>
                     </execution>
@@ -96,7 +95,7 @@
                             <excludes>
                                 <exclude>**/Legacy**Test.java</exclude>
                             </excludes>
-                            <argLine>-Xmx1024m -XX:MaxPermSize=512m ${surefire.argLine}</argLine>
+                            <argLine>-Xmx1024m ${surefire.argLine}</argLine>
                         </configuration>
                     </execution>
                 </executions>
@@ -202,7 +201,7 @@
                                     <argLine>
                                         -Dlegacy=true
                                         -Xmx1024m
-                                        -XX:MaxPermSize=512m -Xdebug
+                                        -Xdebug
                                         -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8083
                                         -agentpath:${jrebel.path}
                                         -Drebel.log.stdout=true
@@ -215,7 +214,7 @@
                                 <configuration>
                                     <argLine>
                                         -Xmx1024m
-                                        -XX:MaxPermSize=512m -Xdebug
+                                        -Xdebug
                                         -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8083
                                         -agentpath:${jrebel.path}
                                         -Drebel.log.stdout=true
@@ -272,20 +271,18 @@
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <type>jar</type>
-            <classifier>jdk15</classifier>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet.jsp</groupId>
-            <artifactId>jsp-api</artifactId>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-dbcp</groupId>
@@ -303,27 +300,27 @@
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymockclassextension</artifactId>
-        </dependency>
-
         <!-- Spock/Groovy Test Dependencies -->
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
+            <groupId>org.apache.groovy</groupId>
             <artifactId>groovy-all</artifactId>
+            <type>pom</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-spring</artifactId>
             <version>${spock.spring.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy-all</artifactId>
-                </exclusion>
-            </exclusions>
             <scope>compile</scope>
         </dependency>
     </dependencies>

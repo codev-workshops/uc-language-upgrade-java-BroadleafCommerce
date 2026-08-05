@@ -43,7 +43,7 @@ import org.springframework.web.context.request.WebRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 
 /**
@@ -78,7 +78,7 @@ public class CustomerStateRequestProcessor extends AbstractBroadleafWebRequestPr
         Customer customer = null;
         Long overrideId = null;
         if (BLCRequestUtils.isOKtoUseSession(request)) {
-            overrideId = (Long) request.getAttribute(OVERRIDE_CUSTOMER_SESSION_ATTR_NAME, WebRequest.SCOPE_GLOBAL_SESSION);
+            overrideId = (Long) request.getAttribute(OVERRIDE_CUSTOMER_SESSION_ATTR_NAME, WebRequest.SCOPE_SESSION);
         }
         if (overrideId != null) {
             customer = customerService.readCustomerById(overrideId);
@@ -173,9 +173,9 @@ public class CustomerStateRequestProcessor extends AbstractBroadleafWebRequestPr
     protected Customer mergeCustomerIfRequired(WebRequest request, Customer customer) {
         if (BLCRequestUtils.isOKtoUseSession(request)) {
             //Don't call this if it has already been called
-            if (request.getAttribute(getAnonymousCustomerMergedSessionAttributeName(), WebRequest.SCOPE_GLOBAL_SESSION) == null) {
+            if (request.getAttribute(getAnonymousCustomerMergedSessionAttributeName(), WebRequest.SCOPE_SESSION) == null) {
                 //Set this so we don't do this every time.
-                request.setAttribute(getAnonymousCustomerMergedSessionAttributeName(), Boolean.TRUE, WebRequest.SCOPE_GLOBAL_SESSION);
+                request.setAttribute(getAnonymousCustomerMergedSessionAttributeName(), Boolean.TRUE, WebRequest.SCOPE_SESSION);
 
                 Customer anonymousCustomer = getAnonymousCustomer(request);
                 customer = copyAnonymousCustomerInfoToCustomer(request, anonymousCustomer, customer);
@@ -267,7 +267,7 @@ public class CustomerStateRequestProcessor extends AbstractBroadleafWebRequestPr
         if (customer == null) {
             customer = customerService.createNewCustomer();
             if (BLCRequestUtils.isOKtoUseSession(request)) {
-                request.setAttribute(getAnonymousCustomerSessionAttributeName(), customer, WebRequest.SCOPE_GLOBAL_SESSION);
+                request.setAttribute(getAnonymousCustomerSessionAttributeName(), customer, WebRequest.SCOPE_SESSION);
             }
         }
         customer.setAnonymous(true);
@@ -289,11 +289,11 @@ public class CustomerStateRequestProcessor extends AbstractBroadleafWebRequestPr
     public Customer getAnonymousCustomer(WebRequest request) {
         if (BLCRequestUtils.isOKtoUseSession(request)) {
             Customer anonymousCustomer = (Customer) request.getAttribute(getAnonymousCustomerSessionAttributeName(),
-                    WebRequest.SCOPE_GLOBAL_SESSION);
+                    WebRequest.SCOPE_SESSION);
             if (anonymousCustomer == null) {
                 //Customer is not in session, see if we have just a customer ID in session (the anonymous customer might have
                 //already been persisted)
-                Long customerId = (Long) request.getAttribute(getAnonymousCustomerIdSessionAttributeName(), WebRequest.SCOPE_GLOBAL_SESSION);
+                Long customerId = (Long) request.getAttribute(getAnonymousCustomerIdSessionAttributeName(), WebRequest.SCOPE_SESSION);
                 if (customerId != null) {
                     //we have a customer ID in session, look up the customer from the database to ensure we have an up-to-date
                     //customer to store in CustomerState

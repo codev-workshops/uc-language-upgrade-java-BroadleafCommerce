@@ -27,8 +27,10 @@ import org.springframework.context.ApplicationContext;
 
 import java.math.BigDecimal;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
 
 /**
  * JAXB wrapper for Dimension
@@ -36,6 +38,7 @@ import javax.xml.bind.annotation.XmlElement;
  * User: Kelly Tisdell
  * Date: 4/10/12
  */
+@XmlAccessorType(value = XmlAccessType.FIELD)
 public class DimensionWrapper extends BaseWrapper implements APIWrapper<Dimension>, APIUnwrapper<Dimension> {
 
     @XmlElement

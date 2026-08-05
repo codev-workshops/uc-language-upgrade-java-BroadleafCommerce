@@ -70,7 +70,8 @@
         <ehcache.version>3.10.8</ehcache.version>
         <slf4j.version>2.0.13</slf4j.version>
         <httpclient5.version>5.3.1</httpclient5.version>
-        <geb.version>5.1</geb.version>
+        <caffeine.version>3.1.8</caffeine.version>
+        <geb.version>7.0</geb.version>
         <spock.core.version>2.3-groovy-4.0</spock.core.version>
         <spock.spring.version>2.3-groovy-4.0</spock.spring.version>
         <selenium.version>4.21.0</selenium.version>
@@ -589,22 +590,17 @@
                 <version>3.1.1</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>org.glassfish.web</groupId>
+                <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+                <version>3.0.1</version>
+            </dependency>
             <!-- Retained until the remaining web modules are migrated to jakarta.servlet.jsp -->
             <dependency>
                 <groupId>javax.servlet.jsp</groupId>
                 <artifactId>jsp-api</artifactId>
                 <version>2.1</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>jstl</groupId>
-                <artifactId>jstl</artifactId>
-                <version>1.1.2</version>
-            </dependency>
-            <dependency>
-                <groupId>taglibs</groupId>
-                <artifactId>standard</artifactId>
-                <version>1.1.2</version>
             </dependency>
             <dependency>
                 <groupId>javax.ws.rs</groupId>
@@ -637,25 +633,6 @@
                 <groupId>org.thymeleaf</groupId>
                 <artifactId>thymeleaf-spring4</artifactId>
                 <version>2.1.4.RELEASE</version>
-            </dependency>
-            <dependency>
-                <groupId>org.easymock</groupId>
-                <artifactId>easymockclassextension</artifactId>
-                <version>2.4</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy-all</artifactId>
-                <version>2.3.10</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.testng</groupId>
-                <artifactId>testng</artifactId>
-                <version>5.9</version>
-                <classifier>jdk15</classifier>
-                <scope>test</scope>
             </dependency>
 
             <!-- Jakarta EE APIs -->
@@ -694,6 +671,18 @@
                 <artifactId>jakarta.ws.rs-api</artifactId>
                 <version>${jakarta.ws.rs.version}</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5</artifactId>
+                <version>${httpclient5.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <version>${caffeine.version}</version>
+                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>

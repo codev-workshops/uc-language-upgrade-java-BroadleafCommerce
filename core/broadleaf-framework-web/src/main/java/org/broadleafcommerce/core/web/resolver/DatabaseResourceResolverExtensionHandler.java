@@ -1,8 +1,8 @@
 /*
  * #%L
- * BroadleafCommerce Framework
+ * broadleaf-theme
  * %%
- * Copyright (C) 2009 - 2013 Broadleaf Commerce
+ * Copyright (C) 2009 - 2014 Broadleaf Commerce
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ package org.broadleafcommerce.core.web.resolver;
 import org.broadleafcommerce.common.extension.ExtensionHandler;
 import org.broadleafcommerce.common.extension.ExtensionResultHolder;
 import org.broadleafcommerce.common.extension.ExtensionResultStatusType;
-import org.thymeleaf.TemplateProcessingParameters;
 
 import java.io.InputStream;
 
@@ -33,21 +32,19 @@ import java.io.InputStream;
  * @author Andre Azzolini (apazzolini), bpolster
  */
 public interface DatabaseResourceResolverExtensionHandler extends ExtensionHandler {
-    
+
     public static final String IS_KEY = "IS_KEY";
-    
+
     /**
      * If this method returns any of the handled conditions in {@link ExtensionResultStatusType},
-     * the value keyed by {@link DatabaseResourceResolverExtensionHandler.IS_KEY} in the 
+     * the value keyed by {@link DatabaseResourceResolverExtensionHandler#IS_KEY} in the
      * {@link ExtensionResultHolder}'s context map will be an {@link InputStream} of the resolved resource's
      * contents.
-     * 
+     *
      * @param erh
-     * @param params
      * @param resourceName
      * @return whether or not a resource was resolved
      */
-    public ExtensionResultStatusType resolveResource(ExtensionResultHolder erh, 
-            TemplateProcessingParameters params, String resourceName);
+    public ExtensionResultStatusType resolveResource(ExtensionResultHolder erh, String resourceName);
 
 }

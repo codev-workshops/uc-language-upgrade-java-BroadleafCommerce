@@ -22,7 +22,7 @@ package org.broadleafcommerce.core.web.api.endpoint.customer;
 import org.broadleafcommerce.core.web.api.endpoint.BaseEndpoint;
 import org.broadleafcommerce.profile.core.service.CustomerService;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * This endpoint depends on JAX-RS.  It should be extended by components that actually wish 

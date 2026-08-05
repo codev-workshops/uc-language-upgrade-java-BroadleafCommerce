@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+import groovy.ant.AntBuilder
 import org.apache.commons.lang3.SystemUtils
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeDriverService
