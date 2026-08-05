@@ -24,7 +24,7 @@ import org.broadleafcommerce.common.web.form.BroadleafFormType;
 import org.broadleafcommerce.profile.core.domain.Address;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * Generic Address Validator not specific to a particular Country.

@@ -23,17 +23,15 @@ import org.broadleafcommerce.common.web.BroadleafRequestContext;
 import org.broadleafcommerce.core.catalog.domain.Category;
 import org.broadleafcommerce.core.catalog.domain.Product;
 import org.broadleafcommerce.core.catalog.service.CatalogURLService;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
-import org.thymeleaf.standard.expression.Expression;
-import org.thymeleaf.standard.expression.StandardExpressions;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.broadleafcommerce.core.web.dialect.AbstractAttributeModifierProcessor;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * For use with category and product entities.   Creates a relative URL using the
@@ -47,7 +45,7 @@ import javax.servlet.http.HttpServletRequest;
  * 
  * @author bpolster
  */
-public class CatalogRelativeHrefProcessor extends AbstractAttributeModifierAttrProcessor {
+public class CatalogRelativeHrefProcessor extends AbstractAttributeModifierProcessor {
 
     private static final String RHREF = "rhref";
     private static final String HREF = "href";
@@ -60,20 +58,18 @@ public class CatalogRelativeHrefProcessor extends AbstractAttributeModifierAttrP
     }
 
     @Override
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
-        Expression expression = (Expression) StandardExpressions.getExpressionParser(arguments.getConfiguration())
-                .parseExpression(arguments.getConfiguration(), arguments, element.getAttributeValue(attributeName));
+    protected Map<String, String> getModifiedAttributes(ITemplateContext context, IProcessableElementTag tag,
+                                                       String attributeValue) {
         HttpServletRequest request = BroadleafRequestContext.getBroadleafRequestContext().getRequest();
 
-        String relativeHref = buildRelativeHref(expression, arguments, request);
+        String relativeHref = buildRelativeHref(evaluate(context, attributeValue), request);
                
         Map<String, String> attrs = new HashMap<String, String>();
         attrs.put(HREF, relativeHref);
         return attrs;
     }
 
-    protected String buildRelativeHref(Expression expression, Arguments arguments, HttpServletRequest request) {
-        Object result = expression.execute(arguments.getConfiguration(), arguments);
+    protected String buildRelativeHref(Object result, HttpServletRequest request) {
         String currentUrl = request.getRequestURI();
 
         if (request.getQueryString() != null) {
@@ -88,23 +84,4 @@ public class CatalogRelativeHrefProcessor extends AbstractAttributeModifierAttrP
         return "";
     }
 
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
-    }
-
-    @Override
-    public int getPrecedence() {
-        return 0;
-    }
 }

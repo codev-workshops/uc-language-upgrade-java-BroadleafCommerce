@@ -35,8 +35,8 @@ import org.springframework.web.servlet.mvc.Controller;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * This class works in combination with the SkuHandlerMapping which finds a category based upon

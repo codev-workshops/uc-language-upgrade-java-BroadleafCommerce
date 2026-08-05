@@ -19,14 +19,14 @@
  */
 package org.broadleafcommerce.core.web;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,7 +49,7 @@ public class SpringTemporaryRedirectOverrideFilter implements Filter {
     private Pattern[] urlPatterns = new Pattern[]{};
 
     /* (non-Javadoc)
-     * @see javax.servlet.Filter#destroy()
+     * @see jakarta.servlet.Filter#destroy()
      */
     public void destroy() {
         //do nothing
@@ -66,7 +66,7 @@ public class SpringTemporaryRedirectOverrideFilter implements Filter {
     }
 
     /* (non-Javadoc)
-     * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
+     * @see jakarta.servlet.Filter#doFilter(jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse, jakarta.servlet.FilterChain)
      */
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         BroadleafResponseWrapper responseWrapper = new BroadleafResponseWrapper((HttpServletResponse) response);
@@ -81,7 +81,7 @@ public class SpringTemporaryRedirectOverrideFilter implements Filter {
     }
 
     /* (non-Javadoc)
-     * @see javax.servlet.Filter#init(javax.servlet.FilterConfig)
+     * @see jakarta.servlet.Filter#init(jakarta.servlet.FilterConfig)
      */
     public void init(FilterConfig config) throws ServletException {
         String massagedString = config.getInitParameter("urlPatterns").replaceAll("\\s+", " ");

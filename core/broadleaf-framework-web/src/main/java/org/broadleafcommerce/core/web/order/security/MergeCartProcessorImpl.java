@@ -35,9 +35,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * 
@@ -86,7 +86,7 @@ public class MergeCartProcessorImpl implements MergeCartProcessor {
         }
 
         if (BLCRequestUtils.isOKtoUseSession(request)) {
-            request.setAttribute(mergeCartResponseKey, mergeCartResponse, WebRequest.SCOPE_GLOBAL_SESSION);
+            request.setAttribute(mergeCartResponseKey, mergeCartResponse, WebRequest.SCOPE_SESSION);
         }
     }
 

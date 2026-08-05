@@ -57,7 +57,6 @@
     <bean id="blPaginationPageLinkProcessor" class="org.broadleafcommerce.core.web.processor.PaginationPageLinkProcessor" />
     <bean id="blPaginationSizeLinkProcessor" class="org.broadleafcommerce.core.web.processor.PaginationSizeLinkProcessor" />
     <bean id="blPaginationSortLinkProcessor" class="org.broadleafcommerce.core.web.processor.PaginationSortLinkProcessor" />    
-    <bean id="blBroadleafCacheProcessor" class="org.broadleafcommerce.core.web.processor.BroadleafCacheProcessor" />    
     <bean id="blPriceTextDisplayProcessor" class="org.broadleafcommerce.core.web.processor.PriceTextDisplayProcessor" />
     <bean id="blRatingsProcessor" class="org.broadleafcommerce.core.web.processor.RatingsProcessor" />
     <bean id="blRelatedProductProcessor" class="org.broadleafcommerce.core.web.processor.RelatedProductProcessor" />
@@ -80,7 +79,6 @@
                 <ref bean="blPaginationPageLinkProcessor" />
                 <ref bean="blPaginationSizeLinkProcessor" />
                 <ref bean="blPaginationSortLinkProcessor" />                
-                <ref bean="blBroadleafCacheProcessor" />
                 <ref bean="blPriceTextDisplayProcessor" />
                 <ref bean="blProductOptionValueProcessor" />
                 <ref bean="blProductOptionsProcessor" />
@@ -173,23 +171,16 @@
         </property>
     </bean>
     
-    <bean id="blThymeleafStandardTemplateModeHandlers" 
-        class="org.broadleafcommerce.common.web.BroadleafThymeleafStandardTemplateModeHandlers" />
-        
-    <bean id="thymeleafLayoutDialect" class="nz.net.ultraq.thymeleaf.LayoutDialect" />
+    <bean id="thymeleafLayoutDialect" class="nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect" />
 
-    <bean id="blICacheManager" class="org.broadleafcommerce.core.web.cache.BLCICacheManager" />
-
-    <bean id="blWebTemplateEngine" class="org.thymeleaf.spring4.SpringTemplateEngine">
+    <bean id="blWebTemplateEngine" class="org.thymeleaf.spring6.SpringTemplateEngine">
         <property name="messageResolvers">
             <set>
                 <ref bean="blMessageResolver" />
-                <bean class="org.thymeleaf.spring4.messageresolver.SpringMessageResolver" />
+                <bean class="org.thymeleaf.spring6.messageresolver.SpringMessageResolver" />
             </set>
         </property>
         <property name="templateResolvers" ref="blWebTemplateResolvers" />
-        <property name="cacheManager" ref="blICacheManager" />
-        <property name="templateModeHandlers" value="#{blThymeleafStandardTemplateModeHandlers.standardTemplateModeHandlers}" />
         <property name="dialects">
             <set>
                 <ref bean="thymeleafSpringStandardDialect" />
@@ -208,7 +199,7 @@
         </property>
     </bean>
     
-    <bean id="blEmailTemplateEngine" class="org.thymeleaf.spring4.SpringTemplateEngine">
+    <bean id="blEmailTemplateEngine" class="org.thymeleaf.spring6.SpringTemplateEngine">
         <property name="templateResolvers" ref="blEmailTemplateResolvers" />
         <property name="dialects">
             <set>
