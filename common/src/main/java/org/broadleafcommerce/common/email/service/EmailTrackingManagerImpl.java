@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * @author jfischer
@@ -94,7 +94,7 @@ public class EmailTrackingManagerImpl implements EmailTrackingManager {
      * (non-Javadoc)
      * @see
      * com.containerstore.web.task.service.EmailTrackingManager#recordOpen(java
-     * .lang.String, javax.servlet.http.HttpServletRequest)
+     * .lang.String, jakarta.servlet.http.HttpServletRequest)
      */
     @Override
     public void recordOpen(Long emailId, Map<String, String> extraValues) {

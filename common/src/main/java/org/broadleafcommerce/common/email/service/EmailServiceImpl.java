@@ -22,7 +22,7 @@ package org.broadleafcommerce.common.email.service;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.broadleafcommerce.common.email.dao.EmailReportingDao;
 import org.broadleafcommerce.common.email.domain.EmailTarget;

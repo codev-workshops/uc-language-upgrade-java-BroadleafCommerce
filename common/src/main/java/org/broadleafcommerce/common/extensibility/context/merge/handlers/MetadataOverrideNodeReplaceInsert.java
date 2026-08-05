@@ -20,7 +20,8 @@
 
 package org.broadleafcommerce.common.extensibility.context.merge.handlers;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Node;
 
 import java.util.List;
@@ -37,7 +38,7 @@ import java.util.List;
  */
 public class MetadataOverrideNodeReplaceInsert extends NodeReplaceInsert {
 
-    Logger LOG = Logger.getLogger(MetadataOverrideNodeReplaceInsert.class.getName());
+    Log LOG = LogFactory.getLog(MetadataOverrideNodeReplaceInsert.class);
 
     protected boolean checkNode(List<Node> usedNodes, Node[] primaryNodes, Node node) {
 

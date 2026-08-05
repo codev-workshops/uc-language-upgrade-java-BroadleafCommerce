@@ -21,9 +21,12 @@ package org.broadleafcommerce.common.util.sql.importsql;
 
 import org.broadleafcommerce.common.logging.SupportLogManager;
 import org.broadleafcommerce.common.logging.SupportLogger;
-import org.hibernate.tool.hbm2ddl.SingleLineSqlCommandExtractor;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.tool.schema.internal.script.SingleLineSqlScriptExtractor;
 
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is a utility class that is only meant to be used for testing the BLC demo on SQL Server. In our current
@@ -32,7 +35,7 @@ import java.io.Reader;
  *
  * @author Jeff Fischer
  */
-public class DemoSqlServerSingleLineSqlCommandExtractor extends SingleLineSqlCommandExtractor {
+public class DemoSqlServerSingleLineSqlCommandExtractor extends SingleLineSqlScriptExtractor {
 
     private static final long serialVersionUID = 1L;
 
@@ -48,38 +51,38 @@ public class DemoSqlServerSingleLineSqlCommandExtractor extends SingleLineSqlCom
     protected boolean alreadyRun = false;
 
     @Override
-    public String[] extractCommands(Reader reader) {
+    public List<String> extractCommands(Reader reader, Dialect dialect) {
         if (!alreadyRun) {
             alreadyRun = true;
             LOGGER.support("Converting hibernate.hbm2ddl.import_files sql statements for compatibility with SQL Server");
         }
 
-        String[] statements = super.extractCommands(reader);
+        List<String> statements = new ArrayList<>(super.extractCommands(reader, dialect));
         handleBooleans(statements);
 
         return statements;
     }
 
-    protected void handleBooleans(String[] statements) {
-        for (int j=0; j<statements.length; j++) {
+    protected void handleBooleans(List<String> statements) {
+        for (int j = 0; j < statements.size(); j++) {
             //try start matches
-            statements[j] = statements[j].replaceAll(BOOLEANTRUEMATCH + "\\s*[,]", TRUE + ",");
-            statements[j] = statements[j].replaceAll(BOOLEANFALSEMATCH + "\\s*[,]", FALSE + ",");
-            statements[j] = statements[j].replaceAll(TIMESTAMPMATCH + "\\s*[,]", CURRENT_TIMESTAMP + ",");
+            statements.set(j, statements.get(j).replaceAll(BOOLEANTRUEMATCH + "\\s*[,]", TRUE + ","));
+            statements.set(j, statements.get(j).replaceAll(BOOLEANFALSEMATCH + "\\s*[,]", FALSE + ","));
+            statements.set(j, statements.get(j).replaceAll(TIMESTAMPMATCH + "\\s*[,]", CURRENT_TIMESTAMP + ","));
 
             //try middle matches
-            statements[j] = statements[j].replaceAll("[,]\\s*" + BOOLEANTRUEMATCH + "\\s*[,]", "," + TRUE + ",");
-            statements[j] = statements[j].replaceAll("[,]\\s*" + BOOLEANFALSEMATCH + "\\s*[,]", "," + FALSE + ",");
-            statements[j] = statements[j].replaceAll("[,]\\s*" + TIMESTAMPMATCH + "\\s*[,]", "," + CURRENT_TIMESTAMP + ",");
+            statements.set(j, statements.get(j).replaceAll("[,]\\s*" + BOOLEANTRUEMATCH + "\\s*[,]", "," + TRUE + ","));
+            statements.set(j, statements.get(j).replaceAll("[,]\\s*" + BOOLEANFALSEMATCH + "\\s*[,]", "," + FALSE + ","));
+            statements.set(j, statements.get(j).replaceAll("[,]\\s*" + TIMESTAMPMATCH + "\\s*[,]", "," + CURRENT_TIMESTAMP + ","));
 
             //try end matches
-            statements[j] = statements[j].replaceAll("[,]\\s*" + BOOLEANTRUEMATCH, "," + TRUE);
-            statements[j] = statements[j].replaceAll("[,]\\s*" + BOOLEANFALSEMATCH, "," + FALSE);
-            statements[j] = statements[j].replaceAll("[,]\\s*" + TIMESTAMPMATCH, "," + CURRENT_TIMESTAMP);
+            statements.set(j, statements.get(j).replaceAll("[,]\\s*" + BOOLEANTRUEMATCH, "," + TRUE));
+            statements.set(j, statements.get(j).replaceAll("[,]\\s*" + BOOLEANFALSEMATCH, "," + FALSE));
+            statements.set(j, statements.get(j).replaceAll("[,]\\s*" + TIMESTAMPMATCH, "," + CURRENT_TIMESTAMP));
 
             //try matches for updates
-            statements[j] = statements[j].replaceAll("[=]\\s*" + BOOLEANTRUEMATCH, "=" + TRUE);
-            statements[j] = statements[j].replaceAll("[=]\\s*" + BOOLEANFALSEMATCH, "=" + FALSE);
+            statements.set(j, statements.get(j).replaceAll("[=]\\s*" + BOOLEANTRUEMATCH, "=" + TRUE));
+            statements.set(j, statements.get(j).replaceAll("[=]\\s*" + BOOLEANFALSEMATCH, "=" + FALSE));
         }
     }
 }

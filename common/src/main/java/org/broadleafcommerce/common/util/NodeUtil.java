@@ -20,7 +20,8 @@
 
 package org.broadleafcommerce.common.util;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -36,7 +37,7 @@ import java.util.TreeSet;
  */
 public class NodeUtil {
 
-    static Logger LOG = Logger.getLogger(NodeUtil.class.getName());
+    static Log LOG = LogFactory.getLog(NodeUtil.class);
 
     /**
      * a simple implementation of the Comparator interface, (applied to the Node class) that uses the value of a given 

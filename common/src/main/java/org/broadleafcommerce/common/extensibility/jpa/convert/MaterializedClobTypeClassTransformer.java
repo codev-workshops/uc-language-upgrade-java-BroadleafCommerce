@@ -30,10 +30,10 @@ import org.hibernate.annotations.Type;
 import org.hibernate.type.MaterializedClobType;
 import org.hibernate.type.StringClobType;
 
-import javax.annotation.Resource;
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import javax.persistence.MappedSuperclass;
+import jakarta.annotation.Resource;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.MappedSuperclass;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;

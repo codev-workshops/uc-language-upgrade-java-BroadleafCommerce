@@ -32,7 +32,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;

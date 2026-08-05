@@ -21,15 +21,15 @@ package org.broadleafcommerce.common.security.util;
 
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component("blCookieUtils")
 public class GenericCookieUtilsImpl implements CookieUtils {
 
     /* (non-Javadoc)
-     * @see org.broadleafcommerce.profile.web.CookieUtils#getCookieValue(javax.servlet.http.HttpServletRequest, java.lang.String)
+     * @see org.broadleafcommerce.profile.web.CookieUtils#getCookieValue(jakarta.servlet.http.HttpServletRequest, java.lang.String)
      */
     public String getCookieValue(HttpServletRequest request, String cookieName) {
         Cookie[] cookies = request.getCookies();
@@ -44,7 +44,7 @@ public class GenericCookieUtilsImpl implements CookieUtils {
     }
 
     /* (non-Javadoc)
-     * @see org.broadleafcommerce.profile.web.CookieUtils#setCookieValue(javax.servlet.http.HttpServletResponse, java.lang.String, java.lang.String, java.lang.String, java.lang.Integer)
+     * @see org.broadleafcommerce.profile.web.CookieUtils#setCookieValue(jakarta.servlet.http.HttpServletResponse, java.lang.String, java.lang.String, java.lang.String, java.lang.Integer)
      */
     public void setCookieValue(HttpServletResponse response, String cookieName, String cookieValue, String path, Integer maxAge, Boolean isSecure) {
         Cookie cookie = new Cookie(cookieName, cookieValue);
@@ -67,14 +67,14 @@ public class GenericCookieUtilsImpl implements CookieUtils {
     }
 
     /* (non-Javadoc)
-     * @see org.broadleafcommerce.profile.web.CookieUtils#setCookieValue(javax.servlet.http.HttpServletResponse, java.lang.String, java.lang.String)
+     * @see org.broadleafcommerce.profile.web.CookieUtils#setCookieValue(jakarta.servlet.http.HttpServletResponse, java.lang.String, java.lang.String)
      */
     public void setCookieValue(HttpServletResponse response, String cookieName, String cookieValue) {
         setCookieValue(response, cookieName, cookieValue, "/", null, false);
     }
 
     /* (non-Javadoc)
-     * @see org.broadleafcommerce.profile.web.CookieUtils#invalidateCookie(javax.servlet.http.HttpServletResponse, java.lang.String)
+     * @see org.broadleafcommerce.profile.web.CookieUtils#invalidateCookie(jakarta.servlet.http.HttpServletResponse, java.lang.String)
      */
     public void invalidateCookie(HttpServletResponse response, String cookieName) {
         setCookieValue(response, cookieName, "", "/", 0, false);

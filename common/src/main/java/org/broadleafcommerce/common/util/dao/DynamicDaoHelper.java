@@ -22,7 +22,7 @@ package org.broadleafcommerce.common.util.dao;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.metamodel.MappingMetamodel;
 import org.hibernate.type.Type;
 
 import java.io.Serializable;
@@ -30,7 +30,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * Provides utility methods for interacting with dynamic entities
@@ -39,13 +39,19 @@ import javax.persistence.EntityManager;
  */
 public interface DynamicDaoHelper {
 
-    Map<String, Object> getIdMetadata(Class<?> entityClass, HibernateEntityManager entityManager);
-    
-    List<String> getPropertyNames(Class<?> entityClass, HibernateEntityManager entityManager);
-    
-    List<Type> getPropertyTypes(Class<?> entityClass, HibernateEntityManager entityManager);
-    
-    SessionFactory getSessionFactory(HibernateEntityManager entityManager);
+    Map<String, Object> getIdMetadata(Class<?> entityClass, EntityManager entityManager);
+
+    List<String> getPropertyNames(Class<?> entityClass, EntityManager entityManager);
+
+    List<Type> getPropertyTypes(Class<?> entityClass, EntityManager entityManager);
+
+    SessionFactory getSessionFactory(EntityManager entityManager);
+
+    /**
+     * Hibernate 6 replacement for the removed {@code ClassMetadata}/{@code Ejb3Configuration} lookups: all mapping
+     * information is now read from the {@link MappingMetamodel} owned by the session factory.
+     */
+    MappingMetamodel getMappingMetamodel(SessionFactory sessionFactory);
 
     Class<?>[] getAllPolymorphicEntitiesFromCeiling(Class<?> ceilingClass, SessionFactory sessionFactory, boolean includeUnqualifiedPolymorphicEntities, boolean useCache);
 
@@ -62,6 +68,6 @@ public interface DynamicDaoHelper {
     Field getIdField(Class<?> clazz, Session session);
 
     Class<?>[] getUpDownInheritance(Class<?> testClass, SessionFactory sessionFactory,
-                    boolean includeUnqualifiedPolymorphicEntities, boolean useCache, EJB3ConfigurationDao ejb3ConfigurationDao);
+                    boolean includeUnqualifiedPolymorphicEntities, boolean useCache);
 
 }

@@ -21,7 +21,7 @@ package org.broadleafcommerce.common.util;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.SQLQuery;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.Session;
 import org.hibernate.type.Type;
 
@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * The purpose for this class is to provide an alternate approach to an HQL UPDATE query for batch updates on Hibernate filtered
@@ -74,7 +74,7 @@ public class UpdateExecutor {
         List<Long[]> runs = buildRuns(ids);
         for (Long[] run : runs) {
             String queryString = String.format(template, buildInClauseTemplate(run.length));
-            SQLQuery query = em.unwrap(Session.class).createSQLQuery(queryString);
+            NativeQuery<?> query = em.unwrap(Session.class).createNativeQuery(queryString);
             int counter = 0;
             if (!ArrayUtils.isEmpty(params)) {
                 for (Object param : params) {

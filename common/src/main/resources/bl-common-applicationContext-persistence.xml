@@ -35,12 +35,6 @@
         <property name="persistenceUnitName" value="blPU"/>
     </bean>
 
-    <bean id="blEJB3ConfigurationDao" class="org.broadleafcommerce.common.util.dao.EJB3ConfigurationDaoImpl">
-        <property name="persistenceUnitInfo">
-            <bean factory-bean="entityManagerFactory" factory-method="getPersistenceUnitInfo" />
-        </property>
-    </bean>
-    
     <bean id="blCacheManager" class="org.broadleafcommerce.common.extensibility.cache.ehcache.MergeEhCacheManagerFactoryBean">
         <property name="shared" value="true"/>
     </bean>

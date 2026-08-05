@@ -26,19 +26,19 @@ import org.broadleafcommerce.common.site.domain.Site;
 import org.broadleafcommerce.common.site.domain.SiteImpl;
 import org.broadleafcommerce.common.site.service.type.SiteResolutionType;
 import org.broadleafcommerce.common.util.dao.TypedQueryBuilder;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 @Repository("blSiteDao")
 public class SiteDaoImpl implements SiteDao {
@@ -80,8 +80,8 @@ public class SiteDaoImpl implements SiteDao {
         );
         
         TypedQuery<Site> query = em.createQuery(criteria);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "blSiteElementsQuery");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "blSiteElementsQuery");
         
         return query.getResultList();
     }
@@ -111,8 +111,8 @@ public class SiteDaoImpl implements SiteDao {
             )
         );
         TypedQuery<Site> query = em.createQuery(criteria);
-        query.setHint(QueryHints.HINT_CACHEABLE, true);
-        query.setHint(QueryHints.HINT_CACHE_REGION, "blSiteElementsQuery");
+        query.setHint(HibernateHints.HINT_CACHEABLE, true);
+        query.setHint(HibernateHints.HINT_CACHE_REGION, "blSiteElementsQuery");
 
         List<Site> results = query.getResultList();
         

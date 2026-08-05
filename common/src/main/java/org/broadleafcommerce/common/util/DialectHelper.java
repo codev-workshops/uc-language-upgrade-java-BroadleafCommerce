@@ -22,14 +22,14 @@ package org.broadleafcommerce.common.util;
 import org.hibernate.Session;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQLDialect;
-import org.hibernate.dialect.Oracle8iDialect;
-import org.hibernate.dialect.PostgreSQL81Dialect;
+import org.hibernate.dialect.OracleDialect;
+import org.hibernate.dialect.PostgreSQLDialect;
 import org.hibernate.dialect.SQLServerDialect;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * @author Jeff Fischer
@@ -45,19 +45,19 @@ public class DialectHelper {
     public synchronized Dialect getHibernateDialect() {
         if (cachedDialect == null) {
             SessionFactoryImplementor factory = (SessionFactoryImplementor) em.unwrap(Session.class).getSessionFactory();
-            cachedDialect = factory.getDialect();
+            cachedDialect = factory.getJdbcServices().getDialect();
         }
         return cachedDialect;
     }
 
     public boolean isOracle() {
-        //Since should handle other Oracle dialects as well, since they derive from Oracle8iDialect
-        return getHibernateDialect() instanceof Oracle8iDialect;
+        //Since should handle other Oracle dialects as well, since they derive from OracleDialect
+        return getHibernateDialect() instanceof OracleDialect;
     }
 
     public boolean isPostgreSql() {
-        //Since should handle other Postgres dialects as well, since they derive from PostgreSQL81Dialect
-        return getHibernateDialect() instanceof PostgreSQL81Dialect;
+        //Since should handle other Postgres dialects as well, since they derive from PostgreSQLDialect
+        return getHibernateDialect() instanceof PostgreSQLDialect;
     }
 
     public boolean isSqlServer() {

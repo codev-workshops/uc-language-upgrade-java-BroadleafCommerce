@@ -30,22 +30,22 @@ import org.broadleafcommerce.common.extension.ExtensionResultHolder;
 import org.broadleafcommerce.common.extension.ExtensionResultStatusType;
 import org.broadleafcommerce.common.persistence.EntityConfiguration;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
-import org.hibernate.ejb.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 /**
  * This DAO enables access to manage system properties that can be stored in the database.
@@ -129,7 +129,7 @@ public class SystemPropertiesDaoImpl extends AbstractCacheMissAware implements S
                     criteria.where(restrictions.toArray(new Predicate[restrictions.size()]));
 
                     TypedQuery<SystemProperty> query = em.createQuery(criteria);
-                    query.setHint(QueryHints.HINT_CACHEABLE, true);
+                    query.setHint(HibernateHints.HINT_CACHEABLE, true);
                     List<SystemProperty> response = query.getResultList();
                     if (response.size() > 0) {
                         ExtensionResultHolder<List> resultHolder = new ExtensionResultHolder<>();

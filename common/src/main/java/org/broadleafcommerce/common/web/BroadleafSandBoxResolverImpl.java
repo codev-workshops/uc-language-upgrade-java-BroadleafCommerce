@@ -41,8 +41,8 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Responsible for determining the SandBox to use for the current request. 

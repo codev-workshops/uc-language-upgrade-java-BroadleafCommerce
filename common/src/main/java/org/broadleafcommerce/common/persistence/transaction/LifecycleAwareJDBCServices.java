@@ -35,6 +35,7 @@ public class LifecycleAwareJDBCServices extends JdbcServicesImpl {
     @Override
     public SqlStatementLogger getSqlStatementLogger() {
         SqlStatementLogger defaultLogger = super.getSqlStatementLogger();
-        return new TransactionLifecycleAwareSqlStatementLogger(defaultLogger.isLogToStdout(), defaultLogger.isFormat());
+        return new TransactionLifecycleAwareSqlStatementLogger(defaultLogger.isLogToStdout(), defaultLogger.isFormat(),
+                false, defaultLogger.getLogSlowQuery());
     }
 }

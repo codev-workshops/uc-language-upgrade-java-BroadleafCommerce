@@ -32,8 +32,8 @@ import org.springframework.web.context.request.ServletWebRequest;
 
 import java.security.NoSuchAlgorithmException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * @see StaleStateProtectionService

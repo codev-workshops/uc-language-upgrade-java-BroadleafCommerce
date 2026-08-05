@@ -97,11 +97,11 @@
             	<value>javassist.bytecode.annotation.BooleanMemberValue</value>
             	<value>javassist.bytecode.annotation.MemberValue</value>
             	<value>javassist.bytecode.annotation.StringMemberValue</value>
-            	<value>javax.annotation.Resource</value>
-            	<value>javax.persistence.EntityListeners</value>
-            	<value>javax.persistence.Embeddable</value>
-            	<value>javax.persistence.Entity</value>
-            	<value>javax.persistence.MappedSuperclass</value>
+            	<value>jakarta.annotation.Resource</value>
+            	<value>jakarta.persistence.EntityListeners</value>
+            	<value>jakarta.persistence.Embeddable</value>
+            	<value>jakarta.persistence.Entity</value>
+            	<value>jakarta.persistence.MappedSuperclass</value>
             	<value>org.apache.commons.lang3.StringUtils</value>
             	<value>org.broadleafcommerce.common.logging.LifeCycleEvent</value>
             	<value>org.broadleafcommerce.common.logging.SupportLogManager</value>

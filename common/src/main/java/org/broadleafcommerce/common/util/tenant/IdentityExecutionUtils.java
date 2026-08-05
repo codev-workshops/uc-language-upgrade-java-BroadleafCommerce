@@ -25,7 +25,7 @@ import org.broadleafcommerce.common.site.domain.Catalog;
 import org.broadleafcommerce.common.site.domain.Site;
 import org.broadleafcommerce.common.util.TransactionUtils;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.Session;
 import org.springframework.orm.jpa.EntityManagerHolder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -35,7 +35,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 /**
@@ -171,7 +171,7 @@ public class IdentityExecutionUtils {
         Map<Object, Object> resourceMap = TransactionSynchronizationManager.getResourceMap();
         for (Map.Entry<Object, Object> entry : resourceMap.entrySet()) {
             if (entry.getKey() instanceof EntityManagerFactory && entry.getValue() instanceof EntityManagerHolder) {
-                ((HibernateEntityManager) ((EntityManagerHolder) entry.getValue()).getEntityManager()).getSession();
+                ((EntityManagerHolder) entry.getValue()).getEntityManager().unwrap(Session.class);
             }
         }
     }

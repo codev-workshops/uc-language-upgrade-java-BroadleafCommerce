@@ -24,8 +24,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * @author Nathan Moore (nathanmoore).
@@ -56,7 +56,7 @@ public class DefaultPostLoaderDao implements PostLoaderDao, ApplicationContextAw
     /**
      * Find and return the entity by primary key and class.
      *
-     * Delegates find to {@link javax.persistence.EntityManager#find(Class, Object)}.
+     * Delegates find to {@link jakarta.persistence.EntityManager#find(Class, Object)}.
      *
      * @param clazz entity class
      * @param id primary key

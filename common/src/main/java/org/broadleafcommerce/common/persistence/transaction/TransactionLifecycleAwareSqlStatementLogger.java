@@ -36,6 +36,11 @@ public class TransactionLifecycleAwareSqlStatementLogger extends SqlStatementLog
         super(logToStdout, format);
     }
 
+    public TransactionLifecycleAwareSqlStatementLogger(boolean logToStdout, boolean format, boolean highlight,
+                                                       long logSlowQuery) {
+        super(logToStdout, format, highlight, logSlowQuery);
+    }
+
     @Override
     public void logStatement(String statement, Formatter formatter) {
         super.logStatement(statement, formatter);

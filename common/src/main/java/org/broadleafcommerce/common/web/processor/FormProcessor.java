@@ -31,7 +31,7 @@ import org.thymeleaf.processor.element.AbstractElementProcessor;
 import org.thymeleaf.standard.expression.Expression;
 import org.thymeleaf.standard.expression.StandardExpressions;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * Used as a replacement to the HTML {@code <form>} element which adds a CSRF token input field to forms that are submitted
