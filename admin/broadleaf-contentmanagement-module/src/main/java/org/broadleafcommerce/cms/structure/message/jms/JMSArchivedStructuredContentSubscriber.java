@@ -21,11 +21,11 @@ package org.broadleafcommerce.cms.structure.message.jms;
 
 import java.util.HashMap;
 
-import javax.annotation.Resource;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
+import jakarta.annotation.Resource;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
+import jakarta.jms.ObjectMessage;
 
 import org.broadleafcommerce.cms.structure.service.StructuredContentService;
 
@@ -42,7 +42,7 @@ public class JMSArchivedStructuredContentSubscriber implements MessageListener {
 
     /*
      * (non-Javadoc)
-     * @see javax.jms.MessageListener#onMessage(javax.jms.Message)
+     * @see jakarta.jms.MessageListener#onMessage(jakarta.jms.Message)
      */
     @SuppressWarnings("unchecked")
     public void onMessage(Message message) {

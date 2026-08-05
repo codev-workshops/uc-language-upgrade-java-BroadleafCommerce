@@ -20,13 +20,10 @@
 package org.broadleafcommerce.cms.web.processor;
 
 import org.broadleafcommerce.common.file.service.StaticAssetPathService;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IProcessableElementTag;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * Similar to {@link UrlRewriteProcessor} but handles href tags.   
@@ -50,34 +47,18 @@ public class HrefUrlRewriteProcessor extends UrlRewriteProcessor {
     }
 
     @Override
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
-        Map<String, String> attrs = new HashMap<String, String>();
-        
-        String elementName = element.getNormalizedName();
-        String useCDN = element.getAttributeValue("useCDN");
+    protected String getRewrittenAttributeName(IProcessableElementTag tag) {
+        return HREF;
+    }
 
-        if (LINK.equals(elementName) || (useCDN != null && "true".equals(useCDN))) {
-            attrs = super.getModifiedAttributeValues(arguments, element, attributeName);
-            String srcAttr = attrs.remove("src");
-            attrs.put(HREF, srcAttr);
-        } else {
-            attrs.put(HREF, element.getAttributeValue(attributeName));
+    @Override
+    protected String rewrite(ITemplateContext context, IProcessableElementTag tag, String attributeValue) {
+        String elementName = tag.getElementCompleteName();
+        String useCDN = tag.getAttributeValue("useCDN");
+
+        if (LINK.equals(elementName) || "true".equals(useCDN)) {
+            return super.rewrite(context, tag, attributeValue);
         }
-        return attrs;
-    }
-
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return false;
+        return attributeValue;
     }
 }

@@ -20,14 +20,16 @@
 package org.broadleafcommerce.common.file.service;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.velocity.tools.view.ImportSupport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 @Service("blStaticAssetPathService")
 public class StaticAssetPathServiceImpl implements StaticAssetPathService {
+
+    protected static final Pattern ABSOLUTE_URL_PATTERN = Pattern.compile("^[a-zA-Z][a-zA-Z0-9+.-]*://.*");
 
     @Value("${asset.server.url.prefix.internal}")
     protected String staticAssetUrlPrefix;
@@ -160,7 +162,7 @@ public class StaticAssetPathServiceImpl implements StaticAssetPathService {
                 returnValue = envPrefix + returnValue;
             }
         } else {
-            if (returnValue != null && ! ImportSupport.isAbsoluteUrl(returnValue)) {
+            if (returnValue != null && ! isAbsoluteUrl(returnValue)) {
                 if (! returnValue.startsWith("/")) {
                     returnValue = "/" + returnValue;
                 }
@@ -242,6 +244,15 @@ public class StaticAssetPathServiceImpl implements StaticAssetPathService {
             urlPrefix = urlPrefix + "/";
         }
         return urlPrefix;
+    }
+
+
+    /**
+     * Determines whether the given url already contains a scheme (for example {@code http://}), in which case it
+     * must not be prefixed with a context path.
+     */
+    protected boolean isAbsoluteUrl(String url) {
+        return ABSOLUTE_URL_PATTERN.matcher(url).matches();
     }
 
 }

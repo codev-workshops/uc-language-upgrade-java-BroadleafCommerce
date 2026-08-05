@@ -22,7 +22,7 @@ package org.broadleafcommerce.cms.file.dao;
 import org.broadleafcommerce.cms.file.domain.StaticAssetStorage;
 import org.broadleafcommerce.cms.file.domain.StaticAssetStorageImpl;
 import org.broadleafcommerce.common.persistence.EntityConfiguration;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,10 +30,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 /**
  * Created by IntelliJ IDEA.
@@ -65,7 +65,7 @@ public class StaticAssetStorageDaoImpl implements StaticAssetStorageDao {
     public Blob createBlob(InputStream uploadedFileInputStream, long fileSize) throws IOException {
         InputStream inputStream = uploadedFileInputStream;
         //We'll work with Blob instances and streams so that the uploaded files are never read into memory
-        return ((HibernateEntityManager) em).getSession().getLobHelper().createBlob(inputStream, fileSize);
+        return em.unwrap(Session.class).getLobHelper().createBlob(inputStream, fileSize);
     }
 
     @Override

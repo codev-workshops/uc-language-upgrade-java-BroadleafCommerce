@@ -19,9 +19,6 @@
  */
 package org.broadleafcommerce.cms.page.service;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
 
 import org.apache.commons.beanutils.BeanComparator;
 import org.apache.commons.logging.Log;
@@ -31,7 +28,9 @@ import org.broadleafcommerce.cms.page.dao.PageDao;
 import org.broadleafcommerce.cms.page.domain.Page;
 import org.broadleafcommerce.cms.page.domain.PageField;
 import org.broadleafcommerce.cms.page.domain.PageTemplate;
+import javax.cache.Cache;
 import org.broadleafcommerce.common.cache.CacheStatType;
+import org.broadleafcommerce.common.cache.JCacheUtil;
 import org.broadleafcommerce.common.cache.StatisticsService;
 import org.broadleafcommerce.common.extensibility.jpa.SiteDiscriminator;
 import org.broadleafcommerce.common.extension.ExtensionResultHolder;
@@ -53,7 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * Created by bpolster.
@@ -90,8 +89,8 @@ public class PageServiceImpl implements PageService {
     @Resource(name = "blPageServiceExtensionManager")
     protected PageServiceExtensionManager extensionManager;
 
-    protected Cache pageCache;
-    protected Cache pageMapCache;
+    protected Cache<Object, Object> pageCache;
+    protected Cache<Object, Object> pageMapCache;
     protected final PageDTO NULL_PAGE = new NullPageDTO();
 
     /**
@@ -195,9 +194,9 @@ public class PageServiceImpl implements PageService {
     @Override
     @SuppressWarnings("unchecked")
     public void removePageFromCache(String key) {
-        Element e = getPageMapCache().get(key);
-        if (e != null && e.getObjectValue() != null) {
-            List<String> keys = (List<String>) e.getObjectValue();
+        Object cachedKeys = getPageMapCache().get(key);
+        if (cachedKeys != null) {
+            List<String> keys = (List<String>) cachedKeys;
             for (String k : keys) {
                 getPageCache().remove(k);
             }
@@ -290,17 +289,17 @@ public class PageServiceImpl implements PageService {
     }
 
     @Override
-    public Cache getPageCache() {
+    public Cache<Object, Object> getPageCache() {
         if (pageCache == null) {
-            pageCache = CacheManager.getInstance().getCache("cmsPageCache");
+            pageCache = JCacheUtil.getCache("cmsPageCache");
         }
         return pageCache;
     }
 
     @Override
-    public Cache getPageMapCache() {
+    public Cache<Object, Object> getPageMapCache() {
         if (pageMapCache == null) {
-            pageMapCache = CacheManager.getInstance().getCache("cmsPageMapCache");
+            pageMapCache = JCacheUtil.getCache("cmsPageMapCache");
         }
         return pageMapCache;
     }
@@ -313,7 +312,7 @@ public class PageServiceImpl implements PageService {
     }
 
     protected void addPageListToCache(List<PageDTO> pageList, String key, String uri, Long sandBox, Long site) {
-        getPageCache().put(new Element(key, pageList));
+        getPageCache().put(key, pageList);
         
         addPageMapCacheEntry(key, uri, sandBox, site);
         if (site != null) {
@@ -325,13 +324,15 @@ public class PageServiceImpl implements PageService {
     protected void addPageMapCacheEntry(String keyToStore, String uri, Long sandBox, Long site) {
         String key = getPageMapCacheKey(uri, sandBox, site);
 
-        Element e = getPageMapCache().get(key);
-        if (e == null || e.getObjectValue() == null) {
+        Object cachedKeys = getPageMapCache().get(key);
+        if (cachedKeys == null) {
             List<String> keys = new ArrayList<String>();
             keys.add(keyToStore);
-            getPageMapCache().put(new Element(key, keys));
+            getPageMapCache().put(key, keys);
         } else {
-            ((List<String>) e.getObjectValue()).add(keyToStore);
+            List<String> keys = (List<String>) cachedKeys;
+            keys.add(keyToStore);
+            getPageMapCache().put(key, keys);
         }
     }
     
@@ -341,10 +342,10 @@ public class PageServiceImpl implements PageService {
     }
 
     protected List<PageDTO> getPageListFromCache(String key) {
-        Element cacheElement = getPageCache().get(key);
-        if (cacheElement != null && cacheElement.getValue() != null) {
+        Object cachedPages = getPageCache().get(key);
+        if (cachedPages != null) {
             statisticsService.addCacheStat(CacheStatType.PAGE_CACHE_HIT_RATE.toString(), true);
-            return (List<PageDTO>) cacheElement.getValue();
+            return (List<PageDTO>) cachedPages;
         }
         statisticsService.addCacheStat(CacheStatType.PAGE_CACHE_HIT_RATE.toString(), false);
         return null;

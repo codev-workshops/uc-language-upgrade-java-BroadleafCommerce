@@ -25,6 +25,8 @@ import org.broadleafcommerce.common.locale.domain.Locale;
 
 import java.util.List;
 
+import jakarta.persistence.criteria.CriteriaQuery;
+
 /**
  * Responsible for querying and updating {@link StructuredContent} items
  * @author bpolster
@@ -59,6 +61,16 @@ public interface StructuredContentDao {
      * @return the list of {@link StructuredContent}, an empty list of none are found
      */
     public List<StructuredContent> findAllContentItems();
+
+    /**
+     * Executes the given JPA criteria query for structured content items.
+     */
+    List<StructuredContent> findContentItems(CriteriaQuery<StructuredContent> criteria);
+
+    /**
+     * Executes the given JPA criteria query and returns the resulting count.
+     */
+    Long countContentItems(CriteriaQuery<Long> criteria);
 
     /**
      * Persists the changes or saves a new content item.

@@ -19,9 +19,6 @@
  */
 package org.broadleafcommerce.cms.structure.service;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
 
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -40,6 +37,10 @@ import org.broadleafcommerce.cms.structure.domain.StructuredContentFieldXref;
 import org.broadleafcommerce.cms.structure.domain.StructuredContentItemCriteria;
 import org.broadleafcommerce.cms.structure.domain.StructuredContentRule;
 import org.broadleafcommerce.cms.structure.domain.StructuredContentType;
+import javax.cache.Cache;
+
+import jakarta.persistence.criteria.CriteriaQuery;
+import org.broadleafcommerce.common.cache.JCacheUtil;
 import org.broadleafcommerce.common.cache.CacheStatType;
 import org.broadleafcommerce.common.cache.StatisticsService;
 import org.broadleafcommerce.common.extension.ExtensionResultHolder;
@@ -56,8 +57,6 @@ import org.broadleafcommerce.common.structure.dto.ItemCriteriaDTO;
 import org.broadleafcommerce.common.structure.dto.StructuredContentDTO;
 import org.broadleafcommerce.common.util.FormatUtil;
 import org.broadleafcommerce.common.web.BroadleafRequestContext;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Projections;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -69,7 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * @author bpolster
@@ -106,7 +105,7 @@ public class StructuredContentServiceImpl implements StructuredContentService {
     @Resource(name = "blStatisticsService")
     protected StatisticsService statisticsService;
 
-    protected Cache structuredContentCache;
+    protected Cache<Object, Object> structuredContentCache;
 
     @Override
     public StructuredContent findStructuredContentById(Long contentId) {
@@ -129,8 +128,8 @@ public class StructuredContentServiceImpl implements StructuredContentService {
     }
 
     @Override
-    public List<StructuredContent> findContentItems(Criteria c) {
-        return c.list();
+    public List<StructuredContent> findContentItems(CriteriaQuery<StructuredContent> criteria) {
+        return structuredContentDao.findContentItems(criteria);
     }
 
     @Override
@@ -139,9 +138,8 @@ public class StructuredContentServiceImpl implements StructuredContentService {
     }
 
     @Override
-    public Long countContentItems(Criteria c) {
-        c.setProjection(Projections.rowCount());
-        return (Long) c.uniqueResult();
+    public Long countContentItems(CriteriaQuery<Long> criteria) {
+        return structuredContentDao.countContentItems(criteria);
     }
 
     /**
@@ -442,9 +440,9 @@ public class StructuredContentServiceImpl implements StructuredContentService {
     }
 
     @Override
-    public Cache getStructuredContentCache() {
+    public Cache<Object, Object> getStructuredContentCache() {
         if (structuredContentCache == null) {
-            structuredContentCache = CacheManager.getInstance().getCache("cmsStructuredContentCache");
+            structuredContentCache = JCacheUtil.getCache("cmsStructuredContentCache");
         }
         return structuredContentCache;
     }
@@ -718,19 +716,19 @@ public class StructuredContentServiceImpl implements StructuredContentService {
 
     @Override
     public void addStructuredContentListToCache(String key, List<StructuredContentDTO> scDTOList) {
-        getStructuredContentCache().put(new Element(key, scDTOList));
+        getStructuredContentCache().put(key, scDTOList);
     }
 
     protected void addSingleStructuredContentToCache(String key, StructuredContentDTO scDTO) {
-        getStructuredContentCache().put(new Element(key, scDTO));
+        getStructuredContentCache().put(key, scDTO);
     }
 
     protected StructuredContentDTO getSingleStructuredContentFromCache(String key) {
-        Element scElement = getStructuredContentCache().get(key);
+        Object cachedContent = getStructuredContentCache().get(key);
 
-        if (scElement != null) {
+        if (cachedContent != null) {
             statisticsService.addCacheStat(CacheStatType.STRUCTURED_CONTENT_CACHE_HIT_RATE.toString(), true);
-            return (StructuredContentDTO) scElement.getValue();
+            return (StructuredContentDTO) cachedContent;
         }
 
         statisticsService.addCacheStat(CacheStatType.STRUCTURED_CONTENT_CACHE_HIT_RATE.toString(), false);
@@ -740,12 +738,12 @@ public class StructuredContentServiceImpl implements StructuredContentService {
 
     @Override
     public List<StructuredContentDTO> getStructuredContentListFromCache(String key) {
-        Element scElement = getStructuredContentCache().get(key);
+        Object cachedContent = getStructuredContentCache().get(key);
 
-        if (scElement != null) {
+        if (cachedContent != null) {
             statisticsService.addCacheStat(CacheStatType.STRUCTURED_CONTENT_CACHE_HIT_RATE.toString(), true);
 
-            return (List<StructuredContentDTO>) scElement.getObjectValue();
+            return (List<StructuredContentDTO>) cachedContent;
         }
 
         statisticsService.addCacheStat(CacheStatType.STRUCTURED_CONTENT_CACHE_HIT_RATE.toString(), false);
