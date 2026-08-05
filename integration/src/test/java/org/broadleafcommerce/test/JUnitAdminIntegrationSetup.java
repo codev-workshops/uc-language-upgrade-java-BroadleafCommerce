@@ -23,9 +23,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Base Integration Test Setup java file for Admin based integration tests. This base class has all the
@@ -36,7 +37,8 @@ import org.springframework.test.context.web.WebAppConfiguration;
  * actual integration tests. IntegrationSetup files should not have any code in their body's.
  *
  */
-@TransactionConfiguration(transactionManager = "blTransactionManager", defaultRollback = true)
+@Transactional(transactionManager = "blTransactionManager")
+@Rollback(true)
 @ContextHierarchy({
 @ContextConfiguration(name = "adminRoot",
     locations = {"classpath:/bl-open-admin-contentClient-applicationContext.xml",

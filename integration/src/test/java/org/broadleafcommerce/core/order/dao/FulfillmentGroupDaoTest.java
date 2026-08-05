@@ -31,7 +31,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.Test;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 public class FulfillmentGroupDaoTest extends CommonSetupBaseTest {
 

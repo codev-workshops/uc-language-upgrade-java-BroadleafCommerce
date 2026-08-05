@@ -28,8 +28,9 @@ import org.springframework.test.context.TestContext;
 import org.springframework.test.context.support.AbstractTestExecutionListener;
 import org.springframework.test.context.transaction.AfterTransaction;
 import org.springframework.test.context.transaction.BeforeTransaction;
-import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.test.context.transaction.TransactionConfigurationAttributes;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
@@ -105,7 +106,7 @@ public class MergeTransactionalTestExecutionListener extends AbstractTestExecuti
 
     protected final TransactionAttributeSource attributeSource = new AnnotationTransactionAttributeSource();
 
-    private TransactionConfigurationAttributes configAttributes;
+    private String transactionManagerName;
 
     private volatile int transactionsStarted = 0;
 
@@ -302,10 +303,10 @@ public class MergeTransactionalTestExecutionListener extends AbstractTestExecuti
      * @throws BeansException if an error occurs while retrieving the transaction manager
      */
     protected final PlatformTransactionManager getTransactionManager(TestContext testContext) {
-        if (this.configAttributes == null) {
-            this.configAttributes = retrieveTransactionConfigurationAttributes(testContext.getTestClass());
+        if (this.transactionManagerName == null) {
+            this.transactionManagerName = retrieveTransactionManagerName(testContext.getTestClass());
         }
-        String transactionManagerName = this.configAttributes.getTransactionManagerName();
+        String transactionManagerName = this.transactionManagerName;
         try {
             return (PlatformTransactionManager) BaseTest.getContext().getBean(
                     transactionManagerName, PlatformTransactionManager.class);
@@ -328,7 +329,7 @@ public class MergeTransactionalTestExecutionListener extends AbstractTestExecuti
      * @throws Exception if an error occurs while determining the default rollback flag
      */
     protected final boolean isDefaultRollback(TestContext testContext) throws Exception {
-        return retrieveTransactionConfigurationAttributes(testContext.getTestClass()).isDefaultRollback();
+        return retrieveDefaultRollback(testContext.getTestClass());
     }
 
     /**
@@ -450,41 +451,31 @@ public class MergeTransactionalTestExecutionListener extends AbstractTestExecuti
     }
 
     /**
-     * <p>
-     * Retrieves the {@link TransactionConfigurationAttributes} for the
-     * specified {@link Class class} which may optionally declare or inherit a
-     * {@link TransactionConfiguration @TransactionConfiguration}. If a
-     * {@link TransactionConfiguration} annotation is not present for the
-     * supplied class, the <entityManager>default values</entityManager> for attributes defined in
-     * {@link TransactionConfiguration} will be used instead.
-     * @param clazz the Class object corresponding to the test class for which
-     * the configuration attributes should be retrieved
-     * @return a new TransactionConfigurationAttributes instance
+     * Retrieves the name of the transaction manager bean declared by the class-level
+     * {@link Transactional @Transactional} annotation of the supplied test class.
+     *
+     * @param clazz the test class
+     * @return the transaction manager bean name, never {@code null}
      */
-    private TransactionConfigurationAttributes retrieveTransactionConfigurationAttributes(Class<?> clazz) {
-        Class<TransactionConfiguration> annotationType = TransactionConfiguration.class;
-        TransactionConfiguration config = clazz.getAnnotation(annotationType);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Retrieved @TransactionConfiguration [" + config + "] for test class [" + clazz + "]");
+    private String retrieveTransactionManagerName(Class<?> clazz) {
+        Transactional config = AnnotatedElementUtils.findMergedAnnotation(clazz, Transactional.class);
+        if (config == null || config.transactionManager().isEmpty()) {
+            throw new IllegalStateException("Test class [" + clazz.getName() + "] must declare a class level "
+                    + "@Transactional annotation naming the transaction manager bean to use");
         }
+        return config.transactionManager();
+    }
 
-        String transactionManagerName;
-        boolean defaultRollback;
-        if (config != null) {
-            transactionManagerName = config.transactionManager();
-            defaultRollback = config.defaultRollback();
-        }
-        else {
-            transactionManagerName = (String) AnnotationUtils.getDefaultValue(annotationType, "transactionManager");
-            defaultRollback = (Boolean) AnnotationUtils.getDefaultValue(annotationType, "defaultRollback");
-        }
-
-        TransactionConfigurationAttributes configAttributes =
-                new TransactionConfigurationAttributes(transactionManagerName, defaultRollback);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Retrieved TransactionConfigurationAttributes [" + configAttributes + "] for class [" + clazz + "]");
-        }
-        return configAttributes;
+    /**
+     * Determines the default rollback behavior for the supplied test class from its class-level
+     * {@link Rollback @Rollback} annotation, defaulting to {@code true} when absent.
+     *
+     * @param clazz the test class
+     * @return whether transactions should be rolled back by default
+     */
+    private boolean retrieveDefaultRollback(Class<?> clazz) {
+        Rollback rollback = AnnotatedElementUtils.findMergedAnnotation(clazz, Rollback.class);
+        return rollback == null || rollback.value();
     }
 
 
