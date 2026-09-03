@@ -1,0 +1,32 @@
+<div class="range-input-container">
+    <input type="hidden" class="listgrid-criteria-input" th:attr="data-name=${fieldName}" />
+    
+    <div class="specific-input">
+        <span class="filter-heading" th:text="#{dateInput.specificInputFilter}"></span>
+        <br />
+    
+        <div class="datepicker-container">
+            <input class="listgrid-criteria-input-range range-single datepicker"
+                   type="text"/>
+            <i class="icon-calendar"></i>
+        </div>
+    </div>
+    
+    <div class="range-input hidden">
+        <span class="filter-heading" th:text="#{dateInput.rangeInputFilter}" ></span>
+        <br />
+    
+        <div class="datepicker-container">
+            <input class="listgrid-criteria-input-range range-low datepicker"
+                   type="text"/>
+            <i class="icon-calendar"></i>
+        </div>
+        <br />
+        <div class="datepicker-container">
+            <input class="listgrid-criteria-input-range range-high datepicker"
+                   type="text"/>
+            <i class="icon-calendar"></i>
+        </div>
+    
+    </div>
+</div>
